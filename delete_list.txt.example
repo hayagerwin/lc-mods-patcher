@@ -1,0 +1,26 @@
+# ==============================================================================
+# Lethal Company Obsolete Files & Folders Deletion Manifest
+# ==============================================================================
+# Add relative paths (from the game root directory) of obsolete files or folders
+# to remove before applying new mod patches.
+#
+# Rules:
+# - Lines starting with '#' and empty lines are ignored.
+# - Forward slashes ('/') and backslashes ('\') are both supported.
+# - Spaces in paths and folder names are supported without quotes.
+# - If the path points to a directory, the entire directory and its contents
+#   will be removed recursively.
+# - If the path points to a file, only that specific file will be deleted.
+#
+# Examples:
+
+# Obsolete mod DLLs:
+# BepInEx/plugins/OldDeprecatedMod.dll
+# BepInEx/plugins/SomeModWith Spaces/DeprecatedHelper.dll
+
+# Obsolete configuration files:
+# BepInEx/config/deprecated_mod_settings.cfg
+
+# Obsolete whole mod directories / asset bundles:
+# BepInEx/plugins/RemovedModFolder
+# BepInEx/patchers/OldPatcher.dll
