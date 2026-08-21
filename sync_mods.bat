@@ -155,7 +155,8 @@ echo %C_GREEN%==================================================================
 echo [SUCCESS] Lethal Company mods have been successfully synchronized.
 echo ============================================================================%C_RESET%
 echo.
-pause
+echo Launching Lethal Company...
+start "" "Lethal Company.exe"
 exit /b 0
 
 

@@ -29,7 +29,7 @@ A standalone, lightweight synchronization toolchain for updating custom **Lethal
 1. Download [`sync_mods.bat`](file:///c:/Reedsoft/LCModsPatcher/sync_mods.bat) (or [`sync_mods.py`](file:///c:/Reedsoft/LCModsPatcher/sync_mods.py)).
 2. Place the script into your **Lethal Company root directory**:
    - *Typical Steam path*: `C:\Program Files (x86)\Steam\steamapps\common\Lethal Company\`
-3. Double-click `sync_mods.bat` to update your mods.
+3. Double-click `sync_mods.bat` to update your mods. Once synchronization succeeds, the script will automatically launch the game and close.
 
 ---
 

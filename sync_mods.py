@@ -273,7 +273,19 @@ def main():
             sys.exit(1)
 
     log_success("Lethal Company mods have been successfully synchronized!\n")
-    input("Press Enter to close...")
+    log_info("Launching Lethal Company...")
+    try:
+        exe_path = game_dir / "Lethal Company.exe"
+        if sys.platform == "win32":
+            os.startfile(str(exe_path))
+        else:
+            subprocess.Popen([str(exe_path)], cwd=str(game_dir))
+    except Exception as e:
+        log_error(f"Failed to launch Lethal Company: {e}")
+        input("\nPress Enter to exit...")
+        sys.exit(1)
+
+    sys.exit(0)
 
 
 if __name__ == "__main__":
