@@ -13,9 +13,17 @@ set "BRANCH=main"
 REM Ensure the script runs in its current folder
 cd /d "%~dp0"
 
-echo ============================================================================
+REM Initialize ANSI color codes
+for /f %%A in ('echo prompt $E ^| cmd') do set "ESC=%%A"
+set "C_GREEN=%ESC%[92m"
+set "C_RED=%ESC%[91m"
+set "C_CYAN=%ESC%[96m"
+set "C_YELLOW=%ESC%[93m"
+set "C_RESET=%ESC%[0m"
+
+echo %C_CYAN%============================================================================
 echo                      Lethal Company Mod Synchronizer
-echo ============================================================================
+echo ============================================================================%C_RESET%
 echo.
 
 REM ----------------------------------------------------------------------------
@@ -45,7 +53,7 @@ set "TEMP_PATCH_ZIP=%TEMP%\lc_patch_%RANDOM%.zip"
 REM ----------------------------------------------------------------------------
 REM 2. STAGE 1: DELETE OBSOLETE FILES & FOLDERS
 REM ----------------------------------------------------------------------------
-echo [1/3] Checking for obsolete files and folders to remove...
+echo %C_CYAN%[1/3]%C_RESET% Checking for obsolete files and folders to remove...
 curl.exe -s -L -f "%DELETE_LIST_URL%" -o "%TEMP_DELETE_LIST%"
 
 if exist "%TEMP_DELETE_LIST%" (
@@ -60,11 +68,11 @@ if exist "%TEMP_DELETE_LIST%" (
         if defined NORM_PATH (
             REM Distinguish between directory and file
             if exist "!NORM_PATH!\" (
-                echo   [-] Removing folder: !NORM_PATH!
+                echo   %C_YELLOW%[-]%C_RESET% Removing folder: !NORM_PATH!
                 rmdir /s /q "!NORM_PATH!" 2>nul
                 set /a DELETED_COUNT+=1
             ) else if exist "!NORM_PATH!" (
-                echo   [-] Removing file:   !NORM_PATH!
+                echo   %C_YELLOW%[-]%C_RESET% Removing file:   !NORM_PATH!
                 del /f /q /a "!NORM_PATH!" 2>nul
                 set /a DELETED_COUNT+=1
             )
@@ -84,7 +92,7 @@ echo.
 REM ----------------------------------------------------------------------------
 REM 3. STAGE 2: DOWNLOAD MOD ARCHIVE
 REM ----------------------------------------------------------------------------
-echo [2/3] Downloading latest mod patch (patch.zip)...
+echo %C_CYAN%[2/3]%C_RESET% Downloading latest mod patch (patch.zip)...
 echo       Source: %REPO_USER%/%REPO_NAME% (%BRANCH%)
 echo.
 curl.exe -L -f --progress-bar "%PATCH_ZIP_URL%" -o "%TEMP_PATCH_ZIP%"
@@ -104,7 +112,7 @@ echo.
 REM ----------------------------------------------------------------------------
 REM 4. STAGE 3: EXTRACT MODS & OVERWRITE
 REM ----------------------------------------------------------------------------
-echo [3/3] Extracting mod files and updating game directory...
+echo %C_CYAN%[3/3]%C_RESET% Extracting mod files and updating game directory...
 tar.exe -xf "%TEMP_PATCH_ZIP%" -C .
 
 if errorlevel 1 (
@@ -115,9 +123,9 @@ REM Cleanup temporary archive
 if exist "%TEMP_PATCH_ZIP%" del /f /q "%TEMP_PATCH_ZIP%" 2>nul
 
 echo.
-echo ============================================================================
+echo %C_GREEN%============================================================================
 echo [SUCCESS] Lethal Company mods have been successfully synchronized.
-echo ============================================================================
+echo ============================================================================%C_RESET%
 echo.
 pause
 exit /b 0
@@ -127,7 +135,7 @@ REM ============================================================================
 REM ERROR HANDLERS
 REM ============================================================================
 :err_missing_game
-echo [ERROR] "Lethal Company.exe" was not found in this folder.
+echo %C_RED%[ERROR] "Lethal Company.exe" was not found in this folder.%C_RESET%
 echo.
 echo Please make sure this script is placed inside your Lethal Company
 echo game directory (e.g., steamapps\common\Lethal Company\).
@@ -136,14 +144,14 @@ pause
 exit /b 1
 
 :err_missing_curl
-echo [ERROR] "curl.exe" was not found on your system.
+echo %C_RED%[ERROR] "curl.exe" was not found on your system.%C_RESET%
 echo Windows 10 (version 1803+) or Windows 11 is required for native sync.
 echo.
 pause
 exit /b 1
 
 :err_missing_tar
-echo [ERROR] "tar.exe" was not found on your system.
+echo %C_RED%[ERROR] "tar.exe" was not found on your system.%C_RESET%
 echo Windows 10 (version 1803+) or Windows 11 is required for native sync.
 echo.
 pause
@@ -151,7 +159,7 @@ exit /b 1
 
 :err_download_failed
 echo.
-echo [ERROR] Failed to download patch.zip from GitHub.
+echo %C_RED%[ERROR] Failed to download patch.zip from GitHub.%C_RESET%
 echo.
 echo Possible reasons:
 echo  - Invalid repository configuration (User: %REPO_USER%, Repo: %REPO_NAME%, Branch: %BRANCH%)
@@ -164,14 +172,14 @@ exit /b 1
 
 :err_empty_zip
 echo.
-echo [ERROR] Downloaded patch.zip is empty (0 bytes).
+echo %C_RED%[ERROR] Downloaded patch.zip is empty (0 bytes).%C_RESET%
 if exist "%TEMP_PATCH_ZIP%" del /f /q "%TEMP_PATCH_ZIP%" 2>nul
 pause
 exit /b 1
 
 :err_extract_failed
 echo.
-echo [ERROR] Extraction failed. Ensure game files are not locked by a running instance of Lethal Company.
+echo %C_RED%[ERROR] Extraction failed. Ensure game files are not locked by a running instance of Lethal Company.%C_RESET%
 if exist "%TEMP_PATCH_ZIP%" del /f /q "%TEMP_PATCH_ZIP%" 2>nul
 pause
 exit /b 1
