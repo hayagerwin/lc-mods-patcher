@@ -1,1 +1,2 @@
 BepInEx/plugins/LTGVE-VeryLateCompany
+BepInEx/patchers/EnemyAIMethodCompatibilityFixer
