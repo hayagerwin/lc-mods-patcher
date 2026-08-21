@@ -9,6 +9,7 @@ import sys
 import shutil
 import zipfile
 import tempfile
+import subprocess
 from pathlib import Path
 import urllib.request
 import urllib.error
@@ -59,6 +60,46 @@ def log_info(message: str):
 # ==============================================================================
 # CORE OPERATIONS
 # ==============================================================================
+def check_self_update(script_url: str):
+    """Checks if a newer version of sync_mods.py exists on GitHub and self-updates."""
+    if os.environ.get("_SYNC_MODS_SELF_UPDATED") == "1":
+        return
+
+    current_script = Path(__file__).resolve()
+    try:
+        req = urllib.request.Request(
+            script_url,
+            headers={"User-Agent": "LethalCompanyModPatcher/1.0"}
+        )
+        with urllib.request.urlopen(req, timeout=10) as response:
+            remote_bytes = response.read()
+
+        if not remote_bytes:
+            return
+
+        remote_text = remote_bytes.decode("utf-8", errors="ignore").replace("\r\n", "\n").strip()
+        local_text = current_script.read_text(encoding="utf-8", errors="ignore").replace("\r\n", "\n").strip()
+
+        if remote_text != local_text:
+            print(f"{Style.BOLD}{Style.CYAN}[UPDATE]{Style.RESET} A newer version of sync_mods.py was detected.")
+            log_info("Updating script to the latest version...")
+
+            current_script.write_bytes(remote_bytes)
+            log_info("Restarting synchronizer...\n")
+
+            env = os.environ.copy()
+            env["_SYNC_MODS_SELF_UPDATED"] = "1"
+            exit_code = subprocess.call([sys.executable, str(current_script)] + sys.argv[1:], env=env)
+            sys.exit(exit_code)
+
+    except urllib.error.HTTPError:
+        pass
+    except urllib.error.URLError:
+        pass
+    except Exception:
+        pass
+
+
 def verify_environment(game_dir: Path) -> bool:
     """Verifies that the script is located in the Lethal Company root directory."""
     exe_path = game_dir / "Lethal Company.exe"
@@ -202,6 +243,9 @@ def main():
     game_dir = Path(__file__).resolve().parent
 
     log_header("Lethal Company Mod Synchronizer")
+
+    script_url = f"https://raw.githubusercontent.com/{REPO_USER}/{REPO_NAME}/{BRANCH}/sync_mods.py"
+    check_self_update(script_url)
 
     if not verify_environment(game_dir):
         input("\nPress Enter to exit...")

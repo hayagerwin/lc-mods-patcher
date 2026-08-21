@@ -6,13 +6,17 @@ A standalone, lightweight synchronization toolchain for updating custom **Lethal
 
 ## Features
 
+- **Automatic Self-Update**:
+  - Automatically checks for newer versions of `sync_mods.bat` or `sync_mods.py` on GitHub before synchronizing mods.
+  - Seamlessly updates itself and restarts if updates or bug fixes are detected on the remote repository.
 - **Zero-Dependency Native Batch Script (`sync_mods.bat`)**:
   - Uses Windows 10/11 built-in `curl.exe` and `tar.exe`.
   - No PowerShell execution policy issues, no 7-Zip, and no Python installation required for players.
 - **Python Alternative (`sync_mods.py`)**:
-  - Written entirely with Python standard library (`urllib`, `zipfile`, `pathlib`, `shutil`).
+  - Written entirely with Python standard library (`urllib`, `zipfile`, `pathlib`, `shutil`, `subprocess`).
   - Cross-platform support and real-time chunked download progress bar.
-- **Robust 3-Stage Pipeline**:
+- **Robust Pipeline**:
+  - **[0] Self-Update Check**: Checks for and applies script updates from the repository.
   - **Environment Check**: Confirms execution inside the game's root directory (`Lethal Company.exe`).
   - **[1/3] Deletion Stage**: Removes outdated/conflicting mods and folders defined in `delete_list.txt`.
   - **[2/3] Download Stage**: Fetches the latest `patch.zip` from GitHub with HTTP error detection (catches 404s cleanly).

@@ -27,6 +27,34 @@ echo ===========================================================================
 echo.
 
 REM ----------------------------------------------------------------------------
+REM 0. SELF-UPDATE CHECK
+REM ----------------------------------------------------------------------------
+if not defined _SYNC_MODS_SELF_UPDATED (
+    where curl.exe >nul 2>nul
+    if not errorlevel 1 (
+        set "SCRIPT_URL=https://raw.githubusercontent.com/%REPO_USER%/%REPO_NAME%/%BRANCH%/sync_mods.bat"
+        set "TEMP_SCRIPT=%TEMP%\lc_sync_update_%RANDOM%.bat"
+
+        curl.exe -s -L -f "!SCRIPT_URL!" -o "!TEMP_SCRIPT!" 2>nul
+        if exist "!TEMP_SCRIPT!" (
+            for %%F in ("!TEMP_SCRIPT!") do (
+                if %%~zF gtr 0 (
+                    fc.exe /b "%~f0" "!TEMP_SCRIPT!" >nul 2>nul
+                    if errorlevel 1 (
+                        echo %C_CYAN%[UPDATE]%C_RESET% A new version of sync_mods.bat was detected.
+                        echo %C_CYAN%[UPDATE]%C_RESET% Updating script and restarting...
+                        echo.
+                        set "_SYNC_MODS_SELF_UPDATED=1"
+                        copy /y "!TEMP_SCRIPT!" "%~f0" >nul & del /f /q "!TEMP_SCRIPT!" 2>nul & call "%~f0" %* & exit /b !errorlevel!
+                    )
+                )
+            )
+            del /f /q "!TEMP_SCRIPT!" 2>nul
+        )
+    )
+)
+
+REM ----------------------------------------------------------------------------
 REM 1. ENVIRONMENT CHECK
 REM ----------------------------------------------------------------------------
 if not exist "Lethal Company.exe" (
