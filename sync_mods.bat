@@ -6,8 +6,8 @@ REM ============================================================================
 REM REPOSITORY CONFIGURATION
 REM Set your GitHub username, repository name, and branch below.
 REM ============================================================================
-set "REPO_USER=YourGitHubUsername"
-set "REPO_NAME=YourModRepository"
+set "REPO_USER=hayagerwin"
+set "REPO_NAME=lc-mods-patcher"
 set "BRANCH=main"
 
 REM Ensure the script runs in its current folder

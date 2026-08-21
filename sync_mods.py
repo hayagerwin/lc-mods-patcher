@@ -17,8 +17,8 @@ import urllib.error
 # REPOSITORY CONFIGURATION
 # Configure your GitHub username, repository name, and branch below.
 # ==============================================================================
-REPO_USER = "YourGitHubUsername"
-REPO_NAME = "YourModRepository"
+REPO_USER = "hayagerwin"
+REPO_NAME = "lc-mods-patcher"
 BRANCH = "main"
 
 # ==============================================================================
