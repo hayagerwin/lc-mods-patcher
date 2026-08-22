@@ -134,8 +134,79 @@ def save_cached_game_dir(game_dir: Path):
         pass
 
 
+def find_lethal_company_root(target: Path | str | None, max_sub_depth: int = 3) -> Path | None:
+    """
+    Given a target path (file or directory), attempts to locate the directory containing 'Lethal Company.exe'.
+    Checks:
+    1. If target is 'Lethal Company.exe' directly or another file in the game root.
+    2. If target directory directly contains 'Lethal Company.exe'.
+    3. If target's parent or grandparent contains 'Lethal Company.exe' (e.g. user selected BepInEx).
+    4. If any subfolder within target (up to max_sub_depth) contains 'Lethal Company.exe' (e.g. nested unzipped archive).
+    """
+    if not target:
+        return None
+
+    try:
+        p = Path(target).resolve()
+    except Exception:
+        return None
+
+    if not p.exists():
+        return None
+
+    # Case A: target is a file
+    if p.is_file():
+        if p.name.lower() == "lethal company.exe":
+            return p.parent
+        if (p.parent / "Lethal Company.exe").is_file():
+            return p.parent
+        p = p.parent
+
+    # Case B: target directly contains Lethal Company.exe
+    if (p / "Lethal Company.exe").is_file():
+        return p
+
+    # Case C: check parent directories (up to 2 levels up, in case user passed BepInEx / Lethal Company_Data)
+    curr = p.parent
+    for _ in range(2):
+        if (curr / "Lethal Company.exe").is_file():
+            return curr
+        if curr == curr.parent:
+            break
+        curr = curr.parent
+
+    # Case D: check subdirectories (breadth-first scan up to max_sub_depth)
+    if max_sub_depth > 0:
+        try:
+            # Check immediate children first (depth 1)
+            subdirs = [d for d in p.iterdir() if d.is_dir()]
+            for sub in subdirs:
+                if (sub / "Lethal Company.exe").is_file():
+                    return sub
+
+            # Check deeper children (depth 2..max_sub_depth)
+            if max_sub_depth >= 2:
+                for root, dirs, _ in os.walk(p, followlinks=False):
+                    try:
+                        rel_parts = Path(root).relative_to(p).parts
+                    except ValueError:
+                        break
+                    depth = len(rel_parts)
+                    if depth >= max_sub_depth:
+                        dirs.clear()
+                        continue
+                    for d in dirs:
+                        cand = Path(root) / d
+                        if (cand / "Lethal Company.exe").is_file():
+                            return cand
+        except (PermissionError, OSError):
+            pass
+
+    return None
+
+
 def resolve_game_directory() -> Path | None:
-    """Resolves Lethal Company root directory with interactive multi-install selection."""
+    """Resolves Lethal Company root directory with flexible subfolder scanning and selection."""
     script_dir = Path(__file__).resolve().parent
 
     # Case 1: In-Place Execution (Script is placed directly inside game directory)
@@ -146,17 +217,26 @@ def resolve_game_directory() -> Path | None:
     candidates: list[tuple[Path, str]] = []
     seen: set[str] = set()
 
-    def add_candidate(path: Path, label: str):
-        resolved = str(path.resolve()).lower()
-        if resolved not in seen and (path / "Lethal Company.exe").is_file():
-            seen.add(resolved)
-            candidates.append((path.resolve(), label))
+    def add_candidate(path: Path | str | None, label: str):
+        if not path:
+            return
+        found = find_lethal_company_root(path, max_sub_depth=2)
+        if found:
+            resolved_key = str(found.resolve()).lower()
+            if resolved_key not in seen and (found / "Lethal Company.exe").is_file():
+                seen.add(resolved_key)
+                candidates.append((found.resolve(), label))
 
-    # Check saved configs
+    # Check if script_dir contains game in a nested folder (e.g. extracted patcher + game archive)
+    sub_game = find_lethal_company_root(script_dir, max_sub_depth=2)
+    if sub_game and sub_game != script_dir:
+        add_candidate(sub_game, "Inside Current Directory")
+
+    # Check saved configs (local and global)
     local_cfg = script_dir / "lc_game_path.txt"
     if local_cfg.is_file():
         try:
-            saved = Path(local_cfg.read_text(encoding="utf-8").strip())
+            saved = local_cfg.read_text(encoding="utf-8").strip()
             add_candidate(saved, "Previously Used")
         except Exception:
             pass
@@ -164,33 +244,45 @@ def resolve_game_directory() -> Path | None:
     global_cfg = get_config_path()
     if global_cfg.is_file():
         try:
-            saved = Path(global_cfg.read_text(encoding="utf-8").strip())
+            saved = global_cfg.read_text(encoding="utf-8").strip()
             add_candidate(saved, "Previously Used")
         except Exception:
             pass
 
-    # Check common paths
-    common_paths = [
-        Path("C:/Games/Lethal Company"),
-        Path("D:/Games/Lethal Company"),
-        Path("E:/Games/Lethal Company"),
-        Path("F:/Games/Lethal Company"),
-        Path(os.environ.get("ProgramFiles(x86)", "C:/Program Files (x86)")) / "Steam/steamapps/common/Lethal Company",
-        Path(os.environ.get("ProgramFiles", "C:/Program Files")) / "Steam/steamapps/common/Lethal Company",
-        Path("D:/SteamLibrary/steamapps/common/Lethal Company"),
-        Path("E:/SteamLibrary/steamapps/common/Lethal Company"),
-        Path("F:/SteamLibrary/steamapps/common/Lethal Company"),
-    ]
-    for cp in common_paths:
-        add_candidate(cp, "Installed Path")
+    # Check common paths & Steam across available drives
+    drive_letters = ["C", "D", "E", "F", "G", "H"]
+    for drive in drive_letters:
+        drive_path = Path(f"{drive}:/")
+        if not drive_path.exists():
+            continue
 
-    # Check Downloads and Desktop
-    for base_dir in [Path.home() / "Downloads", Path.home() / "Desktop"]:
+        common_paths = [
+            drive_path / "Games/Lethal Company",
+            drive_path / "SteamLibrary/steamapps/common/Lethal Company",
+            drive_path / "Steam/steamapps/common/Lethal Company",
+            drive_path / "Program Files (x86)/Steam/steamapps/common/Lethal Company",
+            drive_path / "Program Files/Steam/steamapps/common/Lethal Company",
+        ]
+        for cp in common_paths:
+            add_candidate(cp, "Installed Path")
+
+        # Scan drive Games directory for custom *lethal* folders
+        games_folder = drive_path / "Games"
+        if games_folder.is_dir():
+            try:
+                for item in games_folder.iterdir():
+                    if item.is_dir() and "lethal" in item.name.lower():
+                        add_candidate(item, f"Found on {drive}:/Games")
+            except Exception:
+                pass
+
+    # Check user directories (Downloads, Desktop, Documents)
+    for base_dir in [Path.home() / "Downloads", Path.home() / "Desktop", Path.home() / "Documents"]:
         if base_dir.is_dir():
             try:
-                for folder in base_dir.glob("Lethal*"):
-                    if folder.is_dir():
-                        add_candidate(folder, f"Found in {base_dir.name}")
+                for item in base_dir.iterdir():
+                    if item.is_dir() and "lethal" in item.name.lower():
+                        add_candidate(item, f"Found in {base_dir.name}")
             except Exception:
                 pass
 
@@ -235,12 +327,10 @@ def resolve_game_directory() -> Path | None:
         if not user_input:
             return single_path
 
-        p = Path(user_input).resolve()
-        if p.name.lower() == "lethal company.exe" and p.is_file():
-            p = p.parent
-        if (p / "Lethal Company.exe").is_file():
-            return p
-        print(f"{Style.RED}[ERROR] \"Lethal Company.exe\" was not found in: \"{p}\"{Style.RESET}\n")
+        resolved = find_lethal_company_root(user_input, max_sub_depth=3)
+        if resolved:
+            return resolved
+        print(f"{Style.RED}[ERROR] \"Lethal Company.exe\" was not found in: \"{user_input}\" or its subfolders.{Style.RESET}\n")
 
     return prompt_custom_directory()
 
@@ -259,14 +349,11 @@ def prompt_custom_directory() -> Path | None:
         if not user_input:
             return None
 
-        p = Path(user_input).resolve()
-        if p.name.lower() == "lethal company.exe" and p.is_file():
-            p = p.parent
-
-        if (p / "Lethal Company.exe").is_file():
-            return p
+        resolved = find_lethal_company_root(user_input, max_sub_depth=3)
+        if resolved:
+            return resolved
         else:
-            log_error(f'"Lethal Company.exe" was not found in: "{p}"')
+            log_error(f'"Lethal Company.exe" was not found in: "{user_input}" or its subfolders.')
             print("Please verify the folder and try again (or press Ctrl+C to cancel).")
 
 

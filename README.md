@@ -15,9 +15,11 @@ A standalone, lightweight synchronization toolchain for updating custom **Lethal
 - **Python Alternative (`lethal_company_patcher.py`)**:
   - Written entirely with Python standard library (`urllib`, `zipfile`, `pathlib`, `shutil`, `subprocess`).
   - Cross-platform support and real-time chunked download progress bar.
-- **Smart Game Directory Auto-Detection**:
-  - Automatically discovers your game directory across **Steam**, **Online-Fix**, and custom repack locations (`C:\Games\Lethal Company`, `Downloads\Lethal Company`, Desktop, etc.).
-  - If executed outside the game folder, it prompts you once (with drag-and-drop support) and saves the location so future syncs are 1-click.
+- **Smart Game Directory Auto-Detection & Subfolder Flexibility**:
+  - Automatically discovers your game directory across **Steam**, **Online-Fix**, and custom repack locations (`C:\Games\Lethal Company`, `Downloads\Lethal Company`, Desktop, Documents, etc.).
+  - Deep nested subfolder resolution: seamlessly detects installations even when extracted inside extra folder layers (e.g. `Downloads/Lethal Company/Lethal Company/Lethal Company.exe` or `Downloads/Lethal.Company.v69/Lethal Company/`).
+  - Forgiving drag-and-drop / manual inputs: whether you drag the `.exe`, the root folder, the outer extracted folder, or a subfolder like `BepInEx`, the patcher automatically locates the actual game directory.
+  - If executed outside the game folder, it prompts you once and saves the verified location to `%LOCALAPPDATA%\LCModsPatcher` so future syncs are 1-click.
 - **Robust Pipeline**:
   - **[0] Self-Update Check**: Checks for and applies script updates from the repository.
   - **[1] Game Directory Detection**: Resolves and verifies the Lethal Company root directory (`Lethal Company.exe`).
@@ -43,8 +45,8 @@ A standalone, lightweight synchronization toolchain for updating custom **Lethal
 
 The synchronizer automatically supports both legitimate and standalone/Online-Fix copies:
 - **Steam**: `C:\Program Files (x86)\Steam\steamapps\common\Lethal Company\`, library drives (`D:\SteamLibrary`, etc.)
-- **Online-Fix / Repacks**: `C:\Games\Lethal Company\`, `D:\Games\Lethal Company\`, unzipped folders in `Downloads\` or `Desktop\`
-- **Custom / External**: Any folder containing `Lethal Company.exe`
+- **Online-Fix / Repacks**: `C:\Games\Lethal Company\`, `D:\Games\Lethal Company\`, nested unzipped folders in `Downloads\`, `Desktop\`, or `Documents\` (e.g. `Downloads\Lethal Company\Lethal Company\`)
+- **Custom / External**: Any folder or nested directory containing `Lethal Company.exe`
 
 ---
 

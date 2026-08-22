@@ -76,51 +76,130 @@ if exist "%SCRIPT_DIR%Lethal Company.exe" (
 REM Case 2: External Execution - Scan for available Lethal Company installations
 set "COUNT=0"
 
+REM Scan Nested folder inside SCRIPT_DIR (e.g. extracted alongside game subfolder)
+for /d %%S in ("%SCRIPT_DIR%*Lethal*" "%SCRIPT_DIR%*") do (
+    if exist "%%~fS\Lethal Company.exe" (
+        if not defined FOUND_DIR_%%~fS (
+            set "FOUND_DIR_%%~fS=1"
+            set /a COUNT+=1
+            for %%K in (!COUNT!) do (
+                set "CANDIDATE_%%K=%%~fS"
+                set "LABEL_%%K=Inside Current Folder"
+            )
+        )
+    )
+    for /d %%T in ("%%~fS\*") do (
+        if exist "%%~fT\Lethal Company.exe" (
+            if not defined FOUND_DIR_%%~fT (
+                set "FOUND_DIR_%%~fT=1"
+                set /a COUNT+=1
+                for %%K in (!COUNT!) do (
+                    set "CANDIDATE_%%K=%%~fT"
+                    set "LABEL_%%K=Inside Current Folder"
+                )
+            )
+        )
+    )
+)
+
 REM Scan Saved Location
 if exist "%CONFIG_FILE%" (
     set /p SAVED_P=<"%CONFIG_FILE%"
     if defined SAVED_P (
         set "SAVED_P=!SAVED_P:"=!"
         if exist "!SAVED_P!\Lethal Company.exe" (
-            set "FOUND_DIR_!SAVED_P!=1"
-            set /a COUNT+=1
-            for %%K in (!COUNT!) do (
-                set "CANDIDATE_%%K=!SAVED_P!"
-                set "LABEL_%%K=Previously Used"
+            if not defined FOUND_DIR_!SAVED_P! (
+                set "FOUND_DIR_!SAVED_P!=1"
+                set /a COUNT+=1
+                for %%K in (!COUNT!) do (
+                    set "CANDIDATE_%%K=!SAVED_P!"
+                    set "LABEL_%%K=Previously Used"
+                )
+            )
+        ) else (
+            for /d %%S in ("!SAVED_P!\*") do (
+                if exist "%%~fS\Lethal Company.exe" (
+                    if not defined FOUND_DIR_%%~fS (
+                        set "FOUND_DIR_%%~fS=1"
+                        set /a COUNT+=1
+                        for %%K in (!COUNT!) do (
+                            set "CANDIDATE_%%K=%%~fS"
+                            set "LABEL_%%K=Previously Used"
+                        )
+                    )
+                )
+                for /d %%T in ("%%~fS\*") do (
+                    if exist "%%~fT\Lethal Company.exe" (
+                        if not defined FOUND_DIR_%%~fT (
+                            set "FOUND_DIR_%%~fT=1"
+                            set /a COUNT+=1
+                            for %%K in (!COUNT!) do (
+                                set "CANDIDATE_%%K=%%~fT"
+                                set "LABEL_%%K=Previously Used"
+                            )
+                        )
+                    )
+                )
             )
         )
     )
 )
 
-REM Scan Common Paths
-for %%P in (
-    "C:\Games\Lethal Company"
-    "D:\Games\Lethal Company"
-    "E:\Games\Lethal Company"
-    "F:\Games\Lethal Company"
-    "%ProgramFiles(x86)%\Steam\steamapps\common\Lethal Company"
-    "%ProgramFiles%\Steam\steamapps\common\Lethal Company"
-    "C:\Program Files\Steam\steamapps\common\Lethal Company"
-    "D:\SteamLibrary\steamapps\common\Lethal Company"
-    "E:\SteamLibrary\steamapps\common\Lethal Company"
-    "F:\SteamLibrary\steamapps\common\Lethal Company"
-) do (
-    if exist "%%~P\Lethal Company.exe" (
-        if not defined FOUND_DIR_%%~P (
-            set "FOUND_DIR_%%~P=1"
-            set /a COUNT+=1
-            for %%K in (!COUNT!) do (
-                set "CANDIDATE_%%K=%%~P"
-                set "LABEL_%%K=Installed Path"
+REM Scan Common Paths and Drives
+for %%V in (C D E F G H) do (
+    if exist "%%V:\" (
+        for %%P in (
+            "%%V:\Games\Lethal Company"
+            "%%V:\SteamLibrary\steamapps\common\Lethal Company"
+            "%%V:\Steam\steamapps\common\Lethal Company"
+            "%%V:\Program Files (x86)\Steam\steamapps\common\Lethal Company"
+            "%%V:\Program Files\Steam\steamapps\common\Lethal Company"
+        ) do (
+            if exist "%%~P\Lethal Company.exe" (
+                if not defined FOUND_DIR_%%~P (
+                    set "FOUND_DIR_%%~P=1"
+                    set /a COUNT+=1
+                    for %%K in (!COUNT!) do (
+                        set "CANDIDATE_%%K=%%~P"
+                        set "LABEL_%%K=Installed Path"
+                    )
+                )
+            )
+        )
+        if exist "%%V:\Games\" (
+            for /d %%D in ("%%V:\Games\*Lethal*" "%%V:\Games\Lethal*") do (
+                if exist "%%~fD\Lethal Company.exe" (
+                    if not defined FOUND_DIR_%%~fD (
+                        set "FOUND_DIR_%%~fD=1"
+                        set /a COUNT+=1
+                        for %%K in (!COUNT!) do (
+                            set "CANDIDATE_%%K=%%~fD"
+                            set "LABEL_%%K=Found on %%V:\Games"
+                        )
+                    )
+                )
+                for /d %%S in ("%%~fD\*") do (
+                    if exist "%%~fS\Lethal Company.exe" (
+                        if not defined FOUND_DIR_%%~fS (
+                            set "FOUND_DIR_%%~fS=1"
+                            set /a COUNT+=1
+                            for %%K in (!COUNT!) do (
+                                set "CANDIDATE_%%K=%%~fS"
+                                set "LABEL_%%K=Found on %%V:\Games"
+                            )
+                        )
+                    )
+                )
             )
         )
     )
 )
 
-REM Scan Downloads and Desktop
-for %%B in ("%USERPROFILE%\Downloads" "%USERPROFILE%\Desktop") do (
+REM Scan User Directories (Downloads, Desktop, Documents)
+for %%B in ("%USERPROFILE%\Downloads" "%USERPROFILE%\Desktop" "%USERPROFILE%\Documents") do (
     if exist "%%~B\" (
-        for /d %%D in ("%%~B\Lethal*") do (
+        for /d %%D in ("%%~B\*Lethal*" "%%~B\Lethal*") do (
+            REM Direct check
             if exist "%%~fD\Lethal Company.exe" (
                 if not defined FOUND_DIR_%%~fD (
                     set "FOUND_DIR_%%~fD=1"
@@ -128,6 +207,32 @@ for %%B in ("%USERPROFILE%\Downloads" "%USERPROFILE%\Desktop") do (
                     for %%K in (!COUNT!) do (
                         set "CANDIDATE_%%K=%%~fD"
                         set "LABEL_%%K=Found in %%~nB"
+                    )
+                )
+            )
+            REM Subfolder depth 1 check (e.g. Downloads/Lethal Company/Lethal Company)
+            for /d %%S in ("%%~fD\*") do (
+                if exist "%%~fS\Lethal Company.exe" (
+                    if not defined FOUND_DIR_%%~fS (
+                        set "FOUND_DIR_%%~fS=1"
+                        set /a COUNT+=1
+                        for %%K in (!COUNT!) do (
+                            set "CANDIDATE_%%K=%%~fS"
+                            set "LABEL_%%K=Found in %%~nB"
+                        )
+                    )
+                )
+                REM Subfolder depth 2 check
+                for /d %%T in ("%%~fS\*") do (
+                    if exist "%%~fT\Lethal Company.exe" (
+                        if not defined FOUND_DIR_%%~fT (
+                            set "FOUND_DIR_%%~fT=1"
+                            set /a COUNT+=1
+                            for %%K in (!COUNT!) do (
+                                set "CANDIDATE_%%K=%%~fT"
+                                set "LABEL_%%K=Found in %%~nB"
+                            )
+                        )
                     )
                 )
             )
@@ -201,19 +306,52 @@ if not defined INPUT_DIR goto :err_missing_game
 
 :validate_custom_path
 set "INPUT_DIR=!INPUT_DIR:"=!"
-if /i "!INPUT_DIR:~-18!"=="Lethal Company.exe" (
-    for %%F in ("!INPUT_DIR!") do set "INPUT_DIR=%%~dpF"
-)
 if "!INPUT_DIR:~-1!"=="\" set "INPUT_DIR=!INPUT_DIR:~0,-1!"
 
+REM If user dragged executable directly or another file
+if /i "!INPUT_DIR:~-18!"=="Lethal Company.exe" (
+    for %%F in ("!INPUT_DIR!") do set "INPUT_DIR=%%~dpF"
+    if "!INPUT_DIR:~-1!"=="\" set "INPUT_DIR=!INPUT_DIR:~0,-1!"
+)
+
+REM 1. Check direct folder
 if exist "!INPUT_DIR!\Lethal Company.exe" (
     set "GAME_DIR=!INPUT_DIR!"
-) else (
-    echo.
-    echo %C_RED%[ERROR] "Lethal Company.exe" was not found in: "!INPUT_DIR!"%C_RESET%
-    echo.
-    goto :prompt_custom_path
+    goto :game_dir_confirmed
 )
+
+REM 2. Check subfolder depth 1 (e.g. user dragged Downloads/Lethal Company)
+for /d %%S in ("!INPUT_DIR!\*") do (
+    if exist "%%~fS\Lethal Company.exe" (
+        set "GAME_DIR=%%~fS"
+        goto :game_dir_confirmed
+    )
+)
+
+REM 3. Check subfolder depth 2
+for /d %%S in ("!INPUT_DIR!\*") do (
+    for /d %%T in ("%%~fS\*") do (
+        if exist "%%~fT\Lethal Company.exe" (
+            set "GAME_DIR=%%~fT"
+            goto :game_dir_confirmed
+        )
+    )
+)
+
+REM 4. Check parent directories (in case user dragged BepInEx or Lethal Company_Data)
+if exist "!INPUT_DIR!\..\Lethal Company.exe" (
+    for %%F in ("!INPUT_DIR!\..") do set "GAME_DIR=%%~fF"
+    goto :game_dir_confirmed
+)
+if exist "!INPUT_DIR!\..\..\Lethal Company.exe" (
+    for %%F in ("!INPUT_DIR!\..\..") do set "GAME_DIR=%%~fF"
+    goto :game_dir_confirmed
+)
+
+echo.
+echo %C_RED%[ERROR] "Lethal Company.exe" was not found in: "!INPUT_DIR!" or its subfolders.%C_RESET%
+echo.
+goto :prompt_custom_path
 
 :game_dir_confirmed
 REM Strip trailing backslash from GAME_DIR if present
