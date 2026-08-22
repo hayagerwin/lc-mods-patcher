@@ -246,7 +246,7 @@ if exist "!LC_CFG!" (
 )
 
 if "!IS_OPTIMIZED!"=="1" (
-    set "STATE_STATUS=%C_GREEN%[ACTIVE] Low-Spec Optimized (Intel UHD Mode)%C_RESET%"
+    set "STATE_STATUS=%C_GREEN%[ACTIVE] Low-Spec Optimized Mode%C_RESET%"
     set "TAG_OPT=%C_GREEN% [ACTIVE *]%C_RESET%"
     set "TAG_REV="
     set "DEFAULT_OPT=3"
@@ -269,7 +269,7 @@ if not exist "%SCRIPT_DIR%optimize.ps1" (
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%SCRIPT_DIR%optimize.ps1" -Mode "Check" -GameDir "!GAME_DIR!"
 echo %C_CYAN%============================================================================%C_RESET%
 echo.
-echo   %C_GREEN%[1]%C_RESET% Apply Low-Spec Optimizations  (%C_CYAN%Intel UHD, 0.7x Res, Shadow/Fog Cuts%C_RESET%)!TAG_OPT!
+echo   %C_GREEN%[1]%C_RESET% Apply Low-Spec Optimizations  (%C_CYAN%0.7x Res, Shadow/Fog Cuts, Occlusion%C_RESET%)!TAG_OPT!
 echo   %C_YELLOW%[2]%C_RESET% Revert to Standard / High Specs (%C_YELLOW%Restore Baseline Friends Copy%C_RESET%)!TAG_REV!
 echo   %C_CYAN%[3]%C_RESET% Launch Lethal Company
 echo   %C_RED%[Q]%C_RESET% Exit

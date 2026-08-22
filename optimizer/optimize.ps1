@@ -37,16 +37,13 @@ if ($Mode -eq "Optimize") {
     Write-Host "============================================================================" -ForegroundColor Cyan
     Write-Host ""
 
-    Write-Host "[1/10] Locking Windows GPU Preference to Intel UHD..." -ForegroundColor Cyan
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\DirectX\UserGpuPreferences" -Name $exePath -Value "GpuPreference=1;" -Force -ErrorAction SilentlyContinue
-
-    Write-Host "[2/10] Optimizing LCUltrawide resolution for Intel UHD..." -ForegroundColor Cyan
+    Write-Host "[1/9] Optimizing LCUltrawide resolution for low-spec rendering..." -ForegroundColor Cyan
     $lcUltra = Join-Path $configDir "com.github.lethalcompanymodding.LCUltrawide.cfg"
     Set-ConfigValue $lcUltra "(?m)^Gameplay Camera Resolution Multiplier\s*=.*$" "Gameplay Camera Resolution Multiplier = 0.7"
     Set-ConfigValue $lcUltra "(?m)^Terminal Resolution Multiplier\s*=.*$" "Terminal Resolution Multiplier = 1.25"
     Set-ConfigValue $lcUltra "(?m)^AspectRatio\s*=.*$" "AspectRatio = 1.777778"
 
-    Write-Host "[3/10] Optimizing OpenBodyCams (Disabled 3D camera overhead)..." -ForegroundColor Cyan
+    Write-Host "[2/9] Optimizing OpenBodyCams (Disabled 3D camera overhead)..." -ForegroundColor Cyan
     $obc = Join-Path $configDir "Zaggy1024.OpenBodyCams.cfg"
     Set-ConfigValue $obc "(?m)^HorizontalResolution\s*=.*$" "HorizontalResolution = 80"
     Set-ConfigValue $obc "(?m)^Framerate\s*=.*$" "Framerate = 10"
@@ -55,14 +52,14 @@ if ($Mode -eq "Optimize") {
     Set-ConfigValue $obc "(?m)^GeneralImprovementsBetterMonitorIndex\s*=.*$" "GeneralImprovementsBetterMonitorIndex = 14"
     Set-ConfigValue $obc "(?m)^EnablePiPBodyCam\s*=.*$" "EnablePiPBodyCam = false"
 
-    Write-Host "[4/10] Optimizing Terminal & Suits preview cameras..." -ForegroundColor Cyan
+    Write-Host "[3/9] Optimizing Terminal & Suits preview cameras..." -ForegroundColor Cyan
     $termStuff = Join-Path $configDir "darmuh.TerminalStuff.cfg"
     Set-ConfigValue $termStuff "(?m)^ObcResolutionMirror\s*=.*$" "ObcResolutionMirror = 320; 240"
     Set-ConfigValue $termStuff "(?m)^ObcResolutionBodyCam\s*=.*$" "ObcResolutionBodyCam = 320; 240"
     $suitsTerm = Join-Path $configDir "com.github.darmuh.suitsTerminal.cfg"
     Set-ConfigValue $suitsTerm "(?m)^OpenBodyCams Resolution\s*=.*$" "OpenBodyCams Resolution = 320; 240"
 
-    Write-Host "[5/10] Optimizing GeneralImprovements ship monitors..." -ForegroundColor Cyan
+    Write-Host "[4/9] Optimizing GeneralImprovements ship monitors..." -ForegroundColor Cyan
     $genImp = Join-Path $configDir "ShaosilGaming.GeneralImprovements.cfg"
     Set-ConfigValue $genImp "(?m)^ShipExternalCamFPS\s*=.*$" "ShipExternalCamFPS = 5"
     Set-ConfigValue $genImp "(?m)^ShipInternalCamFPS\s*=.*$" "ShipInternalCamFPS = 5"
@@ -82,7 +79,7 @@ if ($Mode -eq "Optimize") {
     Set-ConfigValue $genImp "(?m)^ShipMonitor13\s*=.*$" "ShipMonitor13 = None"
     Set-ConfigValue $genImp "(?m)^ShipMonitor14\s*=.*$" "ShipMonitor14 = None"
 
-    Write-Host "[6/10] Disabling ScienceBird rotating floodlight on ship..." -ForegroundColor Cyan
+    Write-Host "[5/9] Disabling ScienceBird rotating floodlight on ship..." -ForegroundColor Cyan
     $sbTweaks = Join-Path $configDir "ScienceBird.ScienceBirdTweaks.cfg"
     Set-ConfigValue $sbTweaks "(?m)^Rotating Floodlight\s*=.*$" "Rotating Floodlight = false"
     Set-ConfigValue $sbTweaks "(?m)^Rotate Floodlight Upon Landing\s*=.*$" "Rotate Floodlight Upon Landing = false"
@@ -90,14 +87,14 @@ if ($Mode -eq "Optimize") {
     Set-ConfigValue $sbTweaks "(?m)^Ship Floodlight Range\s*=.*$" "Ship Floodlight Range = 30"
     Set-ConfigValue $sbTweaks "(?m)^Ship Floodlight Intensity in Lumen\s*=.*$" "Ship Floodlight Intensity in Lumen = 2275"
 
-    Write-Host "[7/10] Optimizing ShipWindows exterior rendering..." -ForegroundColor Cyan
+    Write-Host "[6/9] Optimizing ShipWindows exterior rendering..." -ForegroundColor Cyan
     $shipWin = Join-Path $configDir "TestAccount666.ShipWindows.cfg"
     Set-ConfigValue $shipWin "(?m)^Skybox Type\s*=.*$" "Skybox Type = BLACK_AND_STARS"
     Set-ConfigValue $shipWin "(?m)^Hide Moon Landing\s*=.*$" "Hide Moon Landing = true"
     Set-ConfigValue $shipWin "(?m)^Hide Moon Transitions\s*=.*$" "Hide Moon Transitions = true"
     Set-ConfigValue $shipWin "(?m)^5\.\s*Spawn Underlights\s*=.*$" "5. Spawn Underlights = false"
 
-    Write-Host "[8/10] Optimizing LethalSponge HDRP fog, shadows, and textures..." -ForegroundColor Cyan
+    Write-Host "[7/9] Optimizing LethalSponge HDRP fog, shadows, and textures..." -ForegroundColor Cyan
     $sponge = Join-Path $configDir "LethalSponge.cfg"
     Set-ConfigValue $sponge "(?m)^securityCameraFramerate\s*=.*$" "securityCameraFramerate = 5"
     Set-ConfigValue $sponge "(?m)^shipCameraFramerate\s*=.*$" "shipCameraFramerate = 5"
@@ -120,7 +117,7 @@ if ($Mode -eq "Optimize") {
     Set-ConfigValue $sponge "(?m)^resizeTextures\s*=.*$" "resizeTextures = false"
     Set-ConfigValue $sponge "(?m)^maxResizeTextureSize\s*=.*$" "maxResizeTextureSize = 1024"
 
-    Write-Host "[9/10] Verifying low-spec plugins (CullFactory & FPS Counter)..." -ForegroundColor Cyan
+    Write-Host "[8/9] Verifying low-spec plugins (CullFactory & FPS Counter)..." -ForegroundColor Cyan
     $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
     $localZip = Join-Path $scriptDir "optimizer_plugins.zip"
     $cullDll = Join-Path $pluginsDir "Zaggy1024-CullFactory\CullFactory.dll"
@@ -142,7 +139,7 @@ if ($Mode -eq "Optimize") {
         }
     }
 
-    Write-Host "[10/10] Verifying FPS Counter plugin status..." -ForegroundColor Cyan
+    Write-Host "[9/9] Verifying FPS Counter plugin status..." -ForegroundColor Cyan
     if (Test-Path $fpsDll) {
         Write-Host "FPS Counter is active (Press F8 in-game to toggle)." -ForegroundColor Green
     }
@@ -153,16 +150,13 @@ elseif ($Mode -eq "Revert") {
     Write-Host "============================================================================" -ForegroundColor Yellow
     Write-Host ""
 
-    Write-Host "[1/8] Reverting Windows GPU Preference to Default..." -ForegroundColor Yellow
-    Remove-ItemProperty -Path "HKCU:\Software\Microsoft\DirectX\UserGpuPreferences" -Name $exePath -ErrorAction SilentlyContinue
-
-    Write-Host "[2/8] Reverting LCUltrawide resolution to Standard (1.0x)..." -ForegroundColor Yellow
+    Write-Host "[1/7] Reverting LCUltrawide resolution to Standard (1.0x)..." -ForegroundColor Yellow
     $lcUltra = Join-Path $configDir "com.github.lethalcompanymodding.LCUltrawide.cfg"
     Set-ConfigValue $lcUltra "(?m)^Gameplay Camera Resolution Multiplier\s*=.*$" "Gameplay Camera Resolution Multiplier = 1"
     Set-ConfigValue $lcUltra "(?m)^Terminal Resolution Multiplier\s*=.*$" "Terminal Resolution Multiplier = 1"
     Set-ConfigValue $lcUltra "(?m)^AspectRatio\s*=.*$" "AspectRatio = 0"
 
-    Write-Host "[3/8] Reverting OpenBodyCams to Standard..." -ForegroundColor Yellow
+    Write-Host "[2/7] Reverting OpenBodyCams to Standard..." -ForegroundColor Yellow
     $obc = Join-Path $configDir "Zaggy1024.OpenBodyCams.cfg"
     Set-ConfigValue $obc "(?m)^HorizontalResolution\s*=.*$" "HorizontalResolution = 160"
     Set-ConfigValue $obc "(?m)^Framerate\s*=.*$" "Framerate = 20"
@@ -171,14 +165,14 @@ elseif ($Mode -eq "Revert") {
     Set-ConfigValue $obc "(?m)^GeneralImprovementsBetterMonitorIndex\s*=.*$" "GeneralImprovementsBetterMonitorIndex = 0"
     Set-ConfigValue $obc "(?m)^EnablePiPBodyCam\s*=.*$" "EnablePiPBodyCam = false"
 
-    Write-Host "[4/8] Reverting Terminal & Suits preview camera resolutions..." -ForegroundColor Yellow
+    Write-Host "[3/7] Reverting Terminal & Suits preview camera resolutions..." -ForegroundColor Yellow
     $termStuff = Join-Path $configDir "darmuh.TerminalStuff.cfg"
     Set-ConfigValue $termStuff "(?m)^ObcResolutionMirror\s*=.*$" "ObcResolutionMirror = 1000; 700"
     Set-ConfigValue $termStuff "(?m)^ObcResolutionBodyCam\s*=.*$" "ObcResolutionBodyCam = 1000; 700"
     $suitsTerm = Join-Path $configDir "com.github.darmuh.suitsTerminal.cfg"
     Set-ConfigValue $suitsTerm "(?m)^OpenBodyCams Resolution\s*=.*$" "OpenBodyCams Resolution = 1000; 700"
 
-    Write-Host "[5/8] Reverting GeneralImprovements ship monitors to Standard..." -ForegroundColor Yellow
+    Write-Host "[4/7] Reverting GeneralImprovements ship monitors to Standard..." -ForegroundColor Yellow
     $genImp = Join-Path $configDir "ShaosilGaming.GeneralImprovements.cfg"
     Set-ConfigValue $genImp "(?m)^ShipExternalCamFPS\s*=.*$" "ShipExternalCamFPS = 10"
     Set-ConfigValue $genImp "(?m)^ShipInternalCamFPS\s*=.*$" "ShipInternalCamFPS = 10"
@@ -198,7 +192,7 @@ elseif ($Mode -eq "Revert") {
     Set-ConfigValue $genImp "(?m)^ShipMonitor13\s*=.*$" "ShipMonitor13 = PlayerHealthExact"
     Set-ConfigValue $genImp "(?m)^ShipMonitor14\s*=.*$" "ShipMonitor14 = None"
 
-    Write-Host "[6/8] Reverting ScienceBird floodlight to Standard..." -ForegroundColor Yellow
+    Write-Host "[5/7] Reverting ScienceBird floodlight to Standard..." -ForegroundColor Yellow
     $sbTweaks = Join-Path $configDir "ScienceBird.ScienceBirdTweaks.cfg"
     Set-ConfigValue $sbTweaks "(?m)^Rotating Floodlight\s*=.*$" "Rotating Floodlight = true"
     Set-ConfigValue $sbTweaks "(?m)^Rotate Floodlight Upon Landing\s*=.*$" "Rotate Floodlight Upon Landing = true"
@@ -206,14 +200,14 @@ elseif ($Mode -eq "Revert") {
     Set-ConfigValue $sbTweaks "(?m)^Ship Floodlight Range\s*=.*$" "Ship Floodlight Range = 45"
     Set-ConfigValue $sbTweaks "(?m)^Ship Floodlight Intensity in Lumen\s*=.*$" "Ship Floodlight Intensity in Lumen = 760"
 
-    Write-Host "[7/8] Reverting ShipWindows exterior rendering to Standard..." -ForegroundColor Yellow
+    Write-Host "[6/7] Reverting ShipWindows exterior rendering to Standard..." -ForegroundColor Yellow
     $shipWin = Join-Path $configDir "TestAccount666.ShipWindows.cfg"
     Set-ConfigValue $shipWin "(?m)^Skybox Type\s*=.*$" "Skybox Type = REAL"
     Set-ConfigValue $shipWin "(?m)^Hide Moon Landing\s*=.*$" "Hide Moon Landing = false"
     Set-ConfigValue $shipWin "(?m)^Hide Moon Transitions\s*=.*$" "Hide Moon Transitions = false"
     Set-ConfigValue $shipWin "(?m)^5\.\s*Spawn Underlights\s*=.*$" "5. Spawn Underlights = true"
 
-    Write-Host "[8/8] Reverting LethalSponge HDRP settings to Standard..." -ForegroundColor Yellow
+    Write-Host "[7/7] Reverting LethalSponge HDRP settings to Standard..." -ForegroundColor Yellow
     $sponge = Join-Path $configDir "LethalSponge.cfg"
     Set-ConfigValue $sponge "(?m)^securityCameraFramerate\s*=.*$" "securityCameraFramerate = 15"
     Set-ConfigValue $sponge "(?m)^shipCameraFramerate\s*=.*$" "shipCameraFramerate = 15"
@@ -236,7 +230,7 @@ elseif ($Mode -eq "Revert") {
     Set-ConfigValue $sponge "(?m)^resizeTextures\s*=.*$" "resizeTextures = false"
     Set-ConfigValue $sponge "(?m)^maxResizeTextureSize\s*=.*$" "maxResizeTextureSize = 2048"
 
-    Write-Host "[9/9] Cleaning up added optimization plugins (CullFactory & FPS Counter)..." -ForegroundColor Yellow
+    Write-Host "[8/8] Cleaning up added optimization plugins (CullFactory & FPS Counter)..." -ForegroundColor Yellow
     $fpsFolder = Join-Path $pluginsDir "LC_FPSCounter"
     $cullFolder = Join-Path $pluginsDir "Zaggy1024-CullFactory"
     if (Test-Path $fpsFolder) {
@@ -255,8 +249,6 @@ elseif ($Mode -eq "Check") {
         return ($content -match $pattern)
     }
 
-    $gpuPref = (Get-ItemProperty -Path "HKCU:\Software\Microsoft\DirectX\UserGpuPreferences" -Name $exePath -ErrorAction SilentlyContinue).$exePath
-    $isGpuOpt = ($gpuPref -like "*GpuPreference=1;*")
     $isLcOpt = Test-ConfigSetting (Join-Path $configDir "com.github.lethalcompanymodding.LCUltrawide.cfg") "(?m)^Gameplay Camera Resolution Multiplier\s*=\s*0\.7"
     $isObcOpt = Test-ConfigSetting (Join-Path $configDir "Zaggy1024.OpenBodyCams.cfg") "(?m)^EnableCamera\s*=\s*false"
     $isMonOpt = Test-ConfigSetting (Join-Path $configDir "ShaosilGaming.GeneralImprovements.cfg") "(?m)^AddMoreBetterMonitors\s*=\s*false"
@@ -285,7 +277,6 @@ elseif ($Mode -eq "Check") {
     }
 
     Write-Host "  Optimization Feature Checklist:" -ForegroundColor Cyan
-    Format-CheckItem -name "Windows GPU Lock" -isOpt $isGpuOpt -optDesc "Intel UHD Locked (GpuPreference=1)" -vanillaDesc "System Default / Dynamic"
     Format-CheckItem -name "LCUltrawide" -isOpt $isLcOpt -optDesc "0.7x Resolution Scale and 16:9 Lock" -vanillaDesc "1.0x Full Native Resolution"
     Format-CheckItem -name "OpenBodyCams" -isOpt $isObcOpt -optDesc "3D Bodycam Rendering Disabled" -vanillaDesc "3D Camera Active (Heavy VRAM)"
     Format-CheckItem -name "Ship Monitors" -isOpt $isMonOpt -optDesc "8 Small Monitors + PlayerHealthExact" -vanillaDesc "14 Monitors with Weather/Cameras"
@@ -295,5 +286,3 @@ elseif ($Mode -eq "Check") {
     Format-CheckItem -name "CullFactory" -isOpt $isCullOpt -optDesc "Occlusion Culling Plugin Installed" -vanillaDesc "Plugin Not Installed"
     Format-CheckItem -name "FPS Counter" -isOpt $isFpsOpt -optDesc "Live In-Game Overlay Active (F8 Toggle)" -vanillaDesc "Plugin Not Installed"
 }
-
-
