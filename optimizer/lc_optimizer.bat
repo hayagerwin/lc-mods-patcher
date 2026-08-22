@@ -238,20 +238,40 @@ REM 3. INTERACTIVE 2-WAY MENU
 REM ----------------------------------------------------------------------------
 :menu
 cls
+set "IS_OPTIMIZED=0"
+set "LC_CFG=!GAME_DIR!\BepInEx\config\com.github.lethalcompanymodding.LCUltrawide.cfg"
+if exist "!LC_CFG!" (
+    findstr /i /c:"Gameplay Camera Resolution Multiplier = 0.7" "!LC_CFG!" >nul 2>&1
+    if not errorlevel 1 set "IS_OPTIMIZED=1"
+)
+
+if "!IS_OPTIMIZED!"=="1" (
+    set "STATE_STATUS=%C_GREEN%[ACTIVE] Low-Spec Optimized (Intel UHD Mode)%C_RESET%"
+    set "TAG_OPT=%C_GREEN% [ACTIVE *]%C_RESET%"
+    set "TAG_REV="
+    set "DEFAULT_OPT=3"
+) else (
+    set "STATE_STATUS=%C_YELLOW%[ACTIVE] Standard High-Specs (Baseline Default)%C_RESET%"
+    set "TAG_OPT="
+    set "TAG_REV=%C_YELLOW% [ACTIVE *]%C_RESET%"
+    set "DEFAULT_OPT=1"
+)
+
 echo %C_CYAN%============================================================================
 echo                     Lethal Company Performance Optimizer
 echo ============================================================================%C_RESET%
-echo  Target Game: %C_YELLOW%!GAME_DIR!%C_RESET%
-echo ============================================================================
+echo   Target Game:   %C_YELLOW%!GAME_DIR!%C_RESET%
+echo   Current State: !STATE_STATUS!
+echo %C_CYAN%============================================================================%C_RESET%
 echo.
-echo   %C_GREEN%[1]%C_RESET% Apply Low-Spec Optimizations  (%C_CYAN%Intel UHD, 0.7x Res, Shadow/Fog Cuts%C_RESET%)
-echo   %C_YELLOW%[2]%C_RESET% Revert to Standard / High Specs (%C_YELLOW%Restore Baseline Friends Copy%C_RESET%)
+echo   %C_GREEN%[1]%C_RESET% Apply Low-Spec Optimizations  (%C_CYAN%Intel UHD, 0.7x Res, Shadow/Fog Cuts%C_RESET%)!TAG_OPT!
+echo   %C_YELLOW%[2]%C_RESET% Revert to Standard / High Specs (%C_YELLOW%Restore Baseline Friends Copy%C_RESET%)!TAG_REV!
 echo   %C_CYAN%[3]%C_RESET% Launch Lethal Company
 echo   %C_RED%[Q]%C_RESET% Exit
 echo.
 set "OPT_CHOICE="
-set /p "OPT_CHOICE=Select an option [1, 2, 3, Q] (Default: 1): "
-if not defined OPT_CHOICE set "OPT_CHOICE=1"
+set /p "OPT_CHOICE=Select an option [1, 2, 3, Q] (Default: !DEFAULT_OPT!): "
+if not defined OPT_CHOICE set "OPT_CHOICE=!DEFAULT_OPT!"
 
 if "%OPT_CHOICE%"=="1" goto :do_optimize
 if "%OPT_CHOICE%"=="2" goto :do_revert
