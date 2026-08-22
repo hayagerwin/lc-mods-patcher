@@ -56,9 +56,11 @@ if not defined _LC_PATCHER_SELF_UPDATED (
     )
 )
 
-REM Cleanup legacy migration scripts if present in script folder
-if exist "%SCRIPT_DIR%sync_mods.bat" del /f /q "%SCRIPT_DIR%sync_mods.bat" 2>nul
-if exist "%SCRIPT_DIR%sync_mods.py" del /f /q "%SCRIPT_DIR%sync_mods.py" 2>nul
+REM Cleanup legacy migration scripts if present (for players outside git repo)
+if not exist "%SCRIPT_DIR%.git" (
+    if exist "%SCRIPT_DIR%sync_mods.bat" del /f /q "%SCRIPT_DIR%sync_mods.bat" 2>nul
+    if exist "%SCRIPT_DIR%sync_mods.py" del /f /q "%SCRIPT_DIR%sync_mods.py" 2>nul
+)
 
 REM ----------------------------------------------------------------------------
 REM 1. GAME DIRECTORY DETECTION (Online-Fix, Steam, Custom folders)
@@ -80,9 +82,12 @@ if exist "%CONFIG_FILE%" (
     if defined SAVED_P (
         set "SAVED_P=!SAVED_P:"=!"
         if exist "!SAVED_P!\Lethal Company.exe" (
+            set "FOUND_DIR_!SAVED_P!=1"
             set /a COUNT+=1
-            set "CANDIDATE_!COUNT!=!SAVED_P!"
-            set "LABEL_!COUNT!=Previously Used"
+            for %%K in (!COUNT!) do (
+                set "CANDIDATE_%%K=!SAVED_P!"
+                set "LABEL_%%K=Previously Used"
+            )
         )
     )
 )
@@ -101,14 +106,13 @@ for %%P in (
     "F:\SteamLibrary\steamapps\common\Lethal Company"
 ) do (
     if exist "%%~P\Lethal Company.exe" (
-        set "ALREADY="
-        for /l %%I in (1,1,!COUNT!) do (
-            if /i "!CANDIDATE_%%I!"=="%%~P" set "ALREADY=1"
-        )
-        if not defined ALREADY (
+        if not defined FOUND_DIR_%%~P (
+            set "FOUND_DIR_%%~P=1"
             set /a COUNT+=1
-            set "CANDIDATE_!COUNT!=%%~P"
-            set "LABEL_!COUNT!=Installed Path"
+            for %%K in (!COUNT!) do (
+                set "CANDIDATE_%%K=%%~P"
+                set "LABEL_%%K=Installed Path"
+            )
         )
     )
 )
@@ -118,14 +122,13 @@ for %%B in ("%USERPROFILE%\Downloads" "%USERPROFILE%\Desktop") do (
     if exist "%%~B\" (
         for /d %%D in ("%%~B\Lethal*") do (
             if exist "%%~fD\Lethal Company.exe" (
-                set "ALREADY="
-                for /l %%I in (1,1,!COUNT!) do (
-                    if /i "!CANDIDATE_%%I!"=="%%~fD" set "ALREADY=1"
-                )
-                if not defined ALREADY (
+                if not defined FOUND_DIR_%%~fD (
+                    set "FOUND_DIR_%%~fD=1"
                     set /a COUNT+=1
-                    set "CANDIDATE_!COUNT!=%%~fD"
-                    set "LABEL_!COUNT!=Found in %%~nB"
+                    for %%K in (!COUNT!) do (
+                        set "CANDIDATE_%%K=%%~fD"
+                        set "LABEL_%%K=Found in %%~nB"
+                    )
                 )
             )
         )
@@ -136,8 +139,14 @@ REM Present choices if multiple installations found
 if !COUNT! gtr 1 (
     echo %C_CYAN%Multiple Lethal Company folders were detected on your PC:%C_RESET%
     echo.
-    for /l %%I in (1,1,!COUNT!) do (
-        echo   %C_GREEN%[%%I]%C_RESET% !CANDIDATE_%%I!  %C_YELLOW%(!LABEL_%%I!)%C_RESET%
+    set "I=1"
+    :show_multi_cand
+    if !I! leq !COUNT! (
+        for %%K in (!I!) do (
+            echo   %C_GREEN%[!I!]%C_RESET% !CANDIDATE_%%K!  %C_YELLOW%^(!LABEL_%%K!^)%C_RESET%
+        )
+        set /a I+=1
+        goto :show_multi_cand
     )
     set /a CUSTOM_OPT=!COUNT!+1
     echo   %C_GREEN%[!CUSTOM_OPT!]%C_RESET% Enter / Drag-and-drop a different folder...
@@ -149,9 +158,9 @@ if !COUNT! gtr 1 (
     if "!CHOICE!"=="!CUSTOM_OPT!" goto :prompt_custom_path
 
     set "VALID="
-    for /l %%I in (1,1,!COUNT!) do (
-        if "!CHOICE!"=="%%I" (
-            set "GAME_DIR=!CANDIDATE_%%I!"
+    for %%K in (!CHOICE!) do (
+        if defined CANDIDATE_%%K (
+            set "GAME_DIR=!CANDIDATE_%%K!"
             set "VALID=1"
         )
     )
@@ -165,11 +174,15 @@ if !COUNT! gtr 1 (
 REM Single installation found
 if !COUNT! equ 1 (
     echo %C_CYAN%Found Lethal Company installation:%C_RESET%
-    echo   %C_GREEN%->%C_RESET% !CANDIDATE_1! %C_YELLOW%(!LABEL_1!)%C_RESET%
+    echo   %C_GREEN%[+]%C_RESET% !CANDIDATE_1! %C_YELLOW%^(!LABEL_1!^)%C_RESET%
     echo.
     echo Press %C_GREEN%[Enter]%C_RESET% to use this folder, or enter/drag-and-drop a different folder:
     set "USER_DIR="
     set /p "USER_DIR=> "
+    if defined USER_DIR (
+        set "USER_DIR=!USER_DIR:"=!"
+        for /f "tokens=* delims= " %%S in ("!USER_DIR!") do set "USER_DIR=%%S"
+    )
     if not defined USER_DIR (
         set "GAME_DIR=!CANDIDATE_1!"
         goto :game_dir_confirmed
@@ -210,7 +223,7 @@ REM Save game path to config
 if not exist "%CONFIG_DIR%" mkdir "%CONFIG_DIR%" 2>nul
 echo !GAME_DIR!>"%CONFIG_FILE%" 2>nul
 
-echo %C_GREEN%[+] Target Game Directory:%C_RESET% !GAME_DIR!
+echo %C_GREEN%[+] Selected Game Directory:%C_RESET% !GAME_DIR!
 echo.
 
 REM ----------------------------------------------------------------------------

@@ -66,15 +66,16 @@ def check_self_update(script_url: str):
         return
 
     current_script = Path(__file__).resolve()
-    # Cleanup legacy migration script if present
-    legacy_bat = current_script.parent / "sync_mods.bat"
-    legacy_py = current_script.parent / "sync_mods.py"
-    for legacy in [legacy_bat, legacy_py]:
-        if legacy.is_file() and legacy != current_script:
-            try:
-                legacy.unlink()
-            except Exception:
-                pass
+    # Cleanup legacy migration script if present (for players outside git repo)
+    if not (current_script.parent / ".git").is_dir():
+        legacy_bat = current_script.parent / "sync_mods.bat"
+        legacy_py = current_script.parent / "sync_mods.py"
+        for legacy in [legacy_bat, legacy_py]:
+            if legacy.is_file() and legacy != current_script:
+                try:
+                    legacy.unlink()
+                except Exception:
+                    pass
 
     try:
         req = urllib.request.Request(
