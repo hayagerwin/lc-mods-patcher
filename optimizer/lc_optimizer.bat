@@ -36,7 +36,26 @@ if not defined _LC_OPTIMIZER_SELF_UPDATED (
     if not errorlevel 1 (
         set "SCRIPT_URL=https://raw.githubusercontent.com/%REPO_USER%/%REPO_NAME%/%BRANCH%/optimizer/lc_optimizer.bat?t=%RANDOM%"
         set "TEMP_SCRIPT=%TEMP%\lc_optimizer_update_%RANDOM%.bat"
+        set "PS_URL=https://raw.githubusercontent.com/%REPO_USER%/%REPO_NAME%/%BRANCH%/optimizer/optimize.ps1?t=%RANDOM%"
+        set "TEMP_PS=%TEMP%\lc_optimize_update_%RANDOM%.ps1"
 
+        REM Silently update optimize.ps1 if newer version available
+        curl.exe -s -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" "!PS_URL!" -o "!TEMP_PS!" 2>nul
+        if exist "!TEMP_PS!" (
+            for %%F in ("!TEMP_PS!") do (
+                if %%~zF gtr 0 (
+                    if exist "%SCRIPT_DIR%optimize.ps1" (
+                        fc.exe /b "%SCRIPT_DIR%optimize.ps1" "!TEMP_PS!" >nul 2>nul
+                        if errorlevel 1 copy /y "!TEMP_PS!" "%SCRIPT_DIR%optimize.ps1" >nul 2>nul
+                    ) else (
+                        copy /y "!TEMP_PS!" "%SCRIPT_DIR%optimize.ps1" >nul 2>nul
+                    )
+                )
+            )
+            del /f /q "!TEMP_PS!" 2>nul
+        )
+
+        REM Self-update lc_optimizer.bat if newer version available
         curl.exe -s -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" "!SCRIPT_URL!" -o "!TEMP_SCRIPT!" 2>nul
         if exist "!TEMP_SCRIPT!" (
             for %%F in ("!TEMP_SCRIPT!") do (
