@@ -66,10 +66,24 @@ def check_self_update(script_url: str):
         return
 
     current_script = Path(__file__).resolve()
+    # Cleanup legacy migration script if present
+    legacy_bat = current_script.parent / "sync_mods.bat"
+    legacy_py = current_script.parent / "sync_mods.py"
+    for legacy in [legacy_bat, legacy_py]:
+        if legacy.is_file() and legacy != current_script:
+            try:
+                legacy.unlink()
+            except Exception:
+                pass
+
     try:
         req = urllib.request.Request(
             script_url,
-            headers={"User-Agent": "LethalCompanyModPatcher/1.0"}
+            headers={
+                "User-Agent": "LethalCompanyModPatcher/1.0",
+                "Cache-Control": "no-cache",
+                "Pragma": "no-cache"
+            }
         )
         with urllib.request.urlopen(req, timeout=10) as response:
             remote_bytes = response.read()

@@ -31,7 +31,11 @@ def migrate():
     try:
         req = urllib.request.Request(
             url,
-            headers={"User-Agent": "LethalCompanyModPatcher/1.0"}
+            headers={
+                "User-Agent": "LethalCompanyModPatcher/1.0",
+                "Cache-Control": "no-cache",
+                "Pragma": "no-cache"
+            }
         )
         with urllib.request.urlopen(req, timeout=15) as response:
             content = response.read()
@@ -39,14 +43,6 @@ def migrate():
         if content:
             new_script.write_bytes(content)
             print("[+] Successfully installed lethal_company_patcher.py!")
-
-            # Remove legacy sync_mods.py if it's different from the target file
-            if current_script != new_script and current_script.is_file():
-                try:
-                    current_script.unlink()
-                except Exception:
-                    pass
-
             print("[+] Launching lethal_company_patcher.py...\n")
             exit_code = subprocess.call([sys.executable, str(new_script)] + sys.argv[1:])
             sys.exit(exit_code)

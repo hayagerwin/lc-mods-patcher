@@ -28,7 +28,7 @@ echo %C_CYAN%[*] Downloading the updated "lethal_company_patcher.bat"...%C_RESET
 echo.
 
 set "NEW_SCRIPT=%~dp0lethal_company_patcher.bat"
-set "PATCHER_URL=https://raw.githubusercontent.com/%REPO_USER%/%REPO_NAME%/%BRANCH%/lethal_company_patcher.bat"
+set "PATCHER_URL=https://raw.githubusercontent.com/%REPO_USER%/%REPO_NAME%/%BRANCH%/lethal_company_patcher.bat?t=%RANDOM%"
 
 where curl.exe >nul 2>nul
 if errorlevel 1 (
@@ -37,15 +37,12 @@ if errorlevel 1 (
     exit /b 1
 )
 
-curl.exe -s -L -f "%PATCHER_URL%" -o "%NEW_SCRIPT%"
+curl.exe -s -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" "%PATCHER_URL%" -o "%NEW_SCRIPT%"
 
 if exist "%NEW_SCRIPT%" (
     echo %C_GREEN%[+] Migration successful! Launching lethal_company_patcher.bat...%C_RESET%
     echo.
-    REM Launch the new patcher
     start "" "%NEW_SCRIPT%" %*
-    REM Self-delete the old sync_mods.bat file
-    (goto) 2>nul & del "%~f0"
     exit /b 0
 ) else (
     echo %C_RED%[ERROR] Failed to download lethal_company_patcher.bat from GitHub.%C_RESET%

@@ -34,10 +34,10 @@ REM ----------------------------------------------------------------------------
 if not defined _LC_PATCHER_SELF_UPDATED (
     where curl.exe >nul 2>nul
     if not errorlevel 1 (
-        set "SCRIPT_URL=https://raw.githubusercontent.com/%REPO_USER%/%REPO_NAME%/%BRANCH%/lethal_company_patcher.bat"
+        set "SCRIPT_URL=https://raw.githubusercontent.com/%REPO_USER%/%REPO_NAME%/%BRANCH%/lethal_company_patcher.bat?t=%RANDOM%"
         set "TEMP_SCRIPT=%TEMP%\lc_patcher_update_%RANDOM%.bat"
 
-        curl.exe -s -L -f "!SCRIPT_URL!" -o "!TEMP_SCRIPT!" 2>nul
+        curl.exe -s -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" "!SCRIPT_URL!" -o "!TEMP_SCRIPT!" 2>nul
         if exist "!TEMP_SCRIPT!" (
             for %%F in ("!TEMP_SCRIPT!") do (
                 if %%~zF gtr 0 (
@@ -55,6 +55,10 @@ if not defined _LC_PATCHER_SELF_UPDATED (
         )
     )
 )
+
+REM Cleanup legacy migration scripts if present in script folder
+if exist "%SCRIPT_DIR%sync_mods.bat" del /f /q "%SCRIPT_DIR%sync_mods.bat" 2>nul
+if exist "%SCRIPT_DIR%sync_mods.py" del /f /q "%SCRIPT_DIR%sync_mods.py" 2>nul
 
 REM ----------------------------------------------------------------------------
 REM 1. GAME DIRECTORY DETECTION (Online-Fix, Steam, Custom folders)
