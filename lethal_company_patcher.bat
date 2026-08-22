@@ -65,116 +65,148 @@ REM 1. GAME DIRECTORY DETECTION (Online-Fix, Steam, Custom folders)
 REM ----------------------------------------------------------------------------
 set "GAME_DIR="
 
-REM Check 1: Current script folder
+REM Case 1: In-Place Execution (Script is placed directly inside game directory)
 if exist "%SCRIPT_DIR%Lethal Company.exe" (
     set "GAME_DIR=%SCRIPT_DIR%"
+    goto :game_dir_confirmed
 )
 
-REM Check 2: Local config file in script directory
-if not defined GAME_DIR (
-    if exist "%SCRIPT_DIR%lc_game_path.txt" (
-        set /p SAVED_PATH=<"%SCRIPT_DIR%lc_game_path.txt"
-        if defined SAVED_PATH (
-            set "SAVED_PATH=!SAVED_PATH:"=!"
-            if exist "!SAVED_PATH!\Lethal Company.exe" (
-                set "GAME_DIR=!SAVED_PATH!"
-            )
+REM Case 2: External Execution - Scan for available Lethal Company installations
+set "COUNT=0"
+
+REM Scan Saved Location
+if exist "%CONFIG_FILE%" (
+    set /p SAVED_P=<"%CONFIG_FILE%"
+    if defined SAVED_P (
+        set "SAVED_P=!SAVED_P:"=!"
+        if exist "!SAVED_P!\Lethal Company.exe" (
+            set /a COUNT+=1
+            set "CANDIDATE_!COUNT!=!SAVED_P!"
+            set "LABEL_!COUNT!=Previously Used"
         )
     )
 )
 
-REM Check 3: Global AppData saved config
-if not defined GAME_DIR (
-    if exist "%CONFIG_FILE%" (
-        set /p SAVED_PATH=<"%CONFIG_FILE%"
-        if defined SAVED_PATH (
-            set "SAVED_PATH=!SAVED_PATH:"=!"
-            if exist "!SAVED_PATH!\Lethal Company.exe" (
-                set "GAME_DIR=!SAVED_PATH!"
-            )
+REM Scan Common Paths
+for %%P in (
+    "C:\Games\Lethal Company"
+    "D:\Games\Lethal Company"
+    "E:\Games\Lethal Company"
+    "F:\Games\Lethal Company"
+    "%ProgramFiles(x86)%\Steam\steamapps\common\Lethal Company"
+    "%ProgramFiles%\Steam\steamapps\common\Lethal Company"
+    "C:\Program Files\Steam\steamapps\common\Lethal Company"
+    "D:\SteamLibrary\steamapps\common\Lethal Company"
+    "E:\SteamLibrary\steamapps\common\Lethal Company"
+    "F:\SteamLibrary\steamapps\common\Lethal Company"
+) do (
+    if exist "%%~P\Lethal Company.exe" (
+        set "ALREADY="
+        for /l %%I in (1,1,!COUNT!) do (
+            if /i "!CANDIDATE_%%I!"=="%%~P" set "ALREADY=1"
+        )
+        if not defined ALREADY (
+            set /a COUNT+=1
+            set "CANDIDATE_!COUNT!=%%~P"
+            set "LABEL_!COUNT!=Installed Path"
         )
     )
 )
 
-REM Check 4: Common installation directories (Online-Fix, repacks, Steam)
-if not defined GAME_DIR (
-    for %%P in (
-        "C:\Games\Lethal Company"
-        "D:\Games\Lethal Company"
-        "E:\Games\Lethal Company"
-        "F:\Games\Lethal Company"
-        "%USERPROFILE%\Downloads\Lethal Company"
-        "%USERPROFILE%\Desktop\Lethal Company"
-        "%ProgramFiles(x86)%\Steam\steamapps\common\Lethal Company"
-        "%ProgramFiles%\Steam\steamapps\common\Lethal Company"
-        "C:\Program Files\Steam\steamapps\common\Lethal Company"
-        "D:\SteamLibrary\steamapps\common\Lethal Company"
-        "E:\SteamLibrary\steamapps\common\Lethal Company"
-        "F:\SteamLibrary\steamapps\common\Lethal Company"
-    ) do (
-        if not defined GAME_DIR (
-            if exist "%%~P\Lethal Company.exe" (
-                set "GAME_DIR=%%~P"
-            )
-        )
-    )
-)
-
-REM Check 5: Wildcard match in Downloads and Desktop folders
-if not defined GAME_DIR (
-    for /d %%D in ("%USERPROFILE%\Downloads\Lethal*") do (
-        if not defined GAME_DIR (
+REM Scan Downloads and Desktop
+for %%B in ("%USERPROFILE%\Downloads" "%USERPROFILE%\Desktop") do (
+    if exist "%%~B\" (
+        for /d %%D in ("%%~B\Lethal*") do (
             if exist "%%~fD\Lethal Company.exe" (
-                set "GAME_DIR=%%~fD"
+                set "ALREADY="
+                for /l %%I in (1,1,!COUNT!) do (
+                    if /i "!CANDIDATE_%%I!"=="%%~fD" set "ALREADY=1"
+                )
+                if not defined ALREADY (
+                    set /a COUNT+=1
+                    set "CANDIDATE_!COUNT!=%%~fD"
+                    set "LABEL_!COUNT!=Found in %%~nB"
+                )
             )
         )
     )
 )
 
-if not defined GAME_DIR (
-    for /d %%D in ("%USERPROFILE%\Desktop\Lethal*") do (
-        if not defined GAME_DIR (
-            if exist "%%~fD\Lethal Company.exe" (
-                set "GAME_DIR=%%~fD"
-            )
+REM Present choices if multiple installations found
+if !COUNT! gtr 1 (
+    echo %C_CYAN%Multiple Lethal Company folders were detected on your PC:%C_RESET%
+    echo.
+    for /l %%I in (1,1,!COUNT!) do (
+        echo   %C_GREEN%[%%I]%C_RESET% !CANDIDATE_%%I!  %C_YELLOW%(!LABEL_%%I!)%C_RESET%
+    )
+    set /a CUSTOM_OPT=!COUNT!+1
+    echo   %C_GREEN%[!CUSTOM_OPT!]%C_RESET% Enter / Drag-and-drop a different folder...
+    echo.
+    :prompt_multi_choice
+    set "CHOICE="
+    set /p "CHOICE=Select which folder to patch [1-!CUSTOM_OPT!] (Default: 1): "
+    if not defined CHOICE set "CHOICE=1"
+    if "!CHOICE!"=="!CUSTOM_OPT!" goto :prompt_custom_path
+
+    set "VALID="
+    for /l %%I in (1,1,!COUNT!) do (
+        if "!CHOICE!"=="%%I" (
+            set "GAME_DIR=!CANDIDATE_%%I!"
+            set "VALID=1"
         )
     )
+    if not defined VALID (
+        echo %C_RED%Invalid option. Please enter a number between 1 and !CUSTOM_OPT!.%C_RESET%
+        goto :prompt_multi_choice
+    )
+    goto :game_dir_confirmed
 )
 
-REM Check 6: Interactive Prompt if not automatically located
-:prompt_game_path
-if not defined GAME_DIR (
-    echo %C_YELLOW%[!] Lethal Company folder was not automatically detected.%C_RESET%
+REM Single installation found
+if !COUNT! equ 1 (
+    echo %C_CYAN%Found Lethal Company installation:%C_RESET%
+    echo   %C_GREEN%->%C_RESET% !CANDIDATE_1! %C_YELLOW%(!LABEL_1!)%C_RESET%
     echo.
-    echo Please enter or drag-and-drop your Lethal Company game folder
-    echo ^(where "Lethal Company.exe" is located, e.g. C:\Games\Lethal Company^):
-    echo.
-    set /p "INPUT_DIR=> "
-    if not defined INPUT_DIR (
-        goto :err_missing_game
+    echo Press %C_GREEN%[Enter]%C_RESET% to use this folder, or enter/drag-and-drop a different folder:
+    set "USER_DIR="
+    set /p "USER_DIR=> "
+    if not defined USER_DIR (
+        set "GAME_DIR=!CANDIDATE_1!"
+        goto :game_dir_confirmed
     )
-    set "INPUT_DIR=!INPUT_DIR:"=!"
-    REM If user dragged the executable directly, get parent folder
-    if /i "!INPUT_DIR:~-18!"=="Lethal Company.exe" (
-        for %%F in ("!INPUT_DIR!") do set "INPUT_DIR=%%~dpF"
-    )
-    REM Strip trailing backslash
-    if "!INPUT_DIR:~-1!"=="\" set "INPUT_DIR=!INPUT_DIR:~0,-1!"
-
-    if exist "!INPUT_DIR!\Lethal Company.exe" (
-        set "GAME_DIR=!INPUT_DIR!"
-    ) else (
-        echo.
-        echo %C_RED%[ERROR] "Lethal Company.exe" was not found in: "!INPUT_DIR!"%C_RESET%
-        echo.
-        goto :prompt_game_path
-    )
+    set "INPUT_DIR=!USER_DIR!"
+    goto :validate_custom_path
 )
 
+REM No installations detected - prompt manually
+:prompt_custom_path
+echo %C_YELLOW%[!] Please specify your Lethal Company game folder.%C_RESET%
+echo Enter or drag-and-drop your game folder ^(where "Lethal Company.exe" is located^):
+echo.
+set /p "INPUT_DIR=> "
+if not defined INPUT_DIR goto :err_missing_game
+
+:validate_custom_path
+set "INPUT_DIR=!INPUT_DIR:"=!"
+if /i "!INPUT_DIR:~-18!"=="Lethal Company.exe" (
+    for %%F in ("!INPUT_DIR!") do set "INPUT_DIR=%%~dpF"
+)
+if "!INPUT_DIR:~-1!"=="\" set "INPUT_DIR=!INPUT_DIR:~0,-1!"
+
+if exist "!INPUT_DIR!\Lethal Company.exe" (
+    set "GAME_DIR=!INPUT_DIR!"
+) else (
+    echo.
+    echo %C_RED%[ERROR] "Lethal Company.exe" was not found in: "!INPUT_DIR!"%C_RESET%
+    echo.
+    goto :prompt_custom_path
+)
+
+:game_dir_confirmed
 REM Strip trailing backslash from GAME_DIR if present
 if "!GAME_DIR:~-1!"=="\" set "GAME_DIR=!GAME_DIR:~0,-1!"
 
-REM Save game path to config for future one-click runs
+REM Save game path to config
 if not exist "%CONFIG_DIR%" mkdir "%CONFIG_DIR%" 2>nul
 echo !GAME_DIR!>"%CONFIG_FILE%" 2>nul
 

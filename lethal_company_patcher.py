@@ -133,71 +133,121 @@ def save_cached_game_dir(game_dir: Path):
         pass
 
 
-def find_game_directory() -> Path | None:
-    """Detects Lethal Company root directory from script folder, configs, or common locations."""
+def resolve_game_directory() -> Path | None:
+    """Resolves Lethal Company root directory with interactive multi-install selection."""
     script_dir = Path(__file__).resolve().parent
 
-    # 1. Check current script directory
+    # Case 1: In-Place Execution (Script is placed directly inside game directory)
     if (script_dir / "Lethal Company.exe").is_file():
         return script_dir
 
-    # 2. Check local config in script directory
+    # Case 2: External Execution - Scan for available installations
+    candidates: list[tuple[Path, str]] = []
+    seen: set[str] = set()
+
+    def add_candidate(path: Path, label: str):
+        resolved = str(path.resolve()).lower()
+        if resolved not in seen and (path / "Lethal Company.exe").is_file():
+            seen.add(resolved)
+            candidates.append((path.resolve(), label))
+
+    # Check saved configs
     local_cfg = script_dir / "lc_game_path.txt"
     if local_cfg.is_file():
         try:
             saved = Path(local_cfg.read_text(encoding="utf-8").strip())
-            if (saved / "Lethal Company.exe").is_file():
-                return saved
+            add_candidate(saved, "Previously Used")
         except Exception:
             pass
 
-    # 3. Check global config in AppData / ~/.config
     global_cfg = get_config_path()
     if global_cfg.is_file():
         try:
             saved = Path(global_cfg.read_text(encoding="utf-8").strip())
-            if (saved / "Lethal Company.exe").is_file():
-                return saved
+            add_candidate(saved, "Previously Used")
         except Exception:
             pass
 
-    # 4. Check common non-Steam (Online-Fix, Repacks) and Steam paths
-    candidates = [
+    # Check common paths
+    common_paths = [
         Path("C:/Games/Lethal Company"),
         Path("D:/Games/Lethal Company"),
         Path("E:/Games/Lethal Company"),
         Path("F:/Games/Lethal Company"),
-        Path.home() / "Downloads" / "Lethal Company",
-        Path.home() / "Desktop" / "Lethal Company",
         Path(os.environ.get("ProgramFiles(x86)", "C:/Program Files (x86)")) / "Steam/steamapps/common/Lethal Company",
         Path(os.environ.get("ProgramFiles", "C:/Program Files")) / "Steam/steamapps/common/Lethal Company",
         Path("D:/SteamLibrary/steamapps/common/Lethal Company"),
         Path("E:/SteamLibrary/steamapps/common/Lethal Company"),
         Path("F:/SteamLibrary/steamapps/common/Lethal Company"),
     ]
+    for cp in common_paths:
+        add_candidate(cp, "Installed Path")
 
-    for candidate in candidates:
-        if (candidate / "Lethal Company.exe").is_file():
-            return candidate
-
-    # 5. Wildcard search in Downloads and Desktop
+    # Check Downloads and Desktop
     for base_dir in [Path.home() / "Downloads", Path.home() / "Desktop"]:
         if base_dir.is_dir():
             try:
                 for folder in base_dir.glob("Lethal*"):
-                    if folder.is_dir() and (folder / "Lethal Company.exe").is_file():
-                        return folder
+                    if folder.is_dir():
+                        add_candidate(folder, f"Found in {base_dir.name}")
             except Exception:
                 pass
 
-    return None
+    # If multiple candidates found, let the user choose
+    if len(candidates) > 1:
+        print(f"{Style.BOLD}{Style.CYAN}Multiple Lethal Company folders were detected on your PC:{Style.RESET}\n")
+        for i, (path, label) in enumerate(candidates, 1):
+            print(f"  {Style.GREEN}[{i}]{Style.RESET} {path}  {Style.YELLOW}({label}){Style.RESET}")
+        custom_idx = len(candidates) + 1
+        print(f"  {Style.GREEN}[{custom_idx}]{Style.RESET} Enter / Drag-and-drop a different folder...\n")
+
+        while True:
+            try:
+                choice = input(f"Select which folder to patch [1-{custom_idx}] (Default: 1): ").strip()
+            except (KeyboardInterrupt, EOFError):
+                return None
+
+            if not choice or choice == "1":
+                return candidates[0][0]
+
+            if choice == str(custom_idx):
+                return prompt_custom_directory()
+
+            try:
+                idx = int(choice)
+                if 1 <= idx <= len(candidates):
+                    return candidates[idx - 1][0]
+            except ValueError:
+                pass
+            print(f"{Style.RED}Invalid option. Please enter a number between 1 and {custom_idx}.{Style.RESET}")
+
+    # If single candidate found
+    if len(candidates) == 1:
+        single_path, single_label = candidates[0]
+        print(f"{Style.BOLD}{Style.CYAN}Found Lethal Company installation:{Style.RESET}")
+        print(f"  {Style.GREEN}->{Style.RESET} {single_path} {Style.YELLOW}({single_label}){Style.RESET}\n")
+        try:
+            user_input = input(f"Press [Enter] to use this folder, or enter/drag-and-drop a different folder: ").strip().strip('"').strip("'")
+        except (KeyboardInterrupt, EOFError):
+            return None
+
+        if not user_input:
+            return single_path
+
+        p = Path(user_input).resolve()
+        if p.name.lower() == "lethal company.exe" and p.is_file():
+            p = p.parent
+        if (p / "Lethal Company.exe").is_file():
+            return p
+        print(f"{Style.RED}[ERROR] \"Lethal Company.exe\" was not found in: \"{p}\"{Style.RESET}\n")
+
+    return prompt_custom_directory()
 
 
-def prompt_game_directory() -> Path | None:
+def prompt_custom_directory() -> Path | None:
     """Interactively prompts the user to input or drag-and-drop their game folder."""
-    print(f"{Style.BOLD}{Style.YELLOW}[!] Lethal Company folder was not automatically detected.{Style.RESET}")
-    print("\nPlease enter or drag-and-drop your Lethal Company game folder")
-    print('(where "Lethal Company.exe" is located, e.g. C:\\Games\\Lethal Company):')
+    print(f"\n{Style.BOLD}{Style.YELLOW}[!] Please specify your Lethal Company game folder.{Style.RESET}")
+    print('Enter or drag-and-drop your game folder (where "Lethal Company.exe" is located):')
 
     while True:
         try:
@@ -209,7 +259,6 @@ def prompt_game_directory() -> Path | None:
             return None
 
         p = Path(user_input).resolve()
-        # If user dragged the executable directly
         if p.name.lower() == "lethal company.exe" and p.is_file():
             p = p.parent
 
@@ -355,9 +404,7 @@ def main():
     check_self_update(script_url)
 
     # Step 1: Game Directory Detection
-    game_dir = find_game_directory()
-    if not game_dir:
-        game_dir = prompt_game_directory()
+    game_dir = resolve_game_directory()
 
     if not game_dir or not (game_dir / "Lethal Company.exe").is_file():
         log_error('Could not locate "Lethal Company.exe"!')
@@ -367,7 +414,7 @@ def main():
         sys.exit(1)
 
     save_cached_game_dir(game_dir)
-    print(f"{Style.BOLD}{Style.GREEN}[+] Target Game Directory:{Style.RESET} {game_dir}\n")
+    print(f"{Style.BOLD}{Style.GREEN}[+] Selected Game Directory:{Style.RESET} {game_dir}\n")
 
     delete_list_url = f"https://raw.githubusercontent.com/{REPO_USER}/{REPO_NAME}/{BRANCH}/delete_list.txt"
     patch_zip_url = f"https://raw.githubusercontent.com/{REPO_USER}/{REPO_NAME}/{BRANCH}/patch.zip"
