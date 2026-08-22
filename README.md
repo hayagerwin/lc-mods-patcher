@@ -111,3 +111,14 @@ BepInEx/config/removed_mod.cfg
 - **Spaces in Paths**: Paths with spaces (e.g. `BepInEx/plugins/Custom Mod Pack/`) are properly handled.
 - **Directory vs File Detection**: Accurately differentiates folders (`rmdir /s /q`) from files (`del /f /q /a`).
 - **Network Failures**: `curl -f` ensures that 404 responses or connection drops fail cleanly without writing corrupt files.
+
+---
+
+## ⚡ Low-Spec Performance Optimizer (`lc_optimizer.bat`)
+
+For players running on low-spec laptops, integrated graphics (Intel UHD / Iris), or experiencing low FPS in the ship/facility:
+
+* **2-Way Toggle**:
+  * **`[1] Apply Low-Spec Optimizations`**: Drops camera load (`0.7x` res), disables 3D bodycams, cuts HDRP shadow/fog budgets, disables 600m ship rotating floodlights, and auto-installs occlusion culling (`CullFactory`) & FPS overlay (`F8`).
+  * **`[2] Revert to Standard / High Specs`**: Restores all configurations back to the high-spec baseline matching your friends' copies and cleanly uninstalls added low-spec plugins.
+* **Usage**: Double-click [`lc_optimizer.bat`](file:///c:/Reedsoft/lc-mods-patcher/lc_optimizer.bat) from the game directory or anywhere on your PC. It will auto-detect your game and self-update automatically from this repository.
