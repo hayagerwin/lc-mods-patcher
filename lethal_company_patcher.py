@@ -526,6 +526,16 @@ def main():
             sys.exit(1)
 
     log_success("Lethal Company mods have been successfully synchronized!\n")
+    try:
+        user_choice = input("Press [ENTER] to launch Lethal Company, or close this window to exit: ").strip()
+    except (KeyboardInterrupt, EOFError):
+        print()
+        sys.exit(0)
+
+    if user_choice.lower() in ("q", "quit", "exit", "n", "no"):
+        sys.exit(0)
+
+    print()
     log_info("Launching Lethal Company...")
     try:
         exe_path = game_dir / "Lethal Company.exe"

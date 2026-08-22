@@ -463,7 +463,17 @@ echo %C_GREEN%==================================================================
 echo [SUCCESS] Lethal Company mods have been successfully synchronized.
 echo ============================================================================%C_RESET%
 echo.
-echo Launching Lethal Company...
+set "USER_CHOICE="
+set /p "USER_CHOICE=Press [ENTER] to launch Lethal Company, or close this window to exit: "
+
+if /i "!USER_CHOICE!"=="q" exit /b 0
+if /i "!USER_CHOICE!"=="quit" exit /b 0
+if /i "!USER_CHOICE!"=="exit" exit /b 0
+if /i "!USER_CHOICE!"=="n" exit /b 0
+if /i "!USER_CHOICE!"=="no" exit /b 0
+
+echo.
+echo %C_CYAN%Launching Lethal Company...%C_RESET%
 cd /d "!GAME_DIR!"
 start "" "Lethal Company.exe"
 timeout /t 1 >nul 2>&1

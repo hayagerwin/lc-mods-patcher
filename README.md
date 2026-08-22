@@ -27,7 +27,7 @@ A standalone, lightweight synchronization toolchain for updating custom **Lethal
   - **[1/3] Deletion Stage**: Removes outdated/conflicting mods and folders defined in `delete_list.txt`.
   - **[2/3] Download Stage**: Fetches the latest `patch.zip` from GitHub with HTTP error detection (catches 404s cleanly).
   - **[3/3] Extraction Stage**: Extracts and silently overwrites updated mod files, cleaning up temp archives upon completion.
-  - **[Launch]**: Automatically starts `Lethal Company.exe` with the proper working directory.
+  - **[Launch]**: Prompts to launch `Lethal Company.exe` with the proper working directory or exit.
 
 ---
 
@@ -37,7 +37,7 @@ A standalone, lightweight synchronization toolchain for updating custom **Lethal
 2. Run the script:
    - **Option A (Recommended)**: Place the script inside your Lethal Company game folder (Steam, Online-Fix, or standalone) and double-click `lethal_company_patcher.bat`.
    - **Option B (Run from anywhere)**: Run `lethal_company_patcher.bat` from your `Downloads` or Desktop folder. The script will automatically locate your game, or ask you to drag-and-drop your game folder once.
-3. Once synchronization succeeds, the script will automatically launch Lethal Company and close.
+3. Once synchronization succeeds, press `Enter` to launch Lethal Company, or close the window to exit.
 
 ---
 
