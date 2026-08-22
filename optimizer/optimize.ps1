@@ -1,6 +1,6 @@
 param (
     [Parameter(Mandatory = $false)]
-    [ValidateSet("Optimize", "Revert")]
+    [ValidateSet("Optimize", "Revert", "Check")]
     [string]$Mode = "Optimize",
 
     [Parameter(Mandatory = $false)]
@@ -8,6 +8,7 @@ param (
 )
 
 $ErrorActionPreference = "SilentlyContinue"
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 if (-not $GameDir -or -not (Test-Path $GameDir)) {
     $GameDir = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -247,3 +248,52 @@ elseif ($Mode -eq "Revert") {
         Write-Host "  [-] Removed CullFactory plugin" -ForegroundColor Yellow
     }
 }
+elseif ($Mode -eq "Check") {
+    function Test-ConfigSetting($file, $pattern) {
+        if (-not (Test-Path $file)) { return $false }
+        $content = [System.IO.File]::ReadAllText($file, [System.Text.Encoding]::UTF8)
+        return ($content -match $pattern)
+    }
+
+    $gpuPref = (Get-ItemProperty -Path "HKCU:\Software\Microsoft\DirectX\UserGpuPreferences" -Name $exePath -ErrorAction SilentlyContinue).$exePath
+    $isGpuOpt = ($gpuPref -like "*GpuPreference=1;*")
+    $isLcOpt = Test-ConfigSetting (Join-Path $configDir "com.github.lethalcompanymodding.LCUltrawide.cfg") "(?m)^Gameplay Camera Resolution Multiplier\s*=\s*0\.7"
+    $isObcOpt = Test-ConfigSetting (Join-Path $configDir "Zaggy1024.OpenBodyCams.cfg") "(?m)^EnableCamera\s*=\s*false"
+    $isMonOpt = Test-ConfigSetting (Join-Path $configDir "ShaosilGaming.GeneralImprovements.cfg") "(?m)^AddMoreBetterMonitors\s*=\s*false"
+    $isSbOpt = Test-ConfigSetting (Join-Path $configDir "ScienceBird.ScienceBirdTweaks.cfg") "(?m)^Rotating Floodlight\s*=\s*false"
+    $isWinOpt = Test-ConfigSetting (Join-Path $configDir "TestAccount666.ShipWindows.cfg") "(?m)^Skybox Type\s*=\s*BLACK_AND_STARS"
+    $isSpongeOpt = Test-ConfigSetting (Join-Path $configDir "LethalSponge.cfg") "(?m)^shadowsMaxResolution\s*=\s*64"
+    $isCullOpt = Test-Path (Join-Path $pluginsDir "Zaggy1024-CullFactory\CullFactory.dll")
+    $isFpsOpt = Test-Path (Join-Path $pluginsDir "LC_FPSCounter\LC_FPSCounter.dll")
+
+    function Format-CheckItem([string]$name, [bool]$isOpt, [string]$optDesc, [string]$vanillaDesc) {
+        if ($isOpt) {
+            Write-Host "   [" -NoNewline
+            Write-Host ([char]0x221A) -ForegroundColor Green -NoNewline
+            Write-Host "] " -NoNewline
+            Write-Host ("{0,-18}" -f $name) -ForegroundColor White -NoNewline
+            Write-Host ": " -NoNewline
+            Write-Host $optDesc -ForegroundColor Green
+        } else {
+            Write-Host "   [" -NoNewline
+            Write-Host "X" -ForegroundColor Red -NoNewline
+            Write-Host "] " -NoNewline
+            Write-Host ("{0,-18}" -f $name) -ForegroundColor DarkGray -NoNewline
+            Write-Host ": " -NoNewline
+            Write-Host $vanillaDesc -ForegroundColor Red
+        }
+    }
+
+    Write-Host "  Optimization Feature Checklist:" -ForegroundColor Cyan
+    Format-CheckItem -name "Windows GPU Lock" -isOpt $isGpuOpt -optDesc "Intel UHD Locked (GpuPreference=1)" -vanillaDesc "System Default / Dynamic"
+    Format-CheckItem -name "LCUltrawide" -isOpt $isLcOpt -optDesc "0.7x Resolution Scale and 16:9 Lock" -vanillaDesc "1.0x Full Native Resolution"
+    Format-CheckItem -name "OpenBodyCams" -isOpt $isObcOpt -optDesc "3D Bodycam Rendering Disabled" -vanillaDesc "3D Camera Active (Heavy VRAM)"
+    Format-CheckItem -name "Ship Monitors" -isOpt $isMonOpt -optDesc "8 Small Monitors + PlayerHealthExact" -vanillaDesc "14 Monitors with Weather/Cameras"
+    Format-CheckItem -name "Ship Floodlight" -isOpt $isSbOpt -optDesc "600m Rotating Spotlight Disabled" -vanillaDesc "Rotating Spotlight Active"
+    Format-CheckItem -name "ShipWindows" -isOpt $isWinOpt -optDesc "Space Starfield and Shutters Active" -vanillaDesc "Real Skybox Active"
+    Format-CheckItem -name "LethalSponge HDRP" -isOpt $isSpongeOpt -optDesc "64px Shadow Maps and 0.05 Fog Budget" -vanillaDesc "2048px Shadows and 0.15 Fog Budget"
+    Format-CheckItem -name "CullFactory" -isOpt $isCullOpt -optDesc "Occlusion Culling Plugin Installed" -vanillaDesc "Plugin Not Installed"
+    Format-CheckItem -name "FPS Counter" -isOpt $isFpsOpt -optDesc "Live In-Game Overlay Active (F8 Toggle)" -vanillaDesc "Plugin Not Installed"
+}
+
+

@@ -262,6 +262,11 @@ echo                     Lethal Company Performance Optimizer
 echo ============================================================================%C_RESET%
 echo   Target Game:   %C_YELLOW%!GAME_DIR!%C_RESET%
 echo   Current State: !STATE_STATUS!
+echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
+if not exist "%SCRIPT_DIR%optimize.ps1" (
+    curl.exe -s -L -f "https://raw.githubusercontent.com/%REPO_USER%/%REPO_NAME%/%BRANCH%/optimizer/optimize.ps1" -o "%SCRIPT_DIR%optimize.ps1" 2>nul
+)
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%SCRIPT_DIR%optimize.ps1" -Mode "Check" -GameDir "!GAME_DIR!"
 echo %C_CYAN%============================================================================%C_RESET%
 echo.
 echo   %C_GREEN%[1]%C_RESET% Apply Low-Spec Optimizations  (%C_CYAN%Intel UHD, 0.7x Res, Shadow/Fog Cuts%C_RESET%)!TAG_OPT!
