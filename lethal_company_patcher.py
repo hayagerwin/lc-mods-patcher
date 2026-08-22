@@ -56,6 +56,10 @@ def log_error(message: str):
 def log_info(message: str):
     print(f"  {Style.YELLOW}->{Style.RESET} {message}")
 
+def clear_screen():
+    """Clears the terminal screen for a clean interface."""
+    os.system("cls" if sys.platform == "win32" else "clear")
+
 
 # ==============================================================================
 # CORE OPERATIONS
@@ -323,57 +327,39 @@ def resolve_game_directory() -> Path | None:
 
 
 def prompt_single_candidate(candidate_path: Path, label: str) -> Path | None:
-    """Displays auto-detected installation and counts down 5 seconds before automatically proceeding."""
-    import time
+    """Displays auto-detected installation with clear Enter/Change choices."""
     print(f"{Style.BOLD}{Style.CYAN}Found Lethal Company installation:{Style.RESET}")
     print(f"  {Style.BOLD}{Style.GREEN}[+] {candidate_path}{Style.RESET} {Style.YELLOW}({label}){Style.RESET}\n")
     print(f"{Style.BOLD}{Style.CYAN}{'-' * 75}{Style.RESET}")
-    print(f"  {Style.BOLD}{Style.GREEN}Auto-proceeding in 5 seconds...{Style.RESET}")
-    print(f"  * Press {Style.BOLD}[ENTER]{Style.RESET} or {Style.BOLD}[Y]{Style.RESET} to start immediately.")
-    print(f"  * Press {Style.BOLD}[C]{Style.RESET} to change, browse, or drag-and-drop a different folder.")
+    print(f"  * Press {Style.BOLD}{Style.GREEN}[ENTER]{Style.RESET} to continue with this folder (Recommended)")
+    print(f"  * Or type {Style.BOLD}[C]{Style.RESET} to change, browse, or drag-and-drop a different folder")
     print(f"{Style.BOLD}{Style.CYAN}{'-' * 75}{Style.RESET}\n")
 
-    if sys.platform == "win32":
-        try:
-            import msvcrt
-            for remaining in range(5, 0, -1):
-                print(f"\r  {Style.CYAN}-> Auto-proceeding in {remaining}s... (Press [Enter] to start, [C] to change){Style.RESET}   ", end="", flush=True)
-                for _ in range(10):
-                    if msvcrt.kbhit():
-                        key = msvcrt.getwch()
-                        if key in ("\r", "\n", "y", "Y", " "):
-                            print(f"\n\n  {Style.BOLD}{Style.GREEN}[OK] Confirmed! Proceeding with detected folder...{Style.RESET}\n")
-                            return candidate_path
-                        elif key in ("c", "C", "n", "N", "\t"):
-                            print("\n")
-                            return prompt_custom_directory()
-                        elif key == "\x03":  # Ctrl+C
-                            raise KeyboardInterrupt
-                        else:
-                            print("\n")
-                            return prompt_custom_directory()
-                    time.sleep(0.1)
-            print(f"\n\n  {Style.BOLD}{Style.GREEN}[OK] Auto-confirmed! Proceeding with detected folder...{Style.RESET}\n")
-            return candidate_path
-        except (KeyboardInterrupt, EOFError):
-            return None
-        except Exception:
-            pass
-
-    # Fallback for non-windows or headless terminal
     try:
-        user_input = input("Press [Enter] to use this folder, or type 'C' to change folder: ").strip().strip('"').strip("'")
+        user_input = input("Press [ENTER] to continue, or type 'C' to change: ").strip().strip('"').strip("'")
     except (KeyboardInterrupt, EOFError):
         return None
 
     if not user_input or user_input.lower() in ("y", "yes"):
         return candidate_path
+
     if user_input.lower() in ("c", "change", "n", "no"):
         return prompt_custom_directory()
 
+    if user_input.lower() in ("b", "browse"):
+        print(f"  {Style.CYAN}-> Opening Windows folder browser...{Style.RESET}")
+        picked = pick_folder_dialog()
+        if picked:
+            resolved = find_lethal_company_root(picked, max_sub_depth=3)
+            if resolved:
+                return resolved
+        return prompt_custom_directory()
+
+    # In case the user dragged and dropped a folder path directly into this prompt
     resolved = find_lethal_company_root(user_input, max_sub_depth=3)
     if resolved:
         return resolved
+
     print(f"{Style.RED}[ERROR] \"Lethal Company.exe\" was not found in: \"{user_input}\" or its subfolders.{Style.RESET}\n")
     return prompt_custom_directory()
 
@@ -578,6 +564,10 @@ def main():
         sys.exit(1)
 
     save_cached_game_dir(game_dir)
+
+    # Clear previous detection messages and show clean dashboard
+    clear_screen()
+    log_header("Lethal Company Mod Patcher")
     print(f"{Style.BOLD}{Style.GREEN}[+] Selected Game Directory:{Style.RESET} {game_dir}\n")
 
     delete_list_url = f"https://raw.githubusercontent.com/{REPO_USER}/{REPO_NAME}/{BRANCH}/delete_list.txt"

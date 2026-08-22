@@ -282,21 +282,36 @@ if !COUNT! equ 1 (
     echo   %C_GREEN%[+]%C_RESET% !CANDIDATE_1! %C_YELLOW%^(!LABEL_1!^)%C_RESET%
     echo.
     echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
-    echo %C_GREEN%Auto-proceeding in 5 seconds...%C_RESET%
-    echo   * Press %C_GREEN%[Y]%C_RESET% or wait 5s to continue with this folder
-    echo   * Press %C_YELLOW%[C]%C_RESET% to change, browse, or drag-and-drop a different folder
+    echo   * Press %C_GREEN%[ENTER]%C_RESET% to continue with this folder ^(Recommended^)
+    echo   * Or type %C_YELLOW%[C]%C_RESET% to change, browse, or drag-and-drop a different folder
     echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
     echo.
-    choice /c YC /t 5 /d Y /n /m "Auto-proceeding in 5s [Press Y to start now, C to change]: "
-    if errorlevel 2 (
-        echo.
-        goto :prompt_custom_path
+    set "USER_CONFIRM="
+    set /p "USER_CONFIRM=Press [ENTER] to continue, or type 'C' to change: "
+    if defined USER_CONFIRM (
+        set "USER_CONFIRM=!USER_CONFIRM:"=!"
+        for /f "tokens=* delims= " %%S in ("!USER_CONFIRM!") do set "USER_CONFIRM=%%S"
     )
-    echo.
-    echo %C_GREEN%[OK] Confirmed! Proceeding with detected folder...%C_RESET%
-    echo.
-    set "GAME_DIR=!CANDIDATE_1!"
-    goto :game_dir_confirmed
+    if not defined USER_CONFIRM (
+        set "GAME_DIR=!CANDIDATE_1!"
+        goto :game_dir_confirmed
+    )
+    if /i "!USER_CONFIRM!"=="Y" (
+        set "GAME_DIR=!CANDIDATE_1!"
+        goto :game_dir_confirmed
+    )
+    if /i "!USER_CONFIRM!"=="YES" (
+        set "GAME_DIR=!CANDIDATE_1!"
+        goto :game_dir_confirmed
+    )
+    if /i "!USER_CONFIRM!"=="C" goto :prompt_custom_path
+    if /i "!USER_CONFIRM!"=="CHANGE" goto :prompt_custom_path
+    if /i "!USER_CONFIRM!"=="B" goto :prompt_browse_path
+    if /i "!USER_CONFIRM!"=="BROWSE" goto :prompt_browse_path
+
+    REM In case user dragged/typed a path directly here anyway
+    set "INPUT_DIR=!USER_CONFIRM!"
+    goto :validate_custom_path
 )
 
 REM No installations detected - prompt manually
@@ -312,15 +327,20 @@ set /p "INPUT_DIR=> "
 if not defined INPUT_DIR goto :err_missing_game
 
 REM Check if user requested GUI browser
-if /i "!INPUT_DIR!"=="B" (
-    echo.
-    echo   %C_CYAN%-^> Opening Windows folder browser...%C_RESET%
-    for /f "usebackq delims=" %%D in (`powershell -NoProfile -Command "Add-Type -AssemblyName System.Windows.Forms; $f = New-Object System.Windows.Forms.FolderBrowserDialog; $f.Description = 'Select your Lethal Company game folder'; if($f.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK){$f.SelectedPath}"`) do set "INPUT_DIR=%%D"
-    if not defined INPUT_DIR (
-        echo   Folder selection cancelled.
-        goto :prompt_custom_path
-    )
+if /i "!INPUT_DIR!"=="B" goto :prompt_browse_path
+if /i "!INPUT_DIR!"=="BROWSE" goto :prompt_browse_path
+goto :validate_custom_path
+
+:prompt_browse_path
+echo.
+echo   %C_CYAN%-^> Opening Windows folder browser...%C_RESET%
+set "INPUT_DIR="
+for /f "usebackq delims=" %%D in (`powershell -NoProfile -Command "Add-Type -AssemblyName System.Windows.Forms; $f = New-Object System.Windows.Forms.FolderBrowserDialog; $f.Description = 'Select your Lethal Company game folder'; if($f.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK){$f.SelectedPath}"`) do set "INPUT_DIR=%%D"
+if not defined INPUT_DIR (
+    echo   Folder selection cancelled.
+    goto :prompt_custom_path
 )
+goto :validate_custom_path
 
 :validate_custom_path
 set "INPUT_DIR=!INPUT_DIR:"=!"
@@ -379,6 +399,12 @@ REM Save game path to config
 if not exist "%CONFIG_DIR%" mkdir "%CONFIG_DIR%" 2>nul
 echo !GAME_DIR!>"%CONFIG_FILE%" 2>nul
 
+REM Clear screen after directory has been determined
+cls
+echo %C_CYAN%============================================================================
+echo                        Lethal Company Mod Patcher
+echo ============================================================================%C_RESET%
+echo.
 echo %C_GREEN%[+] Selected Game Directory:%C_RESET% !GAME_DIR!
 echo.
 
