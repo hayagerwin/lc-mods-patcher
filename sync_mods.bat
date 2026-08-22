@@ -43,7 +43,7 @@ if exist "%NEW_SCRIPT%" (
     echo %C_GREEN%[+] Migration successful! Launching lethal_company_patcher.bat...%C_RESET%
     echo.
     start "" "%NEW_SCRIPT%" %*
-    exit /b 0
+    exit
 ) else (
     echo %C_RED%[ERROR] Failed to download lethal_company_patcher.bat from GitHub.%C_RESET%
     echo Please check your internet connection or download it directly from GitHub.

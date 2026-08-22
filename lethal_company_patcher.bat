@@ -283,7 +283,8 @@ echo.
 echo Launching Lethal Company...
 cd /d "!GAME_DIR!"
 start "" "Lethal Company.exe"
-exit /b 0
+timeout /t 1 >nul 2>&1
+exit
 
 
 REM ============================================================================
