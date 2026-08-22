@@ -254,7 +254,7 @@ if !COUNT! gtr 1 (
         goto :show_multi_cand
     )
     set /a CUSTOM_OPT=!COUNT!+1
-    echo   %C_GREEN%[!CUSTOM_OPT!]%C_RESET% Enter / Drag-and-drop a different folder...
+    echo   %C_GREEN%[!CUSTOM_OPT!]%C_RESET% Enter / Drag-and-drop / Browse for a different folder...
     echo.
     :prompt_multi_choice
     set "CHOICE="
@@ -281,28 +281,46 @@ if !COUNT! equ 1 (
     echo %C_CYAN%Found Lethal Company installation:%C_RESET%
     echo   %C_GREEN%[+]%C_RESET% !CANDIDATE_1! %C_YELLOW%^(!LABEL_1!^)%C_RESET%
     echo.
-    echo Press %C_GREEN%[Enter]%C_RESET% to use this folder, or enter/drag-and-drop a different folder:
-    set "USER_DIR="
-    set /p "USER_DIR=> "
-    if defined USER_DIR (
-        set "USER_DIR=!USER_DIR:"=!"
-        for /f "tokens=* delims= " %%S in ("!USER_DIR!") do set "USER_DIR=%%S"
+    echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
+    echo %C_GREEN%Auto-proceeding in 5 seconds...%C_RESET%
+    echo   * Press %C_GREEN%[Y]%C_RESET% or wait 5s to continue with this folder
+    echo   * Press %C_YELLOW%[C]%C_RESET% to change, browse, or drag-and-drop a different folder
+    echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
+    echo.
+    choice /c YC /t 5 /d Y /n /m "Auto-proceeding in 5s [Press Y to start now, C to change]: "
+    if errorlevel 2 (
+        echo.
+        goto :prompt_custom_path
     )
-    if not defined USER_DIR (
-        set "GAME_DIR=!CANDIDATE_1!"
-        goto :game_dir_confirmed
-    )
-    set "INPUT_DIR=!USER_DIR!"
-    goto :validate_custom_path
+    echo.
+    echo %C_GREEN%[OK] Confirmed! Proceeding with detected folder...%C_RESET%
+    echo.
+    set "GAME_DIR=!CANDIDATE_1!"
+    goto :game_dir_confirmed
 )
 
 REM No installations detected - prompt manually
 :prompt_custom_path
-echo %C_YELLOW%[!] Please specify your Lethal Company game folder.%C_RESET%
-echo Enter or drag-and-drop your game folder ^(where "Lethal Company.exe" is located^):
 echo.
+echo %C_YELLOW%[!] Please specify your Lethal Company game folder.%C_RESET%
+echo   Option 1: Drag-and-drop your game folder or "Lethal Company.exe" here
+echo   Option 2: Type %C_CYAN%B%C_RESET% and press Enter to browse with Windows folder picker
+echo   Option 3: Type the full folder path and press Enter
+echo.
+set "INPUT_DIR="
 set /p "INPUT_DIR=> "
 if not defined INPUT_DIR goto :err_missing_game
+
+REM Check if user requested GUI browser
+if /i "!INPUT_DIR!"=="B" (
+    echo.
+    echo   %C_CYAN%-^> Opening Windows folder browser...%C_RESET%
+    for /f "usebackq delims=" %%D in (`powershell -NoProfile -Command "Add-Type -AssemblyName System.Windows.Forms; $f = New-Object System.Windows.Forms.FolderBrowserDialog; $f.Description = 'Select your Lethal Company game folder'; if($f.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK){$f.SelectedPath}"`) do set "INPUT_DIR=%%D"
+    if not defined INPUT_DIR (
+        echo   Folder selection cancelled.
+        goto :prompt_custom_path
+    )
+)
 
 :validate_custom_path
 set "INPUT_DIR=!INPUT_DIR:"=!"

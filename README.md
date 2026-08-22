@@ -17,9 +17,10 @@ A standalone, lightweight synchronization toolchain for updating custom **Lethal
   - Cross-platform support and real-time chunked download progress bar.
 - **Smart Game Directory Auto-Detection & Subfolder Flexibility**:
   - Automatically discovers your game directory across **Steam**, **Online-Fix**, and custom repack locations (`C:\Games\Lethal Company`, `Downloads\Lethal Company`, Desktop, Documents, etc.).
+  - **Zero-Click 5-Second Auto-Proceed**: When your installation is detected, the patcher gives a clear 5-second countdown to auto-proceed, or allows pressing `Enter` to start immediately or `C` to change folder.
   - Deep nested subfolder resolution: seamlessly detects installations even when extracted inside extra folder layers (e.g. `Downloads/Lethal Company/Lethal Company/Lethal Company.exe` or `Downloads/Lethal.Company.v69/Lethal Company/`).
-  - Forgiving drag-and-drop / manual inputs: whether you drag the `.exe`, the root folder, the outer extracted folder, or a subfolder like `BepInEx`, the patcher automatically locates the actual game directory.
-  - If executed outside the game folder, it prompts you once and saves the verified location to `%LOCALAPPDATA%\LCModsPatcher` so future syncs are 1-click.
+  - Forgiving manual input & Windows file picker: drag-and-drop your folder/exe or press `B` to open the standard Windows folder browser dialog.
+  - If executed outside the game folder, it saves the verified location to `%LOCALAPPDATA%\LCModsPatcher` so future syncs are instant.
 - **Robust Pipeline**:
   - **[0] Self-Update Check**: Checks for and applies script updates from the repository.
   - **[1] Game Directory Detection**: Resolves and verifies the Lethal Company root directory (`Lethal Company.exe`).
@@ -36,7 +37,7 @@ A standalone, lightweight synchronization toolchain for updating custom **Lethal
 1. Download [`lethal_company_patcher.bat`](file:///c:/Reedsoft/lc-mods-patcher/lethal_company_patcher.bat) (or [`lethal_company_patcher.py`](file:///c:/Reedsoft/lc-mods-patcher/lethal_company_patcher.py)).
 2. Run the script:
    - **Option A (Recommended)**: Place the script inside your Lethal Company game folder (Steam, Online-Fix, or standalone) and double-click `lethal_company_patcher.bat`.
-   - **Option B (Run from anywhere)**: Run `lethal_company_patcher.bat` from your `Downloads` or Desktop folder. The script will automatically locate your game, or ask you to drag-and-drop your game folder once.
+   - **Option B (Run from anywhere)**: Run `lethal_company_patcher.bat` from your `Downloads` or Desktop folder. The script will auto-detect your game and proceed after a 5-second countdown (or let you press `B` to browse / drag-and-drop).
 3. Once synchronization succeeds, press `Enter` to launch Lethal Company, or close the window to exit.
 
 ---

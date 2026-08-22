@@ -292,7 +292,7 @@ def resolve_game_directory() -> Path | None:
         for i, (path, label) in enumerate(candidates, 1):
             print(f"  {Style.GREEN}[{i}]{Style.RESET} {path}  {Style.YELLOW}({label}){Style.RESET}")
         custom_idx = len(candidates) + 1
-        print(f"  {Style.GREEN}[{custom_idx}]{Style.RESET} Enter / Drag-and-drop a different folder...\n")
+        print(f"  {Style.GREEN}[{custom_idx}]{Style.RESET} Enter / Drag-and-drop / Browse for a different folder...\n")
 
         while True:
             try:
@@ -317,37 +317,113 @@ def resolve_game_directory() -> Path | None:
     # If single candidate found
     if len(candidates) == 1:
         single_path, single_label = candidates[0]
-        print(f"{Style.BOLD}{Style.CYAN}Found Lethal Company installation:{Style.RESET}")
-        print(f"  {Style.GREEN}->{Style.RESET} {single_path} {Style.YELLOW}({single_label}){Style.RESET}\n")
-        try:
-            user_input = input(f"Press [Enter] to use this folder, or enter/drag-and-drop a different folder: ").strip().strip('"').strip("'")
-        except (KeyboardInterrupt, EOFError):
-            return None
-
-        if not user_input:
-            return single_path
-
-        resolved = find_lethal_company_root(user_input, max_sub_depth=3)
-        if resolved:
-            return resolved
-        print(f"{Style.RED}[ERROR] \"Lethal Company.exe\" was not found in: \"{user_input}\" or its subfolders.{Style.RESET}\n")
+        return prompt_single_candidate(single_path, single_label)
 
     return prompt_custom_directory()
 
 
+def prompt_single_candidate(candidate_path: Path, label: str) -> Path | None:
+    """Displays auto-detected installation and counts down 5 seconds before automatically proceeding."""
+    import time
+    print(f"{Style.BOLD}{Style.CYAN}Found Lethal Company installation:{Style.RESET}")
+    print(f"  {Style.BOLD}{Style.GREEN}[+] {candidate_path}{Style.RESET} {Style.YELLOW}({label}){Style.RESET}\n")
+    print(f"{Style.BOLD}{Style.CYAN}{'-' * 75}{Style.RESET}")
+    print(f"  {Style.BOLD}{Style.GREEN}Auto-proceeding in 5 seconds...{Style.RESET}")
+    print(f"  * Press {Style.BOLD}[ENTER]{Style.RESET} or {Style.BOLD}[Y]{Style.RESET} to start immediately.")
+    print(f"  * Press {Style.BOLD}[C]{Style.RESET} to change, browse, or drag-and-drop a different folder.")
+    print(f"{Style.BOLD}{Style.CYAN}{'-' * 75}{Style.RESET}\n")
+
+    if sys.platform == "win32":
+        try:
+            import msvcrt
+            for remaining in range(5, 0, -1):
+                print(f"\r  {Style.CYAN}-> Auto-proceeding in {remaining}s... (Press [Enter] to start, [C] to change){Style.RESET}   ", end="", flush=True)
+                for _ in range(10):
+                    if msvcrt.kbhit():
+                        key = msvcrt.getwch()
+                        if key in ("\r", "\n", "y", "Y", " "):
+                            print(f"\n\n  {Style.BOLD}{Style.GREEN}[OK] Confirmed! Proceeding with detected folder...{Style.RESET}\n")
+                            return candidate_path
+                        elif key in ("c", "C", "n", "N", "\t"):
+                            print("\n")
+                            return prompt_custom_directory()
+                        elif key == "\x03":  # Ctrl+C
+                            raise KeyboardInterrupt
+                        else:
+                            print("\n")
+                            return prompt_custom_directory()
+                    time.sleep(0.1)
+            print(f"\n\n  {Style.BOLD}{Style.GREEN}[OK] Auto-confirmed! Proceeding with detected folder...{Style.RESET}\n")
+            return candidate_path
+        except (KeyboardInterrupt, EOFError):
+            return None
+        except Exception:
+            pass
+
+    # Fallback for non-windows or headless terminal
+    try:
+        user_input = input("Press [Enter] to use this folder, or type 'C' to change folder: ").strip().strip('"').strip("'")
+    except (KeyboardInterrupt, EOFError):
+        return None
+
+    if not user_input or user_input.lower() in ("y", "yes"):
+        return candidate_path
+    if user_input.lower() in ("c", "change", "n", "no"):
+        return prompt_custom_directory()
+
+    resolved = find_lethal_company_root(user_input, max_sub_depth=3)
+    if resolved:
+        return resolved
+    print(f"{Style.RED}[ERROR] \"Lethal Company.exe\" was not found in: \"{user_input}\" or its subfolders.{Style.RESET}\n")
+    return prompt_custom_directory()
+
+
+def pick_folder_dialog() -> Path | None:
+    """Opens a native Windows FolderBrowserDialog to pick a folder."""
+    try:
+        import tkinter as tk
+        from tkinter import filedialog
+        root = tk.Tk()
+        root.withdraw()
+        root.attributes("-topmost", True)
+        selected = filedialog.askdirectory(title="Select your Lethal Company game folder")
+        root.destroy()
+        if selected:
+            return Path(selected)
+    except Exception:
+        pass
+    return None
+
+
 def prompt_custom_directory() -> Path | None:
-    """Interactively prompts the user to input or drag-and-drop their game folder."""
+    """Interactively prompts the user to input, drag-and-drop, or browse for their game folder."""
     print(f"\n{Style.BOLD}{Style.YELLOW}[!] Please specify your Lethal Company game folder.{Style.RESET}")
-    print('Enter or drag-and-drop your game folder (where "Lethal Company.exe" is located):')
+    print('  Option 1: Drag-and-drop your game folder or "Lethal Company.exe" here.')
+    print("  Option 2: Type 'B' and press Enter to browse with Windows folder picker.")
+    print("  Option 3: Type the full folder path and press Enter.")
 
     while True:
         try:
-            user_input = input("\n> ").strip().strip('"').strip("'")
+            user_input = input(f"\n{Style.BOLD}> {Style.RESET}").strip().strip('"').strip("'")
         except (KeyboardInterrupt, EOFError):
             return None
 
         if not user_input:
             return None
+
+        if user_input.lower() in ("b", "browse"):
+            print(f"  {Style.CYAN}-> Opening Windows folder browser...{Style.RESET}")
+            picked = pick_folder_dialog()
+            if picked:
+                resolved = find_lethal_company_root(picked, max_sub_depth=3)
+                if resolved:
+                    return resolved
+                else:
+                    log_error(f'"Lethal Company.exe" was not found in: "{picked}" or its subfolders.')
+            else:
+                log_info("Folder selection cancelled.")
+            print("Please try again, drag-and-drop a folder, or press Ctrl+C to cancel.")
+            continue
 
         resolved = find_lethal_company_root(user_input, max_sub_depth=3)
         if resolved:
