@@ -1,4 +1,4 @@
-# Lethal Company Mod Synchronizer
+# Lethal Company Mod Patcher
 
 A standalone, lightweight synchronization toolchain for updating custom **Lethal Company** mod files (`BepInEx/plugins`, `BepInEx/config`, `BepInEx/patchers`, etc.) directly from a remote GitHub repository.
 
@@ -6,13 +6,13 @@ A standalone, lightweight synchronization toolchain for updating custom **Lethal
 
 ## Features
 
-- **Automatic Self-Update**:
-  - Automatically checks for newer versions of `sync_mods.bat` or `sync_mods.py` on GitHub before synchronizing mods.
+- **Automatic Self-Update (Always Runs First)**:
+  - Automatically checks for newer versions of `lethal_company_patcher.bat` or `lethal_company_patcher.py` on GitHub before checking directory or synchronizing mods.
   - Seamlessly updates itself and restarts if updates or bug fixes are detected on the remote repository.
-- **Zero-Dependency Native Batch Script (`sync_mods.bat`)**:
+- **Zero-Dependency Native Batch Script (`lethal_company_patcher.bat`)**:
   - Uses Windows 10/11 built-in `curl.exe` and `tar.exe`.
   - No PowerShell execution policy issues, no 7-Zip, and no Python installation required for players.
-- **Python Alternative (`sync_mods.py`)**:
+- **Python Alternative (`lethal_company_patcher.py`)**:
   - Written entirely with Python standard library (`urllib`, `zipfile`, `pathlib`, `shutil`, `subprocess`).
   - Cross-platform support and real-time chunked download progress bar.
 - **Smart Game Directory Auto-Detection**:
@@ -31,10 +31,10 @@ A standalone, lightweight synchronization toolchain for updating custom **Lethal
 
 ## Quick Start for Players
 
-1. Download [`sync_mods.bat`](file:///c:/Reedsoft/lc-mods-patcher/sync_mods.bat) (or [`sync_mods.py`](file:///c:/Reedsoft/lc-mods-patcher/sync_mods.py)).
+1. Download [`lethal_company_patcher.bat`](file:///c:/Reedsoft/lc-mods-patcher/lethal_company_patcher.bat) (or [`lethal_company_patcher.py`](file:///c:/Reedsoft/lc-mods-patcher/lethal_company_patcher.py)).
 2. Run the script:
-   - **Option A (Recommended)**: Place the script inside your Lethal Company game folder (Steam, Online-Fix, or standalone) and double-click `sync_mods.bat`.
-   - **Option B (Run from anywhere)**: Run `sync_mods.bat` from your `Downloads` or Desktop folder. The script will automatically locate your game, or ask you to drag-and-drop your game folder once.
+   - **Option A (Recommended)**: Place the script inside your Lethal Company game folder (Steam, Online-Fix, or standalone) and double-click `lethal_company_patcher.bat`.
+   - **Option B (Run from anywhere)**: Run `lethal_company_patcher.bat` from your `Downloads` or Desktop folder. The script will automatically locate your game, or ask you to drag-and-drop your game folder once.
 3. Once synchronization succeeds, the script will automatically launch Lethal Company and close.
 
 ---
@@ -51,7 +51,7 @@ The synchronizer automatically supports both legitimate and standalone/Online-Fi
 ## Configuration for Repository Maintainers
 
 ### 1. Configure the Scripts
-Open `sync_mods.bat` or `sync_mods.py` in a text editor and set your GitHub repository details at the top:
+Open `lethal_company_patcher.bat` or `lethal_company_patcher.py` in a text editor and set your GitHub repository details at the top:
 
 ```bat
 set "REPO_USER=YourGitHubUsername"

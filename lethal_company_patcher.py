@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Lethal Company Mod Synchronizer (Python Alternative)
+Lethal Company Mod Patcher (Python Alternative)
 Synchronizes custom mods, configs, and patchers from a remote GitHub repository.
 """
 
@@ -61,8 +61,8 @@ def log_info(message: str):
 # CORE OPERATIONS
 # ==============================================================================
 def check_self_update(script_url: str):
-    """Checks if a newer version of sync_mods.py exists on GitHub and self-updates."""
-    if os.environ.get("_SYNC_MODS_SELF_UPDATED") == "1":
+    """Checks if a newer version of lethal_company_patcher.py exists on GitHub and self-updates."""
+    if os.environ.get("_LC_PATCHER_SELF_UPDATED") == "1":
         return
 
     current_script = Path(__file__).resolve()
@@ -81,14 +81,14 @@ def check_self_update(script_url: str):
         local_text = current_script.read_text(encoding="utf-8", errors="ignore").replace("\r\n", "\n").strip()
 
         if remote_text != local_text:
-            print(f"{Style.BOLD}{Style.CYAN}[UPDATE]{Style.RESET} A newer version of sync_mods.py was detected.")
+            print(f"{Style.BOLD}{Style.CYAN}[UPDATE]{Style.RESET} A newer version of lethal_company_patcher.py was detected.")
             log_info("Updating script to the latest version...")
 
             current_script.write_bytes(remote_bytes)
-            log_info("Restarting synchronizer...\n")
+            log_info("Restarting patcher...\n")
 
             env = os.environ.copy()
-            env["_SYNC_MODS_SELF_UPDATED"] = "1"
+            env["_LC_PATCHER_SELF_UPDATED"] = "1"
             exit_code = subprocess.call([sys.executable, str(current_script)] + sys.argv[1:], env=env)
             sys.exit(exit_code)
 
@@ -334,11 +334,13 @@ def stage_extract_patch(game_dir: Path, zip_path: Path) -> bool:
 
 
 def main():
-    log_header("Lethal Company Mod Synchronizer")
+    log_header("Lethal Company Mod Patcher")
 
-    script_url = f"https://raw.githubusercontent.com/{REPO_USER}/{REPO_NAME}/{BRANCH}/sync_mods.py"
+    # Step 0: Self-update check (always runs FIRST before anything else)
+    script_url = f"https://raw.githubusercontent.com/{REPO_USER}/{REPO_NAME}/{BRANCH}/lethal_company_patcher.py"
     check_self_update(script_url)
 
+    # Step 1: Game Directory Detection
     game_dir = find_game_directory()
     if not game_dir:
         game_dir = prompt_game_directory()
