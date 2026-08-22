@@ -100,16 +100,110 @@ def check_self_update(script_url: str):
         pass
 
 
-def verify_environment(game_dir: Path) -> bool:
-    """Verifies that the script is located in the Lethal Company root directory."""
-    exe_path = game_dir / "Lethal Company.exe"
-    if not exe_path.is_file():
-        log_error('"Lethal Company.exe" was not found in this folder!')
-        print(f"\nPlease place and run this script directly inside your Lethal Company root folder:")
-        print(f"  Current directory: {game_dir}")
-        print(f"  Expected location: steamapps/common/Lethal Company/\n")
-        return False
-    return True
+def get_config_path() -> Path:
+    """Returns the persistent config path for storing the game location."""
+    if sys.platform == "win32":
+        appdata = os.environ.get("LOCALAPPDATA")
+        if appdata:
+            return Path(appdata) / "LCModsPatcher" / "lc_game_path.txt"
+    return Path.home() / ".config" / "lc-mods-patcher" / "lc_game_path.txt"
+
+
+def save_cached_game_dir(game_dir: Path):
+    """Saves the verified game directory to the config file."""
+    try:
+        cfg = get_config_path()
+        cfg.parent.mkdir(parents=True, exist_ok=True)
+        cfg.write_text(str(game_dir.resolve()), encoding="utf-8")
+    except Exception:
+        pass
+
+
+def find_game_directory() -> Path | None:
+    """Detects Lethal Company root directory from script folder, configs, or common locations."""
+    script_dir = Path(__file__).resolve().parent
+
+    # 1. Check current script directory
+    if (script_dir / "Lethal Company.exe").is_file():
+        return script_dir
+
+    # 2. Check local config in script directory
+    local_cfg = script_dir / "lc_game_path.txt"
+    if local_cfg.is_file():
+        try:
+            saved = Path(local_cfg.read_text(encoding="utf-8").strip())
+            if (saved / "Lethal Company.exe").is_file():
+                return saved
+        except Exception:
+            pass
+
+    # 3. Check global config in AppData / ~/.config
+    global_cfg = get_config_path()
+    if global_cfg.is_file():
+        try:
+            saved = Path(global_cfg.read_text(encoding="utf-8").strip())
+            if (saved / "Lethal Company.exe").is_file():
+                return saved
+        except Exception:
+            pass
+
+    # 4. Check common non-Steam (Online-Fix, Repacks) and Steam paths
+    candidates = [
+        Path("C:/Games/Lethal Company"),
+        Path("D:/Games/Lethal Company"),
+        Path("E:/Games/Lethal Company"),
+        Path("F:/Games/Lethal Company"),
+        Path.home() / "Downloads" / "Lethal Company",
+        Path.home() / "Desktop" / "Lethal Company",
+        Path(os.environ.get("ProgramFiles(x86)", "C:/Program Files (x86)")) / "Steam/steamapps/common/Lethal Company",
+        Path(os.environ.get("ProgramFiles", "C:/Program Files")) / "Steam/steamapps/common/Lethal Company",
+        Path("D:/SteamLibrary/steamapps/common/Lethal Company"),
+        Path("E:/SteamLibrary/steamapps/common/Lethal Company"),
+        Path("F:/SteamLibrary/steamapps/common/Lethal Company"),
+    ]
+
+    for candidate in candidates:
+        if (candidate / "Lethal Company.exe").is_file():
+            return candidate
+
+    # 5. Wildcard search in Downloads and Desktop
+    for base_dir in [Path.home() / "Downloads", Path.home() / "Desktop"]:
+        if base_dir.is_dir():
+            try:
+                for folder in base_dir.glob("Lethal*"):
+                    if folder.is_dir() and (folder / "Lethal Company.exe").is_file():
+                        return folder
+            except Exception:
+                pass
+
+    return None
+
+
+def prompt_game_directory() -> Path | None:
+    """Interactively prompts the user to input or drag-and-drop their game folder."""
+    print(f"{Style.BOLD}{Style.YELLOW}[!] Lethal Company folder was not automatically detected.{Style.RESET}")
+    print("\nPlease enter or drag-and-drop your Lethal Company game folder")
+    print('(where "Lethal Company.exe" is located, e.g. C:\\Games\\Lethal Company):')
+
+    while True:
+        try:
+            user_input = input("\n> ").strip().strip('"').strip("'")
+        except (KeyboardInterrupt, EOFError):
+            return None
+
+        if not user_input:
+            return None
+
+        p = Path(user_input).resolve()
+        # If user dragged the executable directly
+        if p.name.lower() == "lethal company.exe" and p.is_file():
+            p = p.parent
+
+        if (p / "Lethal Company.exe").is_file():
+            return p
+        else:
+            log_error(f'"Lethal Company.exe" was not found in: "{p}"')
+            print("Please verify the folder and try again (or press Ctrl+C to cancel).")
 
 
 def download_file_with_progress(url: str, destination: Path, show_progress: bool = True) -> bool:
@@ -240,16 +334,24 @@ def stage_extract_patch(game_dir: Path, zip_path: Path) -> bool:
 
 
 def main():
-    game_dir = Path(__file__).resolve().parent
-
     log_header("Lethal Company Mod Synchronizer")
 
     script_url = f"https://raw.githubusercontent.com/{REPO_USER}/{REPO_NAME}/{BRANCH}/sync_mods.py"
     check_self_update(script_url)
 
-    if not verify_environment(game_dir):
-        input("\nPress Enter to exit...")
+    game_dir = find_game_directory()
+    if not game_dir:
+        game_dir = prompt_game_directory()
+
+    if not game_dir or not (game_dir / "Lethal Company.exe").is_file():
+        log_error('Could not locate "Lethal Company.exe"!')
+        print("\nPlease make sure you have Lethal Company installed (Steam, Online-Fix, or standalone),")
+        print("and run this script from inside the game folder or provide the correct path when prompted.\n")
+        input("Press Enter to exit...")
         sys.exit(1)
+
+    save_cached_game_dir(game_dir)
+    print(f"{Style.BOLD}{Style.GREEN}[+] Target Game Directory:{Style.RESET} {game_dir}\n")
 
     delete_list_url = f"https://raw.githubusercontent.com/{REPO_USER}/{REPO_NAME}/{BRANCH}/delete_list.txt"
     patch_zip_url = f"https://raw.githubusercontent.com/{REPO_USER}/{REPO_NAME}/{BRANCH}/patch.zip"
@@ -277,6 +379,7 @@ def main():
     try:
         exe_path = game_dir / "Lethal Company.exe"
         if sys.platform == "win32":
+            os.chdir(str(game_dir))
             os.startfile(str(exe_path))
         else:
             subprocess.Popen([str(exe_path)], cwd=str(game_dir))

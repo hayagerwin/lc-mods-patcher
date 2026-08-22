@@ -15,21 +15,36 @@ A standalone, lightweight synchronization toolchain for updating custom **Lethal
 - **Python Alternative (`sync_mods.py`)**:
   - Written entirely with Python standard library (`urllib`, `zipfile`, `pathlib`, `shutil`, `subprocess`).
   - Cross-platform support and real-time chunked download progress bar.
+- **Smart Game Directory Auto-Detection**:
+  - Automatically discovers your game directory across **Steam**, **Online-Fix**, and custom repack locations (`C:\Games\Lethal Company`, `Downloads\Lethal Company`, Desktop, etc.).
+  - If executed outside the game folder, it prompts you once (with drag-and-drop support) and saves the location so future syncs are 1-click.
 - **Robust Pipeline**:
   - **[0] Self-Update Check**: Checks for and applies script updates from the repository.
-  - **Environment Check**: Confirms execution inside the game's root directory (`Lethal Company.exe`).
+  - **[1] Game Directory Detection**: Resolves and verifies the Lethal Company root directory (`Lethal Company.exe`).
+  - **[2] System Utilities Check**: Verifies `curl.exe` and `tar.exe`.
   - **[1/3] Deletion Stage**: Removes outdated/conflicting mods and folders defined in `delete_list.txt`.
   - **[2/3] Download Stage**: Fetches the latest `patch.zip` from GitHub with HTTP error detection (catches 404s cleanly).
   - **[3/3] Extraction Stage**: Extracts and silently overwrites updated mod files, cleaning up temp archives upon completion.
+  - **[Launch]**: Automatically starts `Lethal Company.exe` with the proper working directory.
 
 ---
 
 ## Quick Start for Players
 
-1. Download [`sync_mods.bat`](file:///c:/Reedsoft/LCModsPatcher/sync_mods.bat) (or [`sync_mods.py`](file:///c:/Reedsoft/LCModsPatcher/sync_mods.py)).
-2. Place the script into your **Lethal Company root directory**:
-   - *Typical Steam path*: `C:\Program Files (x86)\Steam\steamapps\common\Lethal Company\`
-3. Double-click `sync_mods.bat` to update your mods. Once synchronization succeeds, the script will automatically launch the game and close.
+1. Download [`sync_mods.bat`](file:///c:/Reedsoft/lc-mods-patcher/sync_mods.bat) (or [`sync_mods.py`](file:///c:/Reedsoft/lc-mods-patcher/sync_mods.py)).
+2. Run the script:
+   - **Option A (Recommended)**: Place the script inside your Lethal Company game folder (Steam, Online-Fix, or standalone) and double-click `sync_mods.bat`.
+   - **Option B (Run from anywhere)**: Run `sync_mods.bat` from your `Downloads` or Desktop folder. The script will automatically locate your game, or ask you to drag-and-drop your game folder once.
+3. Once synchronization succeeds, the script will automatically launch Lethal Company and close.
+
+---
+
+## Supported Editions & Paths
+
+The synchronizer automatically supports both legitimate and standalone/Online-Fix copies:
+- **Steam**: `C:\Program Files (x86)\Steam\steamapps\common\Lethal Company\`, library drives (`D:\SteamLibrary`, etc.)
+- **Online-Fix / Repacks**: `C:\Games\Lethal Company\`, `D:\Games\Lethal Company\`, unzipped folders in `Downloads\` or `Desktop\`
+- **Custom / External**: Any folder containing `Lethal Company.exe`
 
 ---
 
@@ -87,7 +102,8 @@ BepInEx/config/removed_mod.cfg
 
 ## Error Handling & Safety
 
-- **Wrong Directory**: If executed outside of the Lethal Company folder, the script halts immediately with an informative message.
+- **Smart Path Resolution**: If executed outside of the Lethal Company folder, the script automatically searches standard game locations or lets you drag-and-drop your game folder.
+- **Working Directory Integrity**: Ensures game executable and Online-Fix / BepInEx libraries are loaded with the proper root working directory.
 - **Spaces in Paths**: Paths with spaces (e.g. `BepInEx/plugins/Custom Mod Pack/`) are properly handled.
 - **Directory vs File Detection**: Accurately differentiates folders (`rmdir /s /q`) from files (`del /f /q /a`).
 - **Network Failures**: `curl -f` ensures that 404 responses or connection drops fail cleanly without writing corrupt files.

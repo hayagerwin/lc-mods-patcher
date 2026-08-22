@@ -10,8 +10,10 @@ set "REPO_USER=hayagerwin"
 set "REPO_NAME=lc-mods-patcher"
 set "BRANCH=main"
 
-REM Ensure the script runs in its current folder
-cd /d "%~dp0"
+REM Script directory and config path
+set "SCRIPT_DIR=%~dp0"
+set "CONFIG_DIR=%LOCALAPPDATA%\LCModsPatcher"
+set "CONFIG_FILE=%CONFIG_DIR%\lc_game_path.txt"
 
 REM Initialize ANSI color codes
 for /f %%A in ('echo prompt $E ^| cmd') do set "ESC=%%A"
@@ -55,13 +57,129 @@ if not defined _SYNC_MODS_SELF_UPDATED (
 )
 
 REM ----------------------------------------------------------------------------
-REM 1. ENVIRONMENT CHECK
+REM 1. GAME DIRECTORY DETECTION (Online-Fix, Steam, Custom folders)
 REM ----------------------------------------------------------------------------
-if not exist "Lethal Company.exe" (
-    goto :err_missing_game
+set "GAME_DIR="
+
+REM Check 1: Current script folder
+if exist "%SCRIPT_DIR%Lethal Company.exe" (
+    set "GAME_DIR=%SCRIPT_DIR%"
 )
 
-REM Check for required native Windows utilities (curl.exe and tar.exe)
+REM Check 2: Local config file in script directory
+if not defined GAME_DIR (
+    if exist "%SCRIPT_DIR%lc_game_path.txt" (
+        set /p SAVED_PATH=<"%SCRIPT_DIR%lc_game_path.txt"
+        if defined SAVED_PATH (
+            set "SAVED_PATH=!SAVED_PATH:"=!"
+            if exist "!SAVED_PATH!\Lethal Company.exe" (
+                set "GAME_DIR=!SAVED_PATH!"
+            )
+        )
+    )
+)
+
+REM Check 3: Global AppData saved config
+if not defined GAME_DIR (
+    if exist "%CONFIG_FILE%" (
+        set /p SAVED_PATH=<"%CONFIG_FILE%"
+        if defined SAVED_PATH (
+            set "SAVED_PATH=!SAVED_PATH:"=!"
+            if exist "!SAVED_PATH!\Lethal Company.exe" (
+                set "GAME_DIR=!SAVED_PATH!"
+            )
+        )
+    )
+)
+
+REM Check 4: Common installation directories (Online-Fix, repacks, Steam)
+if not defined GAME_DIR (
+    for %%P in (
+        "C:\Games\Lethal Company"
+        "D:\Games\Lethal Company"
+        "E:\Games\Lethal Company"
+        "F:\Games\Lethal Company"
+        "%USERPROFILE%\Downloads\Lethal Company"
+        "%USERPROFILE%\Desktop\Lethal Company"
+        "%ProgramFiles(x86)%\Steam\steamapps\common\Lethal Company"
+        "%ProgramFiles%\Steam\steamapps\common\Lethal Company"
+        "C:\Program Files\Steam\steamapps\common\Lethal Company"
+        "D:\SteamLibrary\steamapps\common\Lethal Company"
+        "E:\SteamLibrary\steamapps\common\Lethal Company"
+        "F:\SteamLibrary\steamapps\common\Lethal Company"
+    ) do (
+        if not defined GAME_DIR (
+            if exist "%%~P\Lethal Company.exe" (
+                set "GAME_DIR=%%~P"
+            )
+        )
+    )
+)
+
+REM Check 5: Wildcard match in Downloads and Desktop folders
+if not defined GAME_DIR (
+    for /d %%D in ("%USERPROFILE%\Downloads\Lethal*") do (
+        if not defined GAME_DIR (
+            if exist "%%~fD\Lethal Company.exe" (
+                set "GAME_DIR=%%~fD"
+            )
+        )
+    )
+)
+
+if not defined GAME_DIR (
+    for /d %%D in ("%USERPROFILE%\Desktop\Lethal*") do (
+        if not defined GAME_DIR (
+            if exist "%%~fD\Lethal Company.exe" (
+                set "GAME_DIR=%%~fD"
+            )
+        )
+    )
+)
+
+REM Check 6: Interactive Prompt if not automatically located
+:prompt_game_path
+if not defined GAME_DIR (
+    echo %C_YELLOW%[!] Lethal Company folder was not automatically detected.%C_RESET%
+    echo.
+    echo Please enter or drag-and-drop your Lethal Company game folder
+    echo ^(where "Lethal Company.exe" is located, e.g. C:\Games\Lethal Company^):
+    echo.
+    set /p "INPUT_DIR=> "
+    if not defined INPUT_DIR (
+        goto :err_missing_game
+    )
+    set "INPUT_DIR=!INPUT_DIR:"=!"
+    REM If user dragged the executable directly, get parent folder
+    if /i "!INPUT_DIR:~-18!"=="Lethal Company.exe" (
+        for %%F in ("!INPUT_DIR!") do set "INPUT_DIR=%%~dpF"
+    )
+    REM Strip trailing backslash
+    if "!INPUT_DIR:~-1!"=="\" set "INPUT_DIR=!INPUT_DIR:~0,-1!"
+
+    if exist "!INPUT_DIR!\Lethal Company.exe" (
+        set "GAME_DIR=!INPUT_DIR!"
+    ) else (
+        echo.
+        echo %C_RED%[ERROR] "Lethal Company.exe" was not found in: "!INPUT_DIR!"%C_RESET%
+        echo.
+        goto :prompt_game_path
+    )
+)
+
+REM Strip trailing backslash from GAME_DIR if present
+if "!GAME_DIR:~-1!"=="\" set "GAME_DIR=!GAME_DIR:~0,-1!"
+
+REM Save game path to config for future one-click runs
+if not exist "%CONFIG_DIR%" mkdir "%CONFIG_DIR%" 2>nul
+echo !GAME_DIR!>"%CONFIG_FILE%" 2>nul
+
+echo %C_GREEN%[+] Target Game Directory:%C_RESET% !GAME_DIR!
+echo.
+
+REM ----------------------------------------------------------------------------
+REM 2. SYSTEM UTILITIES CHECK
+REM ----------------------------------------------------------------------------
 where curl.exe >nul 2>nul
 if errorlevel 1 (
     goto :err_missing_curl
@@ -72,6 +190,9 @@ if errorlevel 1 (
     goto :err_missing_tar
 )
 
+REM Switch working directory to game folder
+cd /d "!GAME_DIR!"
+
 REM Setup remote URLs and temporary paths
 set "DELETE_LIST_URL=https://raw.githubusercontent.com/%REPO_USER%/%REPO_NAME%/%BRANCH%/delete_list.txt"
 set "PATCH_ZIP_URL=https://raw.githubusercontent.com/%REPO_USER%/%REPO_NAME%/%BRANCH%/patch.zip"
@@ -79,7 +200,7 @@ set "TEMP_DELETE_LIST=%TEMP%\lc_delete_list_%RANDOM%.txt"
 set "TEMP_PATCH_ZIP=%TEMP%\lc_patch_%RANDOM%.zip"
 
 REM ----------------------------------------------------------------------------
-REM 2. STAGE 1: DELETE OBSOLETE FILES & FOLDERS
+REM 3. STAGE 1: DELETE OBSOLETE FILES & FOLDERS
 REM ----------------------------------------------------------------------------
 echo %C_CYAN%[1/3]%C_RESET% Checking for obsolete files and folders to remove...
 curl.exe -s -L -f "%DELETE_LIST_URL%" -o "%TEMP_DELETE_LIST%"
@@ -95,13 +216,13 @@ if exist "%TEMP_DELETE_LIST%" (
 
         if defined NORM_PATH (
             REM Distinguish between directory and file
-            if exist "!NORM_PATH!\" (
+            if exist "!GAME_DIR!\!NORM_PATH!\" (
                 echo   %C_YELLOW%[-]%C_RESET% Removing folder: !NORM_PATH!
-                rmdir /s /q "!NORM_PATH!" 2>nul
+                rmdir /s /q "!GAME_DIR!\!NORM_PATH!" 2>nul
                 set /a DELETED_COUNT+=1
-            ) else if exist "!NORM_PATH!" (
+            ) else if exist "!GAME_DIR!\!NORM_PATH!" (
                 echo   %C_YELLOW%[-]%C_RESET% Removing file:   !NORM_PATH!
-                del /f /q /a "!NORM_PATH!" 2>nul
+                del /f /q /a "!GAME_DIR!\!NORM_PATH!" 2>nul
                 set /a DELETED_COUNT+=1
             )
         )
@@ -118,7 +239,7 @@ if exist "%TEMP_DELETE_LIST%" (
 echo.
 
 REM ----------------------------------------------------------------------------
-REM 3. STAGE 2: DOWNLOAD MOD ARCHIVE
+REM 4. STAGE 2: DOWNLOAD MOD ARCHIVE
 REM ----------------------------------------------------------------------------
 echo %C_CYAN%[2/3]%C_RESET% Downloading latest mod patch (patch.zip)...
 echo       Source: %REPO_USER%/%REPO_NAME% (%BRANCH%)
@@ -138,10 +259,10 @@ for %%F in ("%TEMP_PATCH_ZIP%") do (
 echo.
 
 REM ----------------------------------------------------------------------------
-REM 4. STAGE 3: EXTRACT MODS & OVERWRITE
+REM 5. STAGE 3: EXTRACT MODS & OVERWRITE
 REM ----------------------------------------------------------------------------
 echo %C_CYAN%[3/3]%C_RESET% Extracting mod files and updating game directory...
-tar.exe -xf "%TEMP_PATCH_ZIP%" -C .
+tar.exe -xf "%TEMP_PATCH_ZIP%" -C "!GAME_DIR!"
 
 if errorlevel 1 (
     goto :err_extract_failed
@@ -156,6 +277,7 @@ echo [SUCCESS] Lethal Company mods have been successfully synchronized.
 echo ============================================================================%C_RESET%
 echo.
 echo Launching Lethal Company...
+cd /d "!GAME_DIR!"
 start "" "Lethal Company.exe"
 exit /b 0
 
@@ -164,10 +286,10 @@ REM ============================================================================
 REM ERROR HANDLERS
 REM ============================================================================
 :err_missing_game
-echo %C_RED%[ERROR] "Lethal Company.exe" was not found in this folder.%C_RESET%
+echo %C_RED%[ERROR] "Lethal Company.exe" was not found.%C_RESET%
 echo.
-echo Please make sure this script is placed inside your Lethal Company
-echo game directory (e.g., steamapps\common\Lethal Company\).
+echo Please make sure you have Lethal Company installed (Steam, Online-Fix, or custom repack),
+echo and place this script inside your game folder or provide the correct path when prompted.
 echo.
 pause
 exit /b 1
