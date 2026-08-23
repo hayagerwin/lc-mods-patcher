@@ -9,7 +9,7 @@ REM ============================================================================
 set "REPO_USER=hayagerwin"
 set "REPO_NAME=lc-mods-patcher"
 set "BRANCH=main"
-set "PATCHER_VERSION=2026082302"
+set "PATCHER_VERSION=2026082303"
 
 REM Script directory and config path
 set "SCRIPT_DIR=%~dp0"
@@ -41,9 +41,10 @@ if not defined _LC_PATCHER_SELF_UPDATED (
         curl.exe -s -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" "!SCRIPT_URL!" -o "!TEMP_SCRIPT!" 2>nul
         if exist "!TEMP_SCRIPT!" (
             set "REMOTE_VERSION="
-            for /f "tokens=2 delims==" %%V in ('findstr /b /c:"set \"PATCHER_VERSION=" "!TEMP_SCRIPT!" 2^>nul') do (
+            for /f "tokens=2 delims==" %%V in ('findstr /i "PATCHER_VERSION" "!TEMP_SCRIPT!"') do (
                 set "RAW_REMOTE=%%V"
                 set "RAW_REMOTE=!RAW_REMOTE:"=!"
+                set "RAW_REMOTE=!RAW_REMOTE: =!"
                 set "REMOTE_VERSION=!RAW_REMOTE!"
             )
             if defined REMOTE_VERSION (
@@ -439,18 +440,6 @@ set "TEMP_PATCH_INFO=%TEMP%\lc_patch_info_%RANDOM%.txt"
 REM ----------------------------------------------------------------------------
 REM 2.5 FETCH & DISPLAY LATEST PATCH CHANGELOG
 REM ----------------------------------------------------------------------------
-set "LOCAL_VER=none"
-if exist "!GAME_DIR!\BepInEx\patch_installed.txt" (
-    for /f "usebackq delims=" %%V in ("!GAME_DIR!\BepInEx\patch_installed.txt") do (
-        set "L_LINE=%%V"
-        if not "!L_LINE!"=="" (
-            if "!LOCAL_VER!"=="none" (
-                set "LOCAL_VER=!L_LINE!"
-            )
-        )
-    )
-)
-
 curl.exe -s -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" "%PATCH_INFO_URL%?t=%RANDOM%" -o "%TEMP_PATCH_INFO%" 2>nul
 
 if not exist "%TEMP_PATCH_INFO%" goto :skip_patch_info
@@ -459,7 +448,7 @@ echo %C_CYAN%===================================================================
 echo                      LATEST PATCH DETAILS ^& CHANGELOG
 echo ============================================================================%C_RESET%
 
-powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$info = Get-Content -Raw -Encoding UTF8 '%TEMP_PATCH_INFO%'; $localVer = '%LOCAL_VER%'; $sections = @(); $curVer = $null; $curHead = $null; $curLines = @(); foreach ($line in ($info -split '\r?\n')) { if ($line -match '===\s*\[(.*?)\]') { if ($curVer) { $sections += ,@($curVer, $curHead, $curLines) }; $curVer = $matches[1]; $curHead = $line; $curLines = @(); } elseif ($curVer) { $curLines += $line } }; if ($curVer) { $sections += ,@($curVer, $curHead, $curLines) }; if ($sections.Count -gt 0) { $latest = $sections[0][0]; if ($localVer -eq $latest) { Write-Host ' [STATUS] You are currently UP TO DATE on ' $latest -ForegroundColor Green; Write-Host ' Showing latest release notes:'; Write-Host (' ' + $sections[0][1]) -ForegroundColor Yellow; foreach ($l in $sections[0][2]) { if ($l -match '^\*') { Write-Host '    *' ($l.Substring(1)) -ForegroundColor Green } elseif ($l) { Write-Host ('   ' + $l) } } } else { if ($localVer -and $localVer -ne 'none') { Write-Host (' [STATUS] Updating from ' + $localVer + ' -> ' + $latest) -ForegroundColor Yellow; Write-Host (' New changes since your installed version (' + $localVer + '):`n') -ForegroundColor Green } else { Write-Host (' [STATUS] Installing latest patch: ' + $latest + '`n') -ForegroundColor Green }; foreach ($sec in $sections) { if ($localVer -and $sec[0] -eq $localVer) { break }; Write-Host (' ' + $sec[1]) -ForegroundColor Yellow; foreach ($l in $sec[2]) { if ($l -match '^\*') { Write-Host '    *' ($l.Substring(1)) -ForegroundColor Green } elseif ($l) { Write-Host ('   ' + $l) } }; Write-Host '' } }; Set-Content -Path '!GAME_DIR!\BepInEx\patch_installed.txt' -Value $latest -Encoding UTF8 -ErrorAction SilentlyContinue }"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$installedPath = '!GAME_DIR!\BepInEx\patch_installed.txt'; $localVer = 'none'; if (Test-Path $installedPath) { $localVer = (Get-Content -Path $installedPath -Raw -ErrorAction SilentlyContinue).Trim() }; $info = Get-Content -Raw -Encoding UTF8 '%TEMP_PATCH_INFO%'; $sections = @(); $curVer = $null; $curHead = $null; $curLines = @(); foreach ($line in ($info -split '\r?\n')) { if ($line -match '===\s*\[(.*?)\]') { if ($curVer) { $sections += ,@($curVer, $curHead, $curLines) }; $curVer = $matches[1].Trim(); $curHead = $line; $curLines = @(); } elseif ($curVer) { $curLines += $line } }; if ($curVer) { $sections += ,@($curVer, $curHead, $curLines) }; if ($sections.Count -gt 0) { $latest = $sections[0][0].Trim(); if ($localVer.ToLower() -eq $latest.ToLower()) { Write-Host ' [STATUS] You are currently UP TO DATE on ' $latest -ForegroundColor Green; Write-Host ' Showing latest release notes:'; Write-Host (' ' + $sections[0][1]) -ForegroundColor Yellow; foreach ($l in $sections[0][2]) { if ($l -match '^\*') { Write-Host '    *' ($l.Substring(1)) -ForegroundColor Green } elseif ($l) { Write-Host ('   ' + $l) } } } else { if ($localVer -and $localVer -ne 'none') { Write-Host (' [STATUS] Updating from ' + $localVer + ' -> ' + $latest) -ForegroundColor Yellow; Write-Host (' New changes since your installed version (' + $localVer + '):`n') -ForegroundColor Green } else { Write-Host (' [STATUS] Installing latest patch: ' + $latest + '`n') -ForegroundColor Green }; foreach ($sec in $sections) { if ($localVer -and $sec[0].ToLower() -eq $localVer.ToLower()) { break }; Write-Host (' ' + $sec[1]) -ForegroundColor Yellow; foreach ($l in $sec[2]) { if ($l -match '^\*') { Write-Host '    *' ($l.Substring(1)) -ForegroundColor Green } elseif ($l) { Write-Host ('   ' + $l) } }; Write-Host '' } }; [System.IO.File]::WriteAllText($installedPath, $latest) }"
 
 echo %C_CYAN%============================================================================%C_RESET%
 echo.
