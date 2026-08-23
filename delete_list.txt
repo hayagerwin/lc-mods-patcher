@@ -3,3 +3,4 @@ BepInEx/patchers/EnemyAIMethodCompatibilityFixer
 BepInEx/plugins/nukemaster619-LobbyControlMidSessionJoin
 BepInEx/plugins/MidSessionJoinFix
 BepInEx/plugins/REED-MidSessionJoinFix
+BepInEx/plugins/pokefranzi-Himiko_Toga/MoreSuits.dll
