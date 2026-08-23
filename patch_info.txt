@@ -1,3 +1,9 @@
+=== [v3.4.0] - 2026-08-23 22:33 PHT ===
+* Added Moon Route Asset Caching Buffer for slower PCs/HDDs.
+* Provides a 3.5s safe pre-warming window upon arriving in orbit before the lever can be pulled.
+* Prevents lever pull while in transit ("Ship In Transit: Caching Moon Assets...").
+* Eliminates "Entering the Atmosphere" loading freezes, falling through unloaded terrain, and asset bundle desyncs on slower PCs.
+
 === [v3.3.0] - 2026-08-23 22:23 PHT ===
 * Added full scalability and dynamic array expansion for large 8, 16, and 32-player lobbies.
 * Auto-expands SoundManager voice arrays (playerVoiceVolumes, playerVoicePitches, playerVoiceMixers) up to 32 players.
