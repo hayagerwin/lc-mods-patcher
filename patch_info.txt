@@ -1,3 +1,8 @@
+=== [v2.7.0] - 2026-08-23 19:26 PHT ===
+* Fixed Unity InputSystem exception spam loop caused by legacy Input.GetKeyDown.
+* Migrated F10 voice resync input detection to UnityEngine.InputSystem.Keyboard.
+* Drastically reduced disk log size and CPU overhead.
+
 === [v2.6.0] - 2026-08-23 18:56 PHT ===
 * Added spam protection and a 3-second cooldown to the [F10] voice resync hotkey.
 * Displays countdown warning if [F10] is pressed while resync is already active or cooling down.
