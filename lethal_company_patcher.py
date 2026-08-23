@@ -474,6 +474,40 @@ def download_file_with_progress(url: str, destination: Path, show_progress: bool
         return False
 
 
+def stage_display_patch_info(patch_info_url: str, game_dir: Path):
+    """Fetches and displays the latest patch version, release date, and changelog."""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_info = Path(temp_dir) / "patch_info.txt"
+        success = download_file_with_progress(f"{patch_info_url}?t={os.urandom(4).hex()}", temp_info, show_progress=False)
+        if success and temp_info.is_file():
+            content = temp_info.read_text(encoding="utf-8", errors="ignore").strip()
+            if content:
+                print(f"{Style.BOLD}{Style.CYAN}{'=' * 75}{Style.RESET}")
+                print(f"{Style.BOLD}{Style.CYAN}{'LATEST PATCH DETAILS & CHANGELOG'.center(75)}{Style.RESET}")
+                print(f"{Style.BOLD}{Style.CYAN}{'=' * 75}{Style.RESET}")
+                for line in content.splitlines():
+                    if line.startswith("["):
+                        print(f"\n{Style.BOLD}{Style.YELLOW}{line}{Style.RESET}")
+                    elif line.startswith("Version:"):
+                        print(f"  {Style.BOLD}{Style.GREEN}{line}{Style.RESET}")
+                    elif line.startswith("Date:") or line.startswith("Commit:"):
+                        print(f"  {Style.CYAN}{line}{Style.RESET}")
+                    elif line.startswith("Summary:"):
+                        print(f"  {Style.BOLD}{Style.YELLOW}{line}{Style.RESET}")
+                    elif line.startswith("*"):
+                        print(f"   {Style.GREEN}*{Style.RESET}{line[1:]}")
+                    else:
+                        print(f"  {line}")
+                print(f"{Style.BOLD}{Style.CYAN}{'=' * 75}{Style.RESET}\n")
+
+                try:
+                    bepinex_dir = game_dir / "BepInEx"
+                    if bepinex_dir.is_dir():
+                        (bepinex_dir / "patch_installed.txt").write_text(content, encoding="utf-8")
+                except Exception:
+                    pass
+
+
 def stage_cleanup_obsolete(game_dir: Path, delete_list_url: str):
     """Stage 1: Downloads delete_list.txt and removes specified obsolete files and folders."""
     log_step("1/3", "Checking for obsolete files and folders to remove...")
@@ -572,6 +606,10 @@ def main():
 
     delete_list_url = f"https://raw.githubusercontent.com/{REPO_USER}/{REPO_NAME}/{BRANCH}/delete_list.txt"
     patch_zip_url = f"https://raw.githubusercontent.com/{REPO_USER}/{REPO_NAME}/{BRANCH}/patch.zip"
+    patch_info_url = f"https://raw.githubusercontent.com/{REPO_USER}/{REPO_NAME}/{BRANCH}/patch_info.txt"
+
+    # Display Latest Patch Details & Changelog
+    stage_display_patch_info(patch_info_url, game_dir)
 
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_patch_zip = Path(temp_dir) / "patch.zip"

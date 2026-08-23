@@ -427,8 +427,46 @@ cd /d "!GAME_DIR!"
 REM Setup remote URLs and temporary paths
 set "DELETE_LIST_URL=https://raw.githubusercontent.com/%REPO_USER%/%REPO_NAME%/%BRANCH%/delete_list.txt"
 set "PATCH_ZIP_URL=https://raw.githubusercontent.com/%REPO_USER%/%REPO_NAME%/%BRANCH%/patch.zip"
+set "PATCH_INFO_URL=https://raw.githubusercontent.com/%REPO_USER%/%REPO_NAME%/%BRANCH%/patch_info.txt"
 set "TEMP_DELETE_LIST=%TEMP%\lc_delete_list_%RANDOM%.txt"
 set "TEMP_PATCH_ZIP=%TEMP%\lc_patch_%RANDOM%.zip"
+set "TEMP_PATCH_INFO=%TEMP%\lc_patch_info_%RANDOM%.txt"
+
+REM ----------------------------------------------------------------------------
+REM 2.5 FETCH & DISPLAY LATEST PATCH CHANGELOG
+REM ----------------------------------------------------------------------------
+curl.exe -s -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" "%PATCH_INFO_URL%?t=%RANDOM%" -o "%TEMP_PATCH_INFO%" 2>nul
+
+if exist "%TEMP_PATCH_INFO%" (
+    echo %C_CYAN%============================================================================
+    echo                      LATEST PATCH DETAILS ^& CHANGELOG
+    echo ============================================================================%C_RESET%
+    for /f "usebackq delims=" %%L in ("%TEMP_PATCH_INFO%") do (
+        set "LINE=%%L"
+        if "!LINE:~0,1!"=="[" (
+            echo.
+            echo %C_YELLOW%!LINE!%C_RESET%
+        ) else if "!LINE:~0,8!"=="Version:" (
+            echo   %C_GREEN%!LINE!%C_RESET%
+        ) else if "!LINE:~0,5!"=="Date:" (
+            echo   %C_CYAN%!LINE!%C_RESET%
+        ) else if "!LINE:~0,7!"=="Commit:" (
+            echo   %C_CYAN%!LINE!%C_RESET%
+        ) else if "!LINE:~0,8!"=="Summary:" (
+            echo   %C_YELLOW%!LINE!%C_RESET%
+        ) else if "!LINE:~0,1!"=="*" (
+            echo    %C_GREEN%*!LINE:~1!%C_RESET%
+        ) else (
+            echo   !LINE!
+        )
+    )
+    echo %C_CYAN%============================================================================%C_RESET%
+    echo.
+    if exist "!GAME_DIR!\BepInEx\" (
+        copy /y "%TEMP_PATCH_INFO%" "!GAME_DIR!\BepInEx\patch_installed.txt" >nul 2>&1
+    )
+    del /f /q "%TEMP_PATCH_INFO%" 2>nul
+)
 
 REM ----------------------------------------------------------------------------
 REM 3. STAGE 1: DELETE OBSOLETE FILES & FOLDERS
