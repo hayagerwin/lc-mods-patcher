@@ -1,9 +1,11 @@
-=== [v3.4.0] - 2026-08-23 22:38 PHT ===
-* Added new standalone mod: MoonRouteBuffer (v1.0.0).
-  - Provides a 3.5s safe pre-warming window upon arriving in orbit at a new moon before the start match lever can be pulled.
-  - Prevents premature lever pulls during orbital transit ("Ship In Transit: Caching Moon Assets...").
-  - Completely eliminates "Entering the Atmosphere" loading freezes, falling through unloaded terrain, and asset bundle desyncs on slower PCs.
-* Kept LandingVoiceGuard (v3.3.0) strictly dedicated to voice chat protection, Dissonance buffer expansion, and 32-player audio scaling.
+=== [v3.4.0] - 2026-08-23 22:42 PHT ===
+* Added new standalone mod: MoonRouteBuffer (v1.1.0) with DYNAMIC client-readiness consensus.
+  - Dynamically tracks when every player's PC has finished instantiating & caching the new moon assets.
+  - Instantly unlocks the start match lever (0s extra delay) the exact millisecond all connected players are ready!
+  - Displays real-time progress on the lever tooltip: "[ Caching Moon Assets (X/N)... ]" -> "[ Pull to land ]".
+  - Includes a 15-second safety fallback timeout so lobbies are never soft-locked.
+  - Completely eliminates "Entering the Atmosphere" freezes and terrain loading desyncs.
+* LandingVoiceGuard (v3.3.0) remains strictly focused on voice guard and 32-player audio mixer scaling.
 
 === [v3.3.0] - 2026-08-23 22:23 PHT ===
 * Added full scalability and dynamic array expansion for large 8, 16, and 32-player lobbies.
