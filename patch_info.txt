@@ -1,3 +1,11 @@
+=== [v3.5.2] - 2026-08-24 02:48 PHT ===
+* Updated LandingVoiceGuard to v3.3.1:
+  - Fixed microphone guard failing to activate or instantly deactivating during "Entering Atmosphere" phase.
+  - Replaced server-only transient beganLoadingNewLevel check with reliable game state variables (leverHasBeenPulled, shipDoorsEnabled, shipHasLanded).
+  - Protected FullVoiceAndMixerReconciliation against unmuting the microphone during active descent and scene loading.
+  - Added robust lifecycle hooks for door opening and orbit transitions.
+* Updated LethalSponge texture deduplication and memory cleanup settings in optimize.ps1.
+
 === [v3.5.1] - 2026-08-23 23:48 PHT ===
 * Updated SnowyLibFix to v1.1.0:
   - Silenced leftover vanilla EnemyAI debug console spam ("Start coroutine B!!!").
