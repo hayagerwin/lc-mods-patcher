@@ -1,3 +1,8 @@
+=== [v3.2.0] - 2026-08-23 22:10 PHT ===
+* Completely eliminated false muting during autopilot, round loss, and ship ascension into orbit.
+* Guard now strictly triggers ONLY when pulling the lever in orbit and actively generating the new moon.
+* Microphones remain 100% active and unmuted throughout all deaths, autopilot takeoffs, quota screens, and orbit flights.
+
 === [v3.1.0] - 2026-08-23 21:37 PHT ===
 * Disabled microphone muting during ship ascension/takeoff into orbit by default.
 * Voice chat now remains completely active during the entire flight back to orbit and the quota performance report.
