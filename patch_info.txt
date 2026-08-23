@@ -1,3 +1,8 @@
+=== [v3.5.1] - 2026-08-23 23:48 PHT ===
+* Updated SnowyLibFix to v1.1.0:
+  - Silenced leftover vanilla EnemyAI debug console spam ("Start coroutine B!!!").
+  - Prevents log bloat and micro-stutter when enemy AIs repeatedly initiate non-looping searches.
+
 === [v3.5.0] - 2026-08-23 23:26 PHT ===
 * Added new standalone mod: SnowyLibFix (v1.0.0).
   - Fixed infinite NullReferenceException error loop thrown by SnowyLib.EnemyAIExtensions when SCP-999 is in the game.
