@@ -435,36 +435,66 @@ set "TEMP_PATCH_INFO=%TEMP%\lc_patch_info_%RANDOM%.txt"
 REM ----------------------------------------------------------------------------
 REM 2.5 FETCH & DISPLAY LATEST PATCH CHANGELOG
 REM ----------------------------------------------------------------------------
+set "LOCAL_VER=none"
+if exist "!GAME_DIR!\BepInEx\patch_installed.txt" (
+    for /f "usebackq delims=" %%V in ("!GAME_DIR!\BepInEx\patch_installed.txt") do (
+        set "L_LINE=%%V"
+        if not "!L_LINE!"=="" (
+            if "!LOCAL_VER!"=="none" (
+                set "LOCAL_VER=!L_LINE!"
+            )
+        )
+    )
+)
+
 curl.exe -s -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" "%PATCH_INFO_URL%?t=%RANDOM%" -o "%TEMP_PATCH_INFO%" 2>nul
 
 if exist "%TEMP_PATCH_INFO%" (
     echo %C_CYAN%============================================================================
     echo                      LATEST PATCH DETAILS ^& CHANGELOG
     echo ============================================================================%C_RESET%
-    for /f "usebackq delims=" %%L in ("%TEMP_PATCH_INFO%") do (
-        set "LINE=%%L"
-        if "!LINE:~0,1!"=="[" (
-            echo.
-            echo %C_YELLOW%!LINE!%C_RESET%
-        ) else if "!LINE:~0,8!"=="Version:" (
-            echo   %C_GREEN%!LINE!%C_RESET%
-        ) else if "!LINE:~0,5!"=="Date:" (
-            echo   %C_CYAN%!LINE!%C_RESET%
-        ) else if "!LINE:~0,7!"=="Commit:" (
-            echo   %C_CYAN%!LINE!%C_RESET%
-        ) else if "!LINE:~0,8!"=="Summary:" (
-            echo   %C_YELLOW%!LINE!%C_RESET%
-        ) else if "!LINE:~0,1!"=="*" (
-            echo    %C_GREEN%*!LINE:~1!%C_RESET%
-        ) else (
-            echo   !LINE!
-        )
-    )
+    
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ^
+        "$info = Get-Content '%TEMP_PATCH_INFO%' -Raw -Encoding UTF8;" ^
+        "$localVer = '%LOCAL_VER%';" ^
+        "$sections = @();" ^
+        "$curVer = $null; $curHead = $null; $curLines = @();" ^
+        "foreach ($line in ($info -split '\r?\n')) {" ^
+        "  if ($line -match '===\s*\[(.*?)\]') {" ^
+        "    if ($curVer) { $sections += ,@($curVer, $curHead, $curLines) }" ^
+        "    $curVer = $matches[1]; $curHead = $line; $curLines = @();" ^
+        "  } elseif ($curVer) { $curLines += $line }" ^
+        "};" ^
+        "if ($curVer) { $sections += ,@($curVer, $curHead, $curLines) };" ^
+        "if ($sections.Count -gt 0) {" ^
+        "  $latest = $sections[0][0];" ^
+        "  if ($localVer -eq $latest) {" ^
+        "    Write-Host \"$([char]27)[92m[STATUS]$([char]27)[0m You are currently UP TO DATE on $latest.\";" ^
+        "    Write-Host 'Showing latest release notes:';" ^
+        "    Write-Host \"$([char]27)[93m$($sections[0][1])$([char]27)[0m\";" ^
+        "    foreach ($l in $sections[0][2]) { if ($l -match '^\*') { Write-Host \"   $([char]27)[92m*$([char]27)[0m$($l.Substring(1))\" } elseif ($l) { Write-Host \"  $l\" } };" ^
+        "  } else {" ^
+        "    if ($localVer -and $localVer -ne 'none') {" ^
+        "      Write-Host \"$([char]27)[93m[STATUS]$([char]27)[0m Updating from $localVer to $latest\";" ^
+        "      Write-Host \"$([char]27)[92mNew changes since your installed version ($localVer):$([char]27)[0m`n\";" ^
+        "    } else {" ^
+        "      Write-Host \"$([char]27)[92m[STATUS]$([char]27)[0m Installing latest patch: $latest`n\";" ^
+        "    };" ^
+        "    foreach ($sec in $sections) {" ^
+        "      if ($localVer -and $sec[0] -eq $localVer) { break };" ^
+        "      Write-Host \"$([char]27)[93m$($sec[1])$([char]27)[0m\";" ^
+        "      foreach ($l in $sec[2]) {" ^
+        "        if ($l -match '^\*') { Write-Host \"   $([char]27)[92m*$([char]27)[0m$($l.Substring(1))\" }" ^
+        "        elseif ($l) { Write-Host \"  $l\" }" ^
+        "      };" ^
+        "      Write-Host '';" ^
+        "    };" ^
+        "  };" ^
+        "  Set-Content -Path '!GAME_DIR!\BepInEx\patch_installed.txt' -Value $latest -Encoding UTF8 -ErrorAction SilentlyContinue;" ^
+        "}"
+
     echo %C_CYAN%============================================================================%C_RESET%
     echo.
-    if exist "!GAME_DIR!\BepInEx\" (
-        copy /y "%TEMP_PATCH_INFO%" "!GAME_DIR!\BepInEx\patch_installed.txt" >nul 2>&1
-    )
     del /f /q "%TEMP_PATCH_INFO%" 2>nul
 )
 

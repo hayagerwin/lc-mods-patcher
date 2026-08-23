@@ -1,11 +1,18 @@
-Version: v2.5.0
-Date: 2026-08-23 18:43 (PHT)
-Commit: c0a4ba9
-Summary: Landing Voice Guard v2.5.0 & VoIP Stability Update
-
-[Changes]
+=== [v2.5.0] - 2026-08-23 18:43 PHT ===
 * Added [F10] hotkey in-game to manually resynchronize voice chat & audio mixers anytime.
 * Fixed mic muting issue on host & clients during moon descent and landing.
-* Fixed VoIP packet writer buffer overflow crash loop (Error ID: ED58BC0A).
+* Fixed VoIP packet writer buffer overflow crash loop Error ID: ED58BC0A.
 * Cleaned up legacy and duplicate mod folders to prevent DLL conflicts.
 * Increased LobbyControl connection timeout to 5 minutes for stable joins.
+
+=== [v2.4.0] - 2026-08-23 18:31 PHT ===
+* Cleaned up channel routing to prevent one-way voice hearing in 4+ player lobbies.
+* Fixed player voice playback auto-linking on first speech.
+
+=== [v2.3.0] - 2026-08-21 00:42 PHT ===
+* Fixed host lever pull delay so mic mutes the exact millisecond lever is pulled.
+* Fixed instant unmute condition on moon door open.
+
+=== [v2.0.0] - 2026-08-20 14:00 PHT ===
+* Added dynamic packet buffer expander for Dissonance VoIP.
+* Added terminal WASD navigation mod.

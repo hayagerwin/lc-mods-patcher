@@ -475,37 +475,89 @@ def download_file_with_progress(url: str, destination: Path, show_progress: bool
 
 
 def stage_display_patch_info(patch_info_url: str, game_dir: Path):
-    """Fetches and displays the latest patch version, release date, and changelog."""
+    """Fetches and displays the latest patch version, release date, and changelog diff."""
+    # Read local installed version if available
+    local_ver = "none"
+    installed_file = game_dir / "BepInEx" / "patch_installed.txt"
+    if installed_file.is_file():
+        try:
+            txt = installed_file.read_text(encoding="utf-8", errors="ignore").strip()
+            if txt:
+                local_ver = txt.splitlines()[0].strip()
+        except Exception:
+            pass
+
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_info = Path(temp_dir) / "patch_info.txt"
         success = download_file_with_progress(f"{patch_info_url}?t={os.urandom(4).hex()}", temp_info, show_progress=False)
         if success and temp_info.is_file():
             content = temp_info.read_text(encoding="utf-8", errors="ignore").strip()
-            if content:
-                print(f"{Style.BOLD}{Style.CYAN}{'=' * 75}{Style.RESET}")
-                print(f"{Style.BOLD}{Style.CYAN}{'LATEST PATCH DETAILS & CHANGELOG'.center(75)}{Style.RESET}")
-                print(f"{Style.BOLD}{Style.CYAN}{'=' * 75}{Style.RESET}")
-                for line in content.splitlines():
-                    if line.startswith("["):
-                        print(f"\n{Style.BOLD}{Style.YELLOW}{line}{Style.RESET}")
-                    elif line.startswith("Version:"):
-                        print(f"  {Style.BOLD}{Style.GREEN}{line}{Style.RESET}")
-                    elif line.startswith("Date:") or line.startswith("Commit:"):
-                        print(f"  {Style.CYAN}{line}{Style.RESET}")
-                    elif line.startswith("Summary:"):
-                        print(f"  {Style.BOLD}{Style.YELLOW}{line}{Style.RESET}")
-                    elif line.startswith("*"):
-                        print(f"   {Style.GREEN}*{Style.RESET}{line[1:]}")
-                    else:
-                        print(f"  {line}")
-                print(f"{Style.BOLD}{Style.CYAN}{'=' * 75}{Style.RESET}\n")
+            if not content:
+                return
 
-                try:
-                    bepinex_dir = game_dir / "BepInEx"
-                    if bepinex_dir.is_dir():
-                        (bepinex_dir / "patch_installed.txt").write_text(content, encoding="utf-8")
-                except Exception:
-                    pass
+            sections = []
+            cur_ver = None
+            cur_head = None
+            cur_lines = []
+
+            for line in content.splitlines():
+                trimmed = line.strip()
+                if trimmed.startswith("=== [") and "]" in trimmed:
+                    if cur_ver:
+                        sections.append((cur_ver, cur_head, cur_lines))
+                    cur_ver = trimmed.split("[")[1].split("]")[0].strip()
+                    cur_head = trimmed
+                    cur_lines = []
+                elif cur_ver:
+                    cur_lines.append(line)
+
+            if cur_ver:
+                sections.append((cur_ver, cur_head, cur_lines))
+
+            if not sections:
+                return
+
+            latest_ver = sections[0][0]
+
+            print(f"{Style.BOLD}{Style.CYAN}{'=' * 75}{Style.RESET}")
+            print(f"{Style.BOLD}{Style.CYAN}{'LATEST PATCH DETAILS & CHANGELOG'.center(75)}{Style.RESET}")
+            print(f"{Style.BOLD}{Style.CYAN}{'=' * 75}{Style.RESET}")
+
+            if local_ver.lower() == latest_ver.lower():
+                print(f"{Style.BOLD}{Style.GREEN}[STATUS]{Style.RESET} You are currently UP TO DATE on {latest_ver}.")
+                print("Showing latest release notes:")
+                print(f"{Style.BOLD}{Style.YELLOW}{sections[0][1]}{Style.RESET}")
+                for l in sections[0][2]:
+                    if l.strip().startswith("*"):
+                        print(f"   {Style.GREEN}*{Style.RESET}{l.strip()[1:]}")
+                    elif l.strip():
+                        print(f"  {l.strip()}")
+            else:
+                if local_ver and local_ver != "none":
+                    print(f"{Style.BOLD}{Style.YELLOW}[STATUS]{Style.RESET} Updating from {local_ver} -> {latest_ver}")
+                    print(f"{Style.BOLD}{Style.GREEN}New changes since your installed version ({local_ver}):{Style.RESET}\n")
+                else:
+                    print(f"{Style.BOLD}{Style.GREEN}[STATUS]{Style.RESET} Installing latest patch: {latest_ver}\n")
+
+                for ver, head, lines in sections:
+                    if local_ver and ver.lower() == local_ver.lower():
+                        break
+                    print(f"{Style.BOLD}{Style.YELLOW}{head}{Style.RESET}")
+                    for l in lines:
+                        if l.strip().startswith("*"):
+                            print(f"   {Style.GREEN}*{Style.RESET}{l.strip()[1:]}")
+                        elif l.strip():
+                            print(f"  {l.strip()}")
+                    print()
+
+            print(f"{Style.BOLD}{Style.CYAN}{'=' * 75}{Style.RESET}\n")
+
+            try:
+                bepinex_dir = game_dir / "BepInEx"
+                if bepinex_dir.is_dir():
+                    installed_file.write_text(latest_ver, encoding="utf-8")
+            except Exception:
+                pass
 
 
 def stage_cleanup_obsolete(game_dir: Path, delete_list_url: str):
