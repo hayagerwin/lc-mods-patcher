@@ -85,13 +85,12 @@ if ($Mode -eq "Optimize") {
     Set-ConfigValue $sponge "(?m)^disableMotionBlur\s*=.*$" "disableMotionBlur = true"
     Set-ConfigValue $sponge "(?m)^maxCubeReflectionProbes\s*=.*$" "maxCubeReflectionProbes = 6"
     Set-ConfigValue $sponge "(?m)^maxPlanarReflectionProbes\s*=.*$" "maxPlanarReflectionProbes = 4"
-    Set-ConfigValue $sponge "(?m)^lightVolumetricDistCap\s*=.*$" "lightVolumetricDistCap = 120"
-    Set-ConfigValue $sponge "(?m)^unloadUnused\s*=.*$" "unloadUnused = true"
+    Set-ConfigValue $sponge "(?m)^unloadUnused\s*=.*$" "unloadUnused = false"
     Set-ConfigValue $sponge "(?m)^runDaily\s*=.*$" "runDaily = false"
     Set-ConfigValue $sponge "(?m)^deDupeMeshes\s*=.*$" "deDupeMeshes = false"
-    Set-ConfigValue $sponge "(?m)^deDupeTextures\s*=.*$" "deDupeTextures = true"
+    Set-ConfigValue $sponge "(?m)^deDupeTextures\s*=.*$" "deDupeTextures = false"
     Set-ConfigValue $sponge "(?m)^deDupeAudio\s*=.*$" "deDupeAudio = false"
-    Set-ConfigValue $sponge "(?m)^resizeTextures\s*=.*$" "resizeTextures = true"
+    Set-ConfigValue $sponge "(?m)^resizeTextures\s*=.*$" "resizeTextures = false"
     Set-ConfigValue $sponge "(?m)^maxResizeTextureSize\s*=.*$" "maxResizeTextureSize = 1024"
 
     Write-Host "[7/7] Verifying FPS Counter overlay plugin..." -ForegroundColor Cyan

@@ -4,7 +4,6 @@
   - Replaced server-only transient beganLoadingNewLevel check with reliable game state variables (leverHasBeenPulled, shipDoorsEnabled, shipHasLanded).
   - Protected FullVoiceAndMixerReconciliation against unmuting the microphone during active descent and scene loading.
   - Added robust lifecycle hooks for door opening and orbit transitions.
-* Updated LethalSponge texture deduplication and memory cleanup settings in optimize.ps1.
 
 === [v3.5.1] - 2026-08-23 23:48 PHT ===
 * Updated SnowyLibFix to v1.1.0:
