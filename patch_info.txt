@@ -1,3 +1,9 @@
+=== [v2.8.0] - 2026-08-23 19:57 PHT ===
+* Fixed voice chat breaking after player death and respawn/revive transitions.
+* Fixed AudioListener detachment and 3D spatial voice positioning on revive.
+* Restored living voice mixer routing, player volumes, and Dissonance tracking on respawn.
+* Supercharged [F10] manual voice reset with full audio engine reconciliation.
+
 === [v2.7.0] - 2026-08-23 19:26 PHT ===
 * Fixed Unity InputSystem exception spam loop caused by legacy Input.GetKeyDown.
 * Migrated F10 voice resync input detection to UnityEngine.InputSystem.Keyboard.
