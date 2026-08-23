@@ -9,6 +9,7 @@ REM ============================================================================
 set "REPO_USER=hayagerwin"
 set "REPO_NAME=lc-mods-patcher"
 set "BRANCH=main"
+set "PATCHER_VERSION=2026082302"
 
 REM Script directory and config path
 set "SCRIPT_DIR=%~dp0"
@@ -34,21 +35,24 @@ REM ----------------------------------------------------------------------------
 if not defined _LC_PATCHER_SELF_UPDATED (
     where curl.exe >nul 2>nul
     if not errorlevel 1 (
-        set "SCRIPT_URL=https://raw.githubusercontent.com/%REPO_USER%/%REPO_NAME%/%BRANCH%/lethal_company_patcher.bat?t=%RANDOM%"
+        set "SCRIPT_URL=https://raw.githubusercontent.com/%REPO_USER%/%REPO_NAME%/%BRANCH%/lethal_company_patcher.bat"
         set "TEMP_SCRIPT=%TEMP%\lc_patcher_update_%RANDOM%.bat"
 
         curl.exe -s -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" "!SCRIPT_URL!" -o "!TEMP_SCRIPT!" 2>nul
         if exist "!TEMP_SCRIPT!" (
-            for %%F in ("!TEMP_SCRIPT!") do (
-                if %%~zF gtr 0 (
-                    fc.exe /b "%~f0" "!TEMP_SCRIPT!" >nul 2>nul
-                    if errorlevel 1 (
-                        echo %C_CYAN%[UPDATE]%C_RESET% A newer version of lethal_company_patcher.bat was detected.
-                        echo %C_CYAN%[UPDATE]%C_RESET% Updating script and restarting...
-                        echo.
-                        set "_LC_PATCHER_SELF_UPDATED=1"
-                        copy /y "!TEMP_SCRIPT!" "%~f0" >nul & del /f /q "!TEMP_SCRIPT!" 2>nul & call "%~f0" %* & exit /b !errorlevel!
-                    )
+            set "REMOTE_VERSION="
+            for /f "tokens=2 delims==" %%V in ('findstr /b /c:"set \"PATCHER_VERSION=" "!TEMP_SCRIPT!" 2^>nul') do (
+                set "RAW_REMOTE=%%V"
+                set "RAW_REMOTE=!RAW_REMOTE:"=!"
+                set "REMOTE_VERSION=!RAW_REMOTE!"
+            )
+            if defined REMOTE_VERSION (
+                if !REMOTE_VERSION! gtr !PATCHER_VERSION! (
+                    echo %C_CYAN%[UPDATE]%C_RESET% A newer version of lethal_company_patcher.bat was detected.
+                    echo %C_CYAN%[UPDATE]%C_RESET% Updating script from build !PATCHER_VERSION! -^> !REMOTE_VERSION!...
+                    echo.
+                    set "_LC_PATCHER_SELF_UPDATED=1"
+                    copy /y "!TEMP_SCRIPT!" "%~f0" >nul & del /f /q "!TEMP_SCRIPT!" 2>nul & call "%~f0" %* & exit /b !errorlevel!
                 )
             )
             del /f /q "!TEMP_SCRIPT!" 2>nul
