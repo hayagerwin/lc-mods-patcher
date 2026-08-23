@@ -1,3 +1,9 @@
+=== [v3.5.0] - 2026-08-23 23:26 PHT ===
+* Added new standalone mod: SnowyLibFix (v1.0.0).
+  - Fixed infinite NullReferenceException error loop thrown by SnowyLib.EnemyAIExtensions when SCP-999 is in the game.
+  - Implemented null-safe fallbacks for enemies missing 'eye' transforms (e.g. Baboon Hawk, Manticoils, modded enemies).
+  - Unmasks hidden moon names in the terminal's MoonsPlus menu so all custom and secret moons display their true planet names immediately instead of "[ ??? ]".
+
 === [v3.4.0] - 2026-08-23 22:42 PHT ===
 * Added new standalone mod: MoonRouteBuffer (v1.1.0) with DYNAMIC client-readiness consensus.
   - Dynamically tracks when every player's PC has finished instantiating & caching the new moon assets.
