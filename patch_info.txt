@@ -1,9 +1,14 @@
+=== [v3.0.0] - 2026-08-23 21:03 PHT ===
+* Fixed Netcode OverflowException ("Writing past the end of the buffer, size is 4932/1716 bytes but remaining capacity is 1280 bytes").
+* Added intelligent transport fragmentation (ReliableFragmentedSequenced) for all oversized voice and channel sync packets.
+* Fixed server relay loopback routing and fatal NfgoClient / NfgoServer crashes.
+* Fully tested & unified voice chat lifecycle (Lobby -> Descent -> Proximity -> Death/Spectate -> Orbit -> Respawn).
+
 === [v2.9.0] - 2026-08-23 20:40 PHT ===
 * Fixed fatal Dissonance VoIP crash "Insufficient space in destination array" (NfgoClient crash).
 * Added dynamic loopback buffer auto-expander for all local and network VoIP packet transmissions.
 * Added auto-healing watchdog that automatically restarts Dissonance VoIP sessions if put into an error state.
 * Fixed voice chat breakdown after suicide, spectating, freecam, and respawn in orbit.
-* Fully tested & unified voice chat lifecycle (Lobby -> Descent -> Proximity -> Death/Spectate -> Orbit -> Respawn).
 
 === [v2.8.0] - 2026-08-23 19:57 PHT ===
 * Fixed voice chat breaking after player death and respawn/revive transitions.
