@@ -1,3 +1,8 @@
+=== [v3.1.0] - 2026-08-23 21:37 PHT ===
+* Disabled microphone muting during ship ascension/takeoff into orbit by default.
+* Voice chat now remains completely active during the entire flight back to orbit and the quota performance report.
+* Preserved automatic landing guard for heavy moon generation and scene loading.
+
 === [v3.0.0] - 2026-08-23 21:03 PHT ===
 * Fixed Netcode OverflowException ("Writing past the end of the buffer, size is 4932/1716 bytes but remaining capacity is 1280 bytes").
 * Added intelligent transport fragmentation (ReliableFragmentedSequenced) for all oversized voice and channel sync packets.
