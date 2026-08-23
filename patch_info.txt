@@ -1,3 +1,7 @@
+=== [v2.6.0] - 2026-08-23 18:56 PHT ===
+* Added spam protection and a 3-second cooldown to the [F10] voice resync hotkey.
+* Displays countdown warning if [F10] is pressed while resync is already active or cooling down.
+
 === [v2.5.0] - 2026-08-23 18:43 PHT ===
 * Added [F10] hotkey in-game to manually resynchronize voice chat & audio mixers anytime.
 * Fixed mic muting issue on host & clients during moon descent and landing.
