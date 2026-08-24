@@ -54,10 +54,25 @@ if os.path.isdir(patchers_dir):
             rel_path = os.path.relpath(full_path, game_root).replace(os.sep, "/")
             entries_to_pack.add(rel_path)
 
-# Explicit configs
+# Explicit configs and plugins
 async_cfg = os.path.join(bepinex_dir, "config", "AsyncLoggers", "LogLevels.cfg")
 if os.path.isfile(async_cfg):
     entries_to_pack.add("BepInEx/config/AsyncLoggers/LogLevels.cfg")
+
+coroner_cfg_dir = os.path.join(bepinex_dir, "config", "EliteMasterEric-Coroner")
+if os.path.isdir(coroner_cfg_dir):
+    for f in os.listdir(coroner_cfg_dir):
+        if f.endswith(".xml"):
+            entries_to_pack.add(f"BepInEx/config/EliteMasterEric-Coroner/{f}")
+
+for extra_plugin in ["EliteMasterEric-Coroner", "Turkeysteaks-CoronerIntegrations", "xilophor-StaticNetcodeLib"]:
+    ep_dir = os.path.join(bepinex_dir, "plugins", extra_plugin)
+    if os.path.isdir(ep_dir):
+        for froot, _, ffiles in os.walk(ep_dir):
+            for file_name in ffiles:
+                full_path = os.path.join(froot, file_name)
+                rel_path = os.path.relpath(full_path, game_root).replace(os.sep, "/")
+                entries_to_pack.add(rel_path)
 
 # 4. Rebuild patch.zip
 sorted_entries = sorted(list(entries_to_pack))
