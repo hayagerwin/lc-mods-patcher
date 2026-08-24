@@ -1,4 +1,7 @@
-=== [v3.7.0] - 2026-08-24 19:25 PHT ===
+=== [v3.7.0] - 2026-08-24 19:45 PHT ===
+* Fixed Spacewar Steam Cloud Error On Game Exit:
+  - Configured OnlineFix.ini to disable redundant Steam Remote Storage calls (Storage=false).
+  - Prevents Steam from attempting to upload local save files to non-existent Spacewar cloud servers and eliminates the exit popup notification.
 * Added Permanent Default On-Screen FPS Counter (v1.1.0):
   - Installed REED-LC_FPSCounter as a permanent modular default feature enabled out-of-the-box for all players.
   - High-Accuracy Instantaneous Stutter & 0 FPS Freeze Detection:

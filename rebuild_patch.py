@@ -67,6 +67,10 @@ fps_cfg = os.path.join(bepinex_dir, "config", "com.hayagerwin.lcfpscounter.cfg")
 if os.path.isfile(fps_cfg):
     entries_to_pack.add("BepInEx/config/com.hayagerwin.lcfpscounter.cfg")
 
+onlinefix_ini = os.path.join(game_root, "OnlineFix.ini")
+if os.path.isfile(onlinefix_ini):
+    entries_to_pack.add("OnlineFix.ini")
+
 coroner_cfg_dir = os.path.join(bepinex_dir, "config", "EliteMasterEric-Coroner")
 if os.path.isdir(coroner_cfg_dir):
     for f in os.listdir(coroner_cfg_dir):
