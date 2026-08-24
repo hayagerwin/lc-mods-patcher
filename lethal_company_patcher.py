@@ -632,87 +632,136 @@ def stage_extract_patch(game_dir: Path, zip_path: Path) -> bool:
         return False
 
 
-def run_optimizer_flow(game_dir: Path):
-    """Executes the low-spec performance optimizer."""
-    log_header("Running Low-Spec Performance Optimizer")
-    
+def run_optimizer_menu(game_dir: Path):
+    """Interactive Optimizer Submenu with Live Feature Checklist."""
     script_dir = Path(__file__).resolve().parent
     local_ps = script_dir / "optimizer" / "optimize.ps1"
     ps_url = f"https://raw.githubusercontent.com/{REPO_USER}/{REPO_NAME}/{BRANCH}/optimizer/optimize.ps1"
     opt_zip_url = f"https://raw.githubusercontent.com/{REPO_USER}/{REPO_NAME}/{BRANCH}/optimizer/optimizer_plugins.zip"
 
-    with tempfile.TemporaryDirectory() as temp_dir:
-        temp_ps = Path(temp_dir) / "optimize.ps1"
-        target_ps = local_ps if local_ps.is_file() else temp_ps
-
-        if not target_ps.is_file():
-            log_step("1/2", "Downloading latest optimization definitions...")
-            download_file_with_progress(ps_url, temp_ps, show_progress=False)
-            target_ps = temp_ps
-
-        if not target_ps.is_file():
-            log_error("Failed to load optimize.ps1. Please check your network connection.")
-            input("\nPress Enter to return...")
-            return
-
-        try:
-            subprocess.run([
-                "powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
-                "-File", str(target_ps), "-Mode", "Optimize", "-GameDir", str(game_dir)
-            ], check=True)
-        except Exception as e:
-            log_error(f"Failed to execute optimize.ps1: {e}")
-
-        # Download & install FPS Counter overlay plugin if available
-        print()
-        log_step("2/2", "Checking FPS Counter overlay plugin...")
-        temp_opt_zip = Path(temp_dir) / "optimizer_plugins.zip"
-        if download_file_with_progress(opt_zip_url, temp_opt_zip, show_progress=False):
+    while True:
+        clear_screen()
+        # Check current optimization status
+        is_opt = False
+        lc_cfg = game_dir / "BepInEx" / "config" / "com.github.lethalcompanymodding.LCUltrawide.cfg"
+        if lc_cfg.is_file():
             try:
-                with zipfile.ZipFile(temp_opt_zip, "r") as archive:
-                    archive.extractall(path=game_dir)
-                log_info("FPS Counter plugin synchronized.")
+                content = lc_cfg.read_text(encoding="utf-8", errors="ignore")
+                if "Gameplay Camera Resolution Multiplier = 0.7" in content:
+                    is_opt = True
             except Exception:
                 pass
 
-    log_success("Performance optimizations have been applied successfully!\n")
-    print("  * Gameplay camera scale set to 0.7x (16:9 aspect lock)")
-    print("  * Heavy 3D OpenBodyCam rendering disabled")
-    print("  * Ship cameras capped to 5 FPS")
-    print("  * Low-spec shadow maps and fog budget applied")
-    print("  * FPS Counter overlay active (Toggle in-game with [F8])\n")
-    input("Press Enter to continue...")
-
-
-def run_revert_optimizer_flow(game_dir: Path):
-    """Reverts graphics and camera performance optimizations back to standard defaults."""
-    log_header("Reverting Performance Optimizations")
-    
-    script_dir = Path(__file__).resolve().parent
-    local_ps = script_dir / "optimizer" / "optimize.ps1"
-    ps_url = f"https://raw.githubusercontent.com/{REPO_USER}/{REPO_NAME}/{BRANCH}/optimizer/optimize.ps1"
-
-    with tempfile.TemporaryDirectory() as temp_dir:
-        temp_ps = Path(temp_dir) / "optimize.ps1"
-        target_ps = local_ps if local_ps.is_file() else temp_ps
-
-        if not target_ps.is_file():
-            download_file_with_progress(ps_url, temp_ps, show_progress=False)
-            target_ps = temp_ps
-
-        if target_ps.is_file():
-            try:
-                subprocess.run([
-                    "powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
-                    "-File", str(target_ps), "-Mode", "Revert", "-GameDir", str(game_dir)
-                ], check=True)
-                log_success("Graphics and camera settings restored to defaults.\n")
-            except Exception as e:
-                log_error(f"Failed to revert settings: {e}")
+        if is_opt:
+            state_status = f"{Style.BOLD}{Style.GREEN}[ACTIVE] Low-Spec Optimized Mode{Style.RESET}"
+            tag_opt = f"{Style.GREEN} [ACTIVE *]{Style.RESET}"
+            tag_rev = ""
+            default_choice = "3"
         else:
-            log_error("Could not load optimize.ps1 to revert.")
+            state_status = f"{Style.BOLD}{Style.YELLOW}[ACTIVE] Standard High-Specs (Baseline Default){Style.RESET}"
+            tag_opt = ""
+            tag_rev = f"{Style.YELLOW} [ACTIVE *]{Style.RESET}"
+            default_choice = "1"
 
-    input("Press Enter to continue...")
+        log_header("Lethal Company Performance Optimizer")
+        print(f"  Target Game:   {Style.YELLOW}{game_dir}{Style.RESET}")
+        print(f"  Current State: {state_status}")
+        print(f"{Style.CYAN}{'-' * 75}{Style.RESET}")
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_ps = Path(temp_dir) / "optimize.ps1"
+            target_ps = local_ps if local_ps.is_file() else temp_ps
+
+            if not target_ps.is_file():
+                download_file_with_progress(ps_url, temp_ps, show_progress=False)
+                target_ps = temp_ps
+
+            if target_ps.is_file():
+                try:
+                    subprocess.run([
+                        "powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
+                        "-File", str(target_ps), "-Mode", "Check", "-GameDir", str(game_dir)
+                    ])
+                except Exception:
+                    pass
+
+        print(f"{Style.CYAN}{'=' * 75}{Style.RESET}\n")
+        print(f"  {Style.BOLD}{Style.GREEN}[1]{Style.RESET} Apply Low-Spec Optimizations  ({Style.CYAN}0.7x Res, Shadow/Fog Cuts, Occlusion{Style.RESET}){tag_opt}")
+        print(f"  {Style.BOLD}{Style.YELLOW}[2]{Style.RESET} Revert to Standard / High Specs ({Style.YELLOW}Restore Baseline Friends Copy{Style.RESET}){tag_rev}")
+        print(f"  {Style.BOLD}{Style.CYAN}[3]{Style.RESET} Launch Lethal Company")
+        print(f"  {Style.BOLD}{Style.CYAN}[B]{Style.RESET} Back to Main Menu")
+        print(f"  {Style.BOLD}{Style.RED}[Q]{Style.RESET} Exit\n")
+
+        try:
+            choice = input(f"Select an option [1, 2, 3, B, Q] (Default: {default_choice}): ").strip()
+        except (KeyboardInterrupt, EOFError):
+            print()
+            sys.exit(0)
+
+        if not choice:
+            choice = default_choice
+
+        if choice == "1":
+            log_step("1/2", "Applying Low-Spec Performance Optimizations...")
+            with tempfile.TemporaryDirectory() as temp_dir:
+                temp_ps = Path(temp_dir) / "optimize.ps1"
+                target_ps = local_ps if local_ps.is_file() else temp_ps
+                if not target_ps.is_file():
+                    download_file_with_progress(ps_url, temp_ps, show_progress=False)
+                    target_ps = temp_ps
+                if target_ps.is_file():
+                    subprocess.run([
+                        "powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
+                        "-File", str(target_ps), "-Mode", "Optimize", "-GameDir", str(game_dir)
+                    ])
+
+                print()
+                log_step("2/2", "Synchronizing FPS Counter overlay plugin...")
+                temp_opt_zip = Path(temp_dir) / "optimizer_plugins.zip"
+                if download_file_with_progress(opt_zip_url, temp_opt_zip, show_progress=False):
+                    try:
+                        with zipfile.ZipFile(temp_opt_zip, "r") as archive:
+                            archive.extractall(path=game_dir)
+                        log_info("FPS Counter plugin synchronized.")
+                    except Exception:
+                        pass
+
+            log_success("Low-Spec Optimizations Applied!\n")
+            input("Press Enter to continue...")
+        elif choice == "2":
+            log_step("1/1", "Reverting to Standard / High Specs...")
+            with tempfile.TemporaryDirectory() as temp_dir:
+                temp_ps = Path(temp_dir) / "optimize.ps1"
+                target_ps = local_ps if local_ps.is_file() else temp_ps
+                if not target_ps.is_file():
+                    download_file_with_progress(ps_url, temp_ps, show_progress=False)
+                    target_ps = temp_ps
+                if target_ps.is_file():
+                    subprocess.run([
+                        "powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
+                        "-File", str(target_ps), "-Mode", "Revert", "-GameDir", str(game_dir)
+                    ])
+            log_success("Reverted to Standard Default Graphics.\n")
+            input("Press Enter to continue...")
+        elif choice == "3":
+            print()
+            log_info("Launching Lethal Company...")
+            try:
+                exe_path = game_dir / "Lethal Company.exe"
+                if sys.platform == "win32":
+                    os.chdir(str(game_dir))
+                    os.startfile(str(exe_path))
+                else:
+                    subprocess.Popen([str(exe_path)], cwd=str(game_dir))
+                sys.exit(0)
+            except Exception as e:
+                log_error(f"Failed to launch Lethal Company: {e}")
+                input("\nPress Enter to exit...")
+                sys.exit(1)
+        elif choice.lower() in ("b", "back"):
+            break
+        elif choice.lower() in ("q", "quit", "exit") or choice == "0":
+            sys.exit(0)
 
 
 def run_patcher_flow(game_dir: Path):
@@ -801,8 +850,7 @@ def main():
         print(f"{Style.CYAN}{'-' * 75}{Style.RESET}")
         print("  Select an action:")
         print(f"    {Style.BOLD}{Style.GREEN}[ENTER]{Style.RESET} -> {Style.GREEN}Update & Apply Latest Mods{Style.RESET} (Default / Recommended)")
-        print(f"    {Style.BOLD}{Style.YELLOW}[1]{Style.RESET}     -> {Style.YELLOW}Run Performance Optimizer{Style.RESET} (Low-Spec PC / HDD FPS Boost)")
-        print(f"    {Style.BOLD}{Style.YELLOW}[2]{Style.RESET}     -> {Style.YELLOW}Revert Optimizer Settings{Style.RESET} (Restore Default Graphics)")
+        print(f"    {Style.BOLD}{Style.YELLOW}[1]{Style.RESET}     -> {Style.YELLOW}Performance & Low-Spec Optimizer Tool{Style.RESET}")
         print(f"    {Style.BOLD}{Style.CYAN}[C]{Style.RESET}     -> {Style.CYAN}Change / Browse Game Directory{Style.RESET}")
         print(f"    {Style.BOLD}{Style.RED}[Q]{Style.RESET}     -> {Style.RED}Exit{Style.RESET}")
         print(f"{Style.CYAN}{'-' * 75}{Style.RESET}\n")
@@ -817,9 +865,7 @@ def main():
             run_patcher_flow(game_dir)
             break
         elif choice == "1" or choice.lower() in ("opt", "optimize"):
-            run_optimizer_flow(game_dir)
-        elif choice == "2" or choice.lower() in ("revert", "restore"):
-            run_revert_optimizer_flow(game_dir)
+            run_optimizer_menu(game_dir)
         elif choice.lower() in ("c", "change"):
             new_dir = prompt_manual_directory_picker()
             if new_dir and (new_dir / "Lethal Company.exe").is_file():

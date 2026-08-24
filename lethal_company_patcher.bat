@@ -9,7 +9,7 @@ REM ============================================================================
 set "REPO_USER=hayagerwin"
 set "REPO_NAME=lc-mods-patcher"
 set "BRANCH=main"
-set "PATCHER_VERSION=2026082401"
+set "PATCHER_VERSION=2026082402"
 
 REM Script directory and config path
 set "SCRIPT_DIR=%~dp0"
@@ -410,8 +410,7 @@ echo.
 echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
 echo   Select an action:
 echo     %C_GREEN%[ENTER]%C_RESET% -^> %C_GREEN%Update ^& Apply Latest Mods%C_RESET% ^(Default / Recommended^)
-echo     %C_YELLOW%[1]%C_RESET%     -^> %C_YELLOW%Run Performance Optimizer%C_RESET% ^(Low-Spec PC / HDD FPS Boost^)
-echo     %C_YELLOW%[2]%C_RESET%     -^> %C_YELLOW%Revert Optimizer Settings%C_RESET% ^(Restore Default Graphics^)
+echo     %C_YELLOW%[1]%C_RESET%     -^> %C_YELLOW%Performance ^& Low-Spec Optimizer Tool%C_RESET%
 echo     %C_CYAN%[C]%C_RESET%     -^> %C_CYAN%Change / Browse Game Directory%C_RESET%
 echo     %C_RED%[Q]%C_RESET%     -^> %C_RED%Exit%C_RESET%
 echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
@@ -429,11 +428,9 @@ if /i "!USER_ACTION!"=="P" goto :run_patcher_flow
 if /i "!USER_ACTION!"=="PATCH" goto :run_patcher_flow
 if /i "!USER_ACTION!"=="Y" goto :run_patcher_flow
 if /i "!USER_ACTION!"=="YES" goto :run_patcher_flow
-if "!USER_ACTION!"=="1" goto :run_optimizer_flow
-if /i "!USER_ACTION!"=="OPT" goto :run_optimizer_flow
-if /i "!USER_ACTION!"=="OPTIMIZE" goto :run_optimizer_flow
-if "!USER_ACTION!"=="2" goto :run_revert_optimizer_flow
-if /i "!USER_ACTION!"=="REVERT" goto :run_revert_optimizer_flow
+if "!USER_ACTION!"=="1" goto :optimizer_menu
+if /i "!USER_ACTION!"=="OPT" goto :optimizer_menu
+if /i "!USER_ACTION!"=="OPTIMIZE" goto :optimizer_menu
 if /i "!USER_ACTION!"=="C" goto :prompt_custom_path
 if /i "!USER_ACTION!"=="CHANGE" goto :prompt_custom_path
 if /i "!USER_ACTION!"=="Q" exit /b 0
@@ -444,15 +441,37 @@ if "!USER_ACTION!"=="0" exit /b 0
 REM If user typed anything else unrecognized, assume patcher flow
 goto :run_patcher_flow
 
+
 REM ============================================================================
-REM FLOW 1: PERFORMANCE OPTIMIZER
+REM FLOW 1: PERFORMANCE OPTIMIZER SUBMENU (WITH LIVE CHECKLIST)
 REM ============================================================================
-:run_optimizer_flow
-echo.
+:optimizer_menu
+cls
+set "IS_OPTIMIZED=0"
+set "LC_CFG=!GAME_DIR!\BepInEx\config\com.github.lethalcompanymodding.LCUltrawide.cfg"
+if exist "!LC_CFG!" (
+    findstr /i /c:"Gameplay Camera Resolution Multiplier = 0.7" "!LC_CFG!" >nul 2>&1
+    if not errorlevel 1 set "IS_OPTIMIZED=1"
+)
+
+if "!IS_OPTIMIZED!"=="1" (
+    set "STATE_STATUS=%C_GREEN%[ACTIVE] Low-Spec Optimized Mode%C_RESET%"
+    set "TAG_OPT=%C_GREEN% [ACTIVE *]%C_RESET%"
+    set "TAG_REV="
+    set "DEFAULT_OPT=3"
+) else (
+    set "STATE_STATUS=%C_YELLOW%[ACTIVE] Standard High-Specs (Baseline Default)%C_RESET%"
+    set "TAG_OPT="
+    set "TAG_REV=%C_YELLOW% [ACTIVE *]%C_RESET%"
+    set "DEFAULT_OPT=1"
+)
+
 echo %C_CYAN%============================================================================
-echo                   Running Low-Spec Performance Optimizer
+echo                     Lethal Company Performance Optimizer
 echo ============================================================================%C_RESET%
-echo.
+echo   Target Game:   %C_YELLOW%!GAME_DIR!%C_RESET%
+echo   Current State: !STATE_STATUS!
+echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
 
 set "PS_SCRIPT=%SCRIPT_DIR%optimizer\optimize.ps1"
 set "PS_URL=https://raw.githubusercontent.com/%REPO_USER%/%REPO_NAME%/%BRANCH%/optimizer/optimize.ps1?t=%RANDOM%"
@@ -461,78 +480,79 @@ set "TEMP_PS=%TEMP%\lc_optimize_%RANDOM%.ps1"
 set "TEMP_OPT_ZIP=%TEMP%\lc_opt_plugins_%RANDOM%.zip"
 
 if not exist "!PS_SCRIPT!" (
-    echo %C_CYAN%[1/2] Downloading latest optimization definitions...%C_RESET%
-    curl.exe -s -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" "!PS_URL!" -o "!TEMP_PS!" 2>nul
-    if exist "!TEMP_PS!" (
-        set "PS_SCRIPT=!TEMP_PS!"
-    )
-)
-
-if not exist "!PS_SCRIPT!" (
-    echo %C_RED%[ERROR] Failed to obtain optimize.ps1. Check your internet connection.%C_RESET%
-    pause
-    goto :main_menu
-)
-
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File "!PS_SCRIPT!" -Mode "Optimize" -GameDir "!GAME_DIR!"
-
-echo.
-echo %C_CYAN%[2/2] Checking FPS Counter overlay plugin...%C_RESET%
-curl.exe -s -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" "!OPT_ZIP_URL!" -o "!TEMP_OPT_ZIP!" 2>nul
-if exist "!TEMP_OPT_ZIP!" (
-    tar.exe -xf "!TEMP_OPT_ZIP!" -C "!GAME_DIR!" 2>nul
-    del /f /q "!TEMP_OPT_ZIP!" 2>nul
-)
-
-if exist "!TEMP_PS!" del /f /q "!TEMP_PS!" 2>nul
-
-echo.
-echo %C_GREEN%============================================================================
-echo [SUCCESS] Performance optimizations have been applied successfully!
-echo ============================================================================%C_RESET%
-echo.
-echo   * Gameplay camera scale set to 0.7x (16:9 aspect lock)
-echo   * Heavy 3D OpenBodyCam rendering disabled
-echo   * Ship external & internal cameras capped to 5 FPS
-echo   * Low-spec shadow maps and fog budget applied
-echo   * FPS Counter overlay active (Toggle in-game with [F8])
-echo.
-pause
-goto :main_menu
-
-REM ============================================================================
-REM FLOW 2: REVERT OPTIMIZER
-REM ============================================================================
-:run_revert_optimizer_flow
-echo.
-echo %C_CYAN%============================================================================
-echo                    Reverting Performance Optimizations
-echo ============================================================================%C_RESET%
-echo.
-
-set "PS_SCRIPT=%SCRIPT_DIR%optimizer\optimize.ps1"
-set "PS_URL=https://raw.githubusercontent.com/%REPO_USER%/%REPO_NAME%/%BRANCH%/optimizer/optimize.ps1?t=%RANDOM%"
-set "TEMP_PS=%TEMP%\lc_revert_%RANDOM%.ps1"
-
-if not exist "!PS_SCRIPT!" (
     curl.exe -s -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" "!PS_URL!" -o "!TEMP_PS!" 2>nul
     if exist "!TEMP_PS!" set "PS_SCRIPT=!TEMP_PS!"
 )
 
 if exist "!PS_SCRIPT!" (
-    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "!PS_SCRIPT!" -Mode "Revert" -GameDir "!GAME_DIR!"
-    if exist "!TEMP_PS!" del /f /q "!TEMP_PS!" 2>nul
-    echo.
-    echo %C_GREEN%[SUCCESS] Graphics and camera settings restored to defaults.%C_RESET%
-) else (
-    echo %C_RED%[ERROR] Could not load optimize.ps1 to revert.%C_RESET%
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "!PS_SCRIPT!" -Mode "Check" -GameDir "!GAME_DIR!"
+)
+echo %C_CYAN%============================================================================%C_RESET%
+echo.
+echo   %C_GREEN%[1]%C_RESET% Apply Low-Spec Optimizations  (%C_CYAN%0.7x Res, Shadow/Fog Cuts, Occlusion%C_RESET%)!TAG_OPT!
+echo   %C_YELLOW%[2]%C_RESET% Revert to Standard / High Specs (%C_YELLOW%Restore Baseline Friends Copy%C_RESET%)!TAG_REV!
+echo   %C_CYAN%[3]%C_RESET% Launch Lethal Company
+echo   %C_CYAN%[B]%C_RESET% Back to Main Menu
+echo   %C_RED%[Q]%C_RESET% Exit
+echo.
+set "OPT_CHOICE="
+set /p "OPT_CHOICE=Select an option [1, 2, 3, B, Q] (Default: !DEFAULT_OPT!): "
+if not defined OPT_CHOICE set "OPT_CHOICE=!DEFAULT_OPT!"
+
+if "%OPT_CHOICE%"=="1" goto :do_apply_optimizer
+if "%OPT_CHOICE%"=="2" goto :do_revert_optimizer
+if "%OPT_CHOICE%"=="3" goto :do_launch_from_optimizer
+if /i "%OPT_CHOICE%"=="B" goto :main_menu
+if /i "%OPT_CHOICE%"=="BACK" goto :main_menu
+if /i "%OPT_CHOICE%"=="Q" exit /b 0
+if /i "%OPT_CHOICE%"=="QUIT" exit /b 0
+if "%OPT_CHOICE%"=="0" exit /b 0
+goto :optimizer_menu
+
+:do_apply_optimizer
+echo.
+echo %C_CYAN%[1/2] Applying Low-Spec Performance Optimizations...%C_RESET%
+if exist "!PS_SCRIPT!" (
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "!PS_SCRIPT!" -Mode "Optimize" -GameDir "!GAME_DIR!"
 )
 echo.
+echo %C_CYAN%[2/2] Synchronizing FPS Counter overlay plugin...%C_RESET%
+curl.exe -s -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" "!OPT_ZIP_URL!" -o "!TEMP_OPT_ZIP!" 2>nul
+if exist "!TEMP_OPT_ZIP!" (
+    tar.exe -xf "!TEMP_OPT_ZIP!" -C "!GAME_DIR!" 2>nul
+    del /f /q "!TEMP_OPT_ZIP!" 2>nul
+)
+if exist "!TEMP_PS!" del /f /q "!TEMP_PS!" 2>nul
+echo.
+echo %C_GREEN%[SUCCESS] Low-Spec Optimizations Applied!%C_RESET%
+echo.
 pause
-goto :main_menu
+goto :optimizer_menu
+
+:do_revert_optimizer
+echo.
+echo %C_YELLOW%Reverting to Standard / High Specs...%C_RESET%
+if exist "!PS_SCRIPT!" (
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "!PS_SCRIPT!" -Mode "Revert" -GameDir "!GAME_DIR!"
+)
+if exist "!TEMP_PS!" del /f /q "!TEMP_PS!" 2>nul
+echo.
+echo %C_GREEN%[SUCCESS] Reverted to Standard Default Graphics.%C_RESET%
+echo.
+pause
+goto :optimizer_menu
+
+:do_launch_from_optimizer
+echo.
+echo %C_CYAN%Launching Lethal Company...%C_RESET%
+cd /d "!GAME_DIR!"
+start "" "Lethal Company.exe"
+timeout /t 1 >nul 2>&1
+exit
+
 
 REM ============================================================================
-REM FLOW 3: MOD PATCHER & UPDATE (DEFAULT)
+REM FLOW 2: MOD PATCHER & UPDATE (DEFAULT ENTRY)
 REM ============================================================================
 :run_patcher_flow
 cls
