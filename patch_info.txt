@@ -1,8 +1,14 @@
-=== [v3.7.0] - 2026-08-24 15:05 PHT ===
+=== [v3.7.0] - 2026-08-24 15:15 PHT ===
+* Added Cinematic Death Camera & Spectator Delay Controls:
+  - Extended death camera focus duration from vanilla 1.5s to 5.0s (fully configurable in BepInEx config):
+    * Gives players enough time to enjoy the full hilarious death animation, ragdoll flight, monster roars, and explosions before abruptly cutting away.
+    * Works both when you die AND when you are spectating a teammate who dies.
+    * Preserves camera focus on the death scene even if eaten by giants/leviathans/T-Rex.
+  - Added instant skip keybindings: Press [Space] or [Left Click] to skip the death camera and enter spectator mode immediately.
 * Added Comprehensive Death Reporting & Autopsy Overhaul:
   - Installed Coroner (v2.4.1) & CoronerIntegrations (v0.7.0) with StaticNetcodeLib:
     Replaces generic end-of-round death categories with detailed, humorous autopsy reports for all employees on the ship monitor.
-  - Added new standalone modular plugin: REED-DeathReportExtensions (v1.0.0):
+  - Added new standalone modular plugin: REED-DeathReportExtensions:
     Dynamically registers and hooks custom death causes for all modpack enemies and hazards:
     * Haunted Harpist ("Serenaded into the afterlife by the ghost harpist")
     * Immortal Snail ("Could not outrun the inevitable snail")
