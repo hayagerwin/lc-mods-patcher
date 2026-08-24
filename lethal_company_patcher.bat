@@ -9,7 +9,7 @@ REM ============================================================================
 set "REPO_USER=hayagerwin"
 set "REPO_NAME=lc-mods-patcher"
 set "BRANCH=main"
-set "PATCHER_VERSION=2026082410"
+set "PATCHER_VERSION=2026082411"
 
 REM Script directory and config path
 set "SCRIPT_DIR=%~dp0"
@@ -773,15 +773,15 @@ echo %C_CYAN%-------------------------------------------------------------------
 echo  Disables redundant secondary 3D camera rendering on chest rigs ^& terminals.
 echo  %C_YELLOW%Benefit:%C_RESET% %C_CYAN%+15%% to +20%% FPS Boost%C_RESET%, saves ~500MB VRAM
 echo.
-if /i "!DEF_WIZ_BC!"=="Y" (
-    set "BC_PROMPT_LABEL=[Y/n] (Default: [ENTER] for Yes [Y])"
-    echo   %C_GREEN%[Y]%C_RESET% Yes - Disable 3D Bodycam overhead %C_GREEN%(Currently Active / Recommended)%C_RESET%
-    echo   %C_YELLOW%[N]%C_RESET% No  - Keep original full 3D bodycam rendering
-) else (
-    set "BC_PROMPT_LABEL=[y/N] (Default: [ENTER] for No [N])"
-    echo   %C_GREEN%[Y]%C_RESET% Yes - Disable 3D Bodycam overhead %C_GREEN%(Recommended)%C_RESET%
-    echo   %C_YELLOW%[N]%C_RESET% No  - Keep original full 3D bodycam rendering %C_YELLOW%(Currently Active)%C_RESET%
-)
+set "BC_PROMPT_LABEL=[Y/n] (Default: [ENTER] for Yes)"
+set "BC_TAG_Y=%C_GREEN%[Currently Active]%C_RESET%"
+set "BC_TAG_N="
+if /i "!DEF_WIZ_BC!"=="N" set "BC_PROMPT_LABEL=[y/N] (Default: [ENTER] for No)"
+if /i "!DEF_WIZ_BC!"=="N" set "BC_TAG_Y="
+if /i "!DEF_WIZ_BC!"=="N" set "BC_TAG_N=%C_YELLOW%[Currently Active]%C_RESET%"
+
+echo   %C_GREEN%[Y]%C_RESET% Yes - Disable 3D Bodycam overhead !BC_TAG_Y!
+echo   %C_YELLOW%[N]%C_RESET% No  - Keep original full 3D bodycam rendering !BC_TAG_N!
 echo.
 set "WIZ_BC="
 set /p "WIZ_BC=Apply BodyCam Optimization? !BC_PROMPT_LABEL!: "
@@ -801,15 +801,15 @@ echo %C_CYAN%-------------------------------------------------------------------
 echo  Caps ship interior and security camera refresh rates to 5 FPS.
 echo  %C_YELLOW%Benefit:%C_RESET% %C_CYAN%+8%% to +12%% FPS Boost%C_RESET% inside the ship
 echo.
-if /i "!DEF_WIZ_SC!"=="Y" (
-    set "SC_PROMPT_LABEL=[Y/n] (Default: [ENTER] for Yes [Y])"
-    echo   %C_GREEN%[Y]%C_RESET% Yes - Cap monitor cameras to 5 FPS %C_GREEN%(Currently Active / Recommended)%C_RESET%
-    echo   %C_YELLOW%[N]%C_RESET% No  - Keep default 10+ FPS monitor refresh
-) else (
-    set "SC_PROMPT_LABEL=[y/N] (Default: [ENTER] for No [N])"
-    echo   %C_GREEN%[Y]%C_RESET% Yes - Cap monitor cameras to 5 FPS %C_GREEN%(Recommended)%C_RESET%
-    echo   %C_YELLOW%[N]%C_RESET% No  - Keep default 10+ FPS monitor refresh %C_YELLOW%(Currently Active)%C_RESET%
-)
+set "SC_PROMPT_LABEL=[Y/n] (Default: [ENTER] for Yes)"
+set "SC_TAG_Y=%C_GREEN%[Currently Active]%C_RESET%"
+set "SC_TAG_N="
+if /i "!DEF_WIZ_SC!"=="N" set "SC_PROMPT_LABEL=[y/N] (Default: [ENTER] for No)"
+if /i "!DEF_WIZ_SC!"=="N" set "SC_TAG_Y="
+if /i "!DEF_WIZ_SC!"=="N" set "SC_TAG_N=%C_YELLOW%[Currently Active]%C_RESET%"
+
+echo   %C_GREEN%[Y]%C_RESET% Yes - Cap monitor cameras to 5 FPS !SC_TAG_Y!
+echo   %C_YELLOW%[N]%C_RESET% No  - Keep default 10+ FPS monitor refresh !SC_TAG_N!
 echo.
 set "WIZ_SC="
 set /p "WIZ_SC=Cap Ship Cameras? !SC_PROMPT_LABEL!: "
@@ -829,15 +829,15 @@ echo %C_CYAN%-------------------------------------------------------------------
 echo  Replaces heavy real-time planet exterior skybox with space starfield.
 echo  %C_YELLOW%Benefit:%C_RESET% %C_CYAN%+10%% to +15%% FPS Boost%C_RESET% during landing ^& orbit
 echo.
-if /i "!DEF_WIZ_SW!"=="Y" (
-    set "SW_PROMPT_LABEL=[Y/n] (Default: [ENTER] for Yes [Y])"
-    echo   %C_GREEN%[Y]%C_RESET% Yes - Use space starfield ^& planet culling %C_GREEN%(Currently Active / Recommended)%C_RESET%
-    echo   %C_YELLOW%[N]%C_RESET% No  - Keep default heavy exterior meshes
-) else (
-    set "SW_PROMPT_LABEL=[y/N] (Default: [ENTER] for No [N])"
-    echo   %C_GREEN%[Y]%C_RESET% Yes - Use space starfield ^& planet culling %C_GREEN%(Recommended)%C_RESET%
-    echo   %C_YELLOW%[N]%C_RESET% No  - Keep default heavy exterior meshes %C_YELLOW%(Currently Active)%C_RESET%
-)
+set "SW_PROMPT_LABEL=[Y/n] (Default: [ENTER] for Yes)"
+set "SW_TAG_Y=%C_GREEN%[Currently Active]%C_RESET%"
+set "SW_TAG_N="
+if /i "!DEF_WIZ_SW!"=="N" set "SW_PROMPT_LABEL=[y/N] (Default: [ENTER] for No)"
+if /i "!DEF_WIZ_SW!"=="N" set "SW_TAG_Y="
+if /i "!DEF_WIZ_SW!"=="N" set "SW_TAG_N=%C_YELLOW%[Currently Active]%C_RESET%"
+
+echo   %C_GREEN%[Y]%C_RESET% Yes - Use space starfield ^& planet culling !SW_TAG_Y!
+echo   %C_YELLOW%[N]%C_RESET% No  - Keep default heavy exterior meshes !SW_TAG_N!
 echo.
 set "WIZ_SW="
 set /p "WIZ_SW=Optimize ShipWindows? !SW_PROMPT_LABEL!: "
@@ -857,18 +857,18 @@ echo %C_CYAN%-------------------------------------------------------------------
 echo  Lowers heavy volumetric fog budget (0.05) and shadow maps (64px).
 echo  %C_YELLOW%Benefit:%C_RESET% %C_CYAN%+12%% to +18%% FPS Boost%C_RESET% in foggy ^& stormy weather
 echo.
-if /i "!DEF_WIZ_HDRP!"=="Y" (
-    set "HDRP_PROMPT_LABEL=[Y/n] (Default: [ENTER] for Yes [Y])"
-    echo   %C_GREEN%[Y]%C_RESET% Yes - Apply low-spec shadows and fog %C_GREEN%(Currently Active / Recommended)%C_RESET%
-    echo   %C_YELLOW%[N]%C_RESET% No  - Keep high default HDRP shadows and volumetric fog
-) else (
-    set "HDRP_PROMPT_LABEL=[y/N] (Default: [ENTER] for No [N])"
-    echo   %C_GREEN%[Y]%C_RESET% Yes - Apply low-spec shadows and fog %C_GREEN%(Recommended)%C_RESET%
-    echo   %C_YELLOW%[N]%C_RESET% No  - Keep high default HDRP shadows and volumetric fog %C_YELLOW%(Currently Active)%C_RESET%
-)
+set "HDRP_PROMPT_LABEL=[Y/n] (Default: [ENTER] for Yes)"
+set "HDRP_TAG_Y=%C_GREEN%[Currently Active]%C_RESET%"
+set "HDRP_TAG_N="
+if /i "!DEF_WIZ_HDRP!"=="N" set "HDRP_PROMPT_LABEL=[y/N] (Default: [ENTER] for No)"
+if /i "!DEF_WIZ_HDRP!"=="N" set "HDRP_TAG_Y="
+if /i "!DEF_WIZ_HDRP!"=="N" set "HDRP_TAG_N=%C_YELLOW%[Currently Active]%C_RESET%"
+
+echo   %C_GREEN%[Y]%C_RESET% Yes - Apply low-spec shadows and fog !HDRP_TAG_Y!
+echo   %C_YELLOW%[N]%C_RESET% No  - Keep high default HDRP shadows and volumetric fog !HDRP_TAG_N!
 echo.
 set "WIZ_HDRP="
-set /p "WIZ_HDRP=Optimize Shadows ^& Fog? !HDRP_PROMPT_LABEL!: "
+set /p "WIZ_HDRP=Optimize Shadows and Fog? !HDRP_PROMPT_LABEL!: "
 if not defined WIZ_HDRP set "WIZ_HDRP=!DEF_WIZ_HDRP!"
 set "OPT_HDRP=yes"
 if /i "%WIZ_HDRP%"=="N" set "OPT_HDRP=no"
@@ -885,15 +885,15 @@ echo %C_CYAN%-------------------------------------------------------------------
 echo  Installs a lightweight in-game FPS and frame-time HUD (Toggle with [F8]).
 echo  %C_YELLOW%Benefit:%C_RESET% %C_CYAN%Diagnostic Overlay%C_RESET% (0%% Performance Cost)
 echo.
-if /i "!DEF_WIZ_FPS!"=="Y" (
-    set "FPS_PROMPT_LABEL=[Y/n] (Default: [ENTER] for Yes [Y])"
-    echo   %C_GREEN%[Y]%C_RESET% Yes - Install FPS Counter overlay %C_GREEN%(Currently Active / Installed)%C_RESET%
-    echo   %C_YELLOW%[N]%C_RESET% No  - Do not install FPS overlay
-) else (
-    set "FPS_PROMPT_LABEL=[y/N] (Default: [ENTER] for No [N])"
-    echo   %C_GREEN%[Y]%C_RESET% Yes - Install FPS Counter overlay %C_GREEN%(Recommended)%C_RESET%
-    echo   %C_YELLOW%[N]%C_RESET% No  - Do not install FPS overlay %C_YELLOW%(Currently Not Installed)%C_RESET%
-)
+set "FPS_PROMPT_LABEL=[Y/n] (Default: [ENTER] for Yes)"
+set "FPS_TAG_Y=%C_GREEN%[Currently Installed]%C_RESET%"
+set "FPS_TAG_N="
+if /i "!DEF_WIZ_FPS!"=="N" set "FPS_PROMPT_LABEL=[y/N] (Default: [ENTER] for No)"
+if /i "!DEF_WIZ_FPS!"=="N" set "FPS_TAG_Y="
+if /i "!DEF_WIZ_FPS!"=="N" set "FPS_TAG_N=%C_YELLOW%[Currently Not Installed]%C_RESET%"
+
+echo   %C_GREEN%[Y]%C_RESET% Yes - Install FPS Counter overlay !FPS_TAG_Y!
+echo   %C_YELLOW%[N]%C_RESET% No  - Do not install FPS overlay !FPS_TAG_N!
 echo.
 set "WIZ_FPS="
 set /p "WIZ_FPS=Enable FPS Counter? !FPS_PROMPT_LABEL!: "
