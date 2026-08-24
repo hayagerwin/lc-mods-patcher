@@ -54,6 +54,11 @@ if os.path.isdir(patchers_dir):
             rel_path = os.path.relpath(full_path, game_root).replace(os.sep, "/")
             entries_to_pack.add(rel_path)
 
+# Explicit configs
+async_cfg = os.path.join(bepinex_dir, "config", "AsyncLoggers", "LogLevels.cfg")
+if os.path.isfile(async_cfg):
+    entries_to_pack.add("BepInEx/config/AsyncLoggers/LogLevels.cfg")
+
 # 4. Rebuild patch.zip
 sorted_entries = sorted(list(entries_to_pack))
 with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_DEFLATED) as z:
