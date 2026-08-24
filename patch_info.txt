@@ -1,6 +1,9 @@
-=== [v3.7.0] - 2026-08-24 19:00 PHT ===
-* Added Permanent Default On-Screen FPS Counter:
-  - Installed LC_FPSCounter as a permanent default feature enabled out-of-the-box for all players.
+=== [v3.7.0] - 2026-08-24 19:25 PHT ===
+* Added Permanent Default On-Screen FPS Counter (v1.1.0):
+  - Installed REED-LC_FPSCounter as a permanent modular default feature enabled out-of-the-box for all players.
+  - High-Accuracy Instantaneous Stutter & 0 FPS Freeze Detection:
+    * Replaces stale frozen interval values with real-time frame delta tracking.
+    * When the game freezes, hitches, or drops frames, the counter immediately calculates the true dropped frame rate (down to 0 FPS) and displays critical red warning status.
   - Displays color-coded real-time FPS and frame times with crisp drop-shadow rendering in the top-right corner.
   - Press [F8] in-game to toggle the FPS display on and off at any time.
 * Added Cinematic Death Camera & Poltergeist Spectator Handoff:

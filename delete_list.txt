@@ -5,3 +5,4 @@ BepInEx/plugins/MidSessionJoinFix
 BepInEx/plugins/REED-MidSessionJoinFix
 BepInEx/plugins/pokefranzi-Himiko_Toga/MoreSuits.dll
 BepInEx/plugins/LandingVoiceGuard
+BepInEx/plugins/LC_FPSCounter
