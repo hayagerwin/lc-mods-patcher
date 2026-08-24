@@ -44,7 +44,7 @@ if not defined _LC_PATCHER_SELF_UPDATED (
         curl.exe -s -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" "!SCRIPT_URL!" -o "!TEMP_SCRIPT!" 2>nul
         if exist "!TEMP_SCRIPT!" (
             set "REMOTE_VERSION="
-            for /f "tokens=2 delims==" %%V in ('findstr /i "PATCHER_VERSION" "!TEMP_SCRIPT!"') do (
+            for /f "tokens=2 delims==" %%V in ('findstr /r /c:"^set .PATCHER_VERSION=" "!TEMP_SCRIPT!"') do (
                 set "RAW_REMOTE=%%V"
                 set "RAW_REMOTE=!RAW_REMOTE:"=!"
                 set "RAW_REMOTE=!RAW_REMOTE: =!"
@@ -405,7 +405,7 @@ echo !GAME_DIR!>"%CONFIG_FILE%" 2>nul
 :main_menu
 cls
 echo %C_CYAN%============================================================================
-echo                     Lethal Company Mod Patcher & Toolset
+echo                     Lethal Company Mod Patcher ^& Toolset
 echo ============================================================================%C_RESET%
 echo.
 echo %C_GREEN%[+] Target Game Directory:%C_RESET% !GAME_DIR!
@@ -612,7 +612,7 @@ if "%WIZ_RES%"=="1" set "TARGET_SCALE=1.2"
 if "%WIZ_RES%"=="2" set "TARGET_SCALE=1.0"
 if "%WIZ_RES%"=="3" set "TARGET_SCALE=0.7"
 if "%WIZ_RES%"=="4" set "TARGET_SCALE=0.5"
-echo  %C_GREEN%-[√] Selected:%C_RESET% !TARGET_SCALE!x Resolution Scale
+echo  %C_GREEN%-[+] Selected:%C_RESET% !TARGET_SCALE!x Resolution Scale
 echo.
 
 REM ----------------------------------------------------------------------------
@@ -621,7 +621,7 @@ REM ----------------------------------------------------------------------------
 echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
 echo  %C_BOLD%%C_WHITE%[STEP 2 / 6]%C_RESET% %C_CYAN%OpenBodyCams 3D Camera Overhead%C_RESET%
 echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
-echo  Disables redundant secondary 3D camera rendering on chest rigs & terminals.
+echo  Disables redundant secondary 3D camera rendering on chest rigs ^& terminals.
 echo  %C_YELLOW%Benefit:%C_RESET% %C_CYAN%+15%% to +20%% FPS Boost%C_RESET%, saves ~500MB VRAM
 echo.
 echo   %C_GREEN%[Y]%C_RESET% Yes - Disable 3D Bodycam overhead %C_GREEN%(Recommended)%C_RESET%
@@ -633,14 +633,14 @@ if not defined WIZ_BC set "WIZ_BC=Y"
 set "OPT_BC=yes"
 if /i "%WIZ_BC%"=="N" set "OPT_BC=no"
 if /i "%WIZ_BC%"=="NO" set "OPT_BC=no"
-echo  %C_GREEN%-[√] Selected:%C_RESET% BodyCam Optimization = !OPT_BC!
+echo  %C_GREEN%-[+] Selected:%C_RESET% BodyCam Optimization = !OPT_BC!
 echo.
 
 REM ----------------------------------------------------------------------------
 REM Step 3: Ship Security Cameras
 REM ----------------------------------------------------------------------------
 echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
-echo  %C_BOLD%%C_WHITE%[STEP 3 / 6]%C_RESET% %C_CYAN%Ship Security & Monitor Camera Framerates%C_RESET%
+echo  %C_BOLD%%C_WHITE%[STEP 3 / 6]%C_RESET% %C_CYAN%Ship Security ^& Monitor Camera Framerates%C_RESET%
 echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
 echo  Caps ship interior and security camera refresh rates to 5 FPS.
 echo  %C_YELLOW%Benefit:%C_RESET% %C_CYAN%+8%% to +12%% FPS Boost%C_RESET% inside the ship
@@ -654,19 +654,19 @@ if not defined WIZ_SC set "WIZ_SC=Y"
 set "OPT_SC=yes"
 if /i "%WIZ_SC%"=="N" set "OPT_SC=no"
 if /i "%WIZ_SC%"=="NO" set "OPT_SC=no"
-echo  %C_GREEN%-[√] Selected:%C_RESET% Ship Cameras Cap = !OPT_SC!
+echo  %C_GREEN%-[+] Selected:%C_RESET% Ship Cameras Cap = !OPT_SC!
 echo.
 
 REM ----------------------------------------------------------------------------
 REM Step 4: ShipWindows Exterior Skybox
 REM ----------------------------------------------------------------------------
 echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
-echo  %C_BOLD%%C_WHITE%[STEP 4 / 6]%C_RESET% %C_CYAN%ShipWindows Exterior Skybox & Planet Culling%C_RESET%
+echo  %C_BOLD%%C_WHITE%[STEP 4 / 6]%C_RESET% %C_CYAN%ShipWindows Exterior Skybox ^& Planet Culling%C_RESET%
 echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
 echo  Replaces heavy real-time planet exterior skybox with space starfield.
-echo  %C_YELLOW%Benefit:%C_RESET% %C_CYAN%+10%% to +15%% FPS Boost%C_RESET% during landing & orbit
+echo  %C_YELLOW%Benefit:%C_RESET% %C_CYAN%+10%% to +15%% FPS Boost%C_RESET% during landing ^& orbit
 echo.
-echo   %C_GREEN%[Y]%C_RESET% Yes - Use space starfield & planet culling %C_GREEN%(Recommended)%C_RESET%
+echo   %C_GREEN%[Y]%C_RESET% Yes - Use space starfield ^& planet culling %C_GREEN%(Recommended)%C_RESET%
 echo   %C_YELLOW%[N]%C_RESET% No  - Keep default heavy exterior meshes
 echo.
 set "WIZ_SW="
@@ -675,17 +675,17 @@ if not defined WIZ_SW set "WIZ_SW=Y"
 set "OPT_SW=yes"
 if /i "%WIZ_SW%"=="N" set "OPT_SW=no"
 if /i "%WIZ_SW%"=="NO" set "OPT_SW=no"
-echo  %C_GREEN%-[√] Selected:%C_RESET% ShipWindows Optimization = !OPT_SW!
+echo  %C_GREEN%-[+] Selected:%C_RESET% ShipWindows Optimization = !OPT_SW!
 echo.
 
 REM ----------------------------------------------------------------------------
 REM Step 5: HDRP Fog & Shadows
 REM ----------------------------------------------------------------------------
 echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
-echo  %C_BOLD%%C_WHITE%[STEP 5 / 6]%C_RESET% %C_CYAN%LethalSponge HDRP Fog Budget & Shadow Maps%C_RESET%
+echo  %C_BOLD%%C_WHITE%[STEP 5 / 6]%C_RESET% %C_CYAN%LethalSponge HDRP Fog Budget ^& Shadow Maps%C_RESET%
 echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
 echo  Lowers heavy volumetric fog budget (0.05) and shadow maps (64px).
-echo  %C_YELLOW%Benefit:%C_RESET% %C_CYAN%+12%% to +18%% FPS Boost%C_RESET% in foggy & stormy weather
+echo  %C_YELLOW%Benefit:%C_RESET% %C_CYAN%+12%% to +18%% FPS Boost%C_RESET% in foggy ^& stormy weather
 echo.
 echo   %C_GREEN%[Y]%C_RESET% Yes - Apply low-spec shadows and fog %C_GREEN%(Recommended)%C_RESET%
 echo   %C_YELLOW%[N]%C_RESET% No  - Keep high default HDRP shadows and volumetric fog
@@ -696,7 +696,7 @@ if not defined WIZ_HDRP set "WIZ_HDRP=Y"
 set "OPT_HDRP=yes"
 if /i "%WIZ_HDRP%"=="N" set "OPT_HDRP=no"
 if /i "%WIZ_HDRP%"=="NO" set "OPT_HDRP=no"
-echo  %C_GREEN%-[√] Selected:%C_RESET% HDRP Fog & Shadows = !OPT_HDRP!
+echo  %C_GREEN%-[+] Selected:%C_RESET% HDRP Fog & Shadows = !OPT_HDRP!
 echo.
 
 REM ----------------------------------------------------------------------------
@@ -717,7 +717,7 @@ if not defined WIZ_FPS set "WIZ_FPS=Y"
 set "OPT_FPS=yes"
 if /i "%WIZ_FPS%"=="N" set "OPT_FPS=no"
 if /i "%WIZ_FPS%"=="NO" set "OPT_FPS=no"
-echo  %C_GREEN%-[√] Selected:%C_RESET% FPS Counter = !OPT_FPS!
+echo  %C_GREEN%-[+] Selected:%C_RESET% FPS Counter = !OPT_FPS!
 echo.
 
 echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
