@@ -362,11 +362,11 @@ elseif ($Mode -eq "LogMinimal") {
         Set-IniSectionValue $bepCfg "Logging" "UnityLogListening" "false"
         Set-IniSectionValue $bepCfg "Logging.Disk" "WriteUnityLog" "false"
 
-        Write-Host "  [3/4] Capping disk log levels to Errors & Warnings only..." -ForegroundColor Cyan
-        Set-IniSectionValue $bepCfg "Logging.Disk" "LogLevels" "Fatal, Error, Warning"
+        Write-Host "  [3/4] Recording all Mod Info, VoIP/Mic events, Warnings & Errors to disk..." -ForegroundColor Cyan
+        Set-IniSectionValue $bepCfg "Logging.Disk" "LogLevels" "Fatal, Error, Warning, Message, Info"
         Set-IniSectionValue $bepCfg "Logging.Disk" "Enabled" "true"
 
-        Write-Host "  [4/4] Setting Harmony log channels to Standard..." -ForegroundColor Cyan
+        Write-Host "  [4/4] Setting Harmony log channels to Standard (Filtering hook noise)..." -ForegroundColor Cyan
         Set-IniSectionValue $bepCfg "Harmony.Logger" "LogChannels" "Warn, Error"
         Write-Host ""
         Write-Host "  [SUCCESS] Clean Console & High Performance Mode configured!" -ForegroundColor Green
@@ -472,7 +472,7 @@ elseif ($Mode -eq "LogCheck") {
         Write-Host "Disk Log Verbosity      : " -NoNewline; Write-Host "Diagnostic (All Mod Debug, Info, Warnings & Errors recorded)" -ForegroundColor Yellow
     } else {
         Write-Host "   [" -NoNewline; Write-Host ([char]0x221A) -ForegroundColor Green -NoNewline; Write-Host "] " -NoNewline
-        Write-Host "Disk Log Verbosity      : " -NoNewline; Write-Host "Optimized (Errors & Warnings only)" -ForegroundColor Green
+        Write-Host "Disk Log Verbosity      : " -NoNewline; Write-Host "Clean & Informative (All Mod Info, Mic events, Warnings & Errors recorded)" -ForegroundColor Green
     }
 
     Write-Host "   [i] " -ForegroundColor Cyan -NoNewline
