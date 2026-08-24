@@ -310,28 +310,7 @@ REM 4. STAGE: APPLY OPTIMIZATIONS
 REM ----------------------------------------------------------------------------
 :do_optimize
 echo.
-echo %C_CYAN%[1/2]%C_RESET% Synchronizing low-spec plugin DLLs (optimizer_plugins.zip)...
-set "PLUGINS_ZIP_URL=https://raw.githubusercontent.com/%REPO_USER%/%REPO_NAME%/%BRANCH%/optimizer/optimizer_plugins.zip"
-set "TEMP_PLUGINS_ZIP=%TEMP%\lc_opt_plugins_%RANDOM%.zip"
-
-if exist "%SCRIPT_DIR%optimizer_plugins.zip" (
-    tar.exe -xf "%SCRIPT_DIR%optimizer_plugins.zip" -C "!GAME_DIR!" 2>nul
-    echo   %C_GREEN%[+]%C_RESET% Extracted local optimizer_plugins.zip
-) else (
-    curl.exe -s -L -f "%PLUGINS_ZIP_URL%" -o "%TEMP_PLUGINS_ZIP%" 2>nul
-    if exist "%TEMP_PLUGINS_ZIP%" (
-        for %%F in ("%TEMP_PLUGINS_ZIP%") do (
-            if %%~zF gtr 0 (
-                tar.exe -xf "%TEMP_PLUGINS_ZIP%" -C "!GAME_DIR!" 2>nul
-                echo   %C_GREEN%[+]%C_RESET% Downloaded and extracted optimizer_plugins.zip
-            )
-        )
-        del /f /q "%TEMP_PLUGINS_ZIP%" 2>nul
-    )
-)
-
-echo.
-echo %C_CYAN%[2/2]%C_RESET% Applying low-spec configuration tweaks...
+echo %C_CYAN%[1/1]%C_RESET% Applying low-spec configuration tweaks...
 if not exist "%SCRIPT_DIR%optimize.ps1" (
     curl.exe -s -L -f "https://raw.githubusercontent.com/%REPO_USER%/%REPO_NAME%/%BRANCH%/optimizer/optimize.ps1" -o "%SCRIPT_DIR%optimize.ps1" 2>nul
 )
@@ -347,9 +326,6 @@ pause >nul
 goto :menu
 
 :do_optimize_silent
-if exist "%SCRIPT_DIR%optimizer_plugins.zip" (
-    tar.exe -xf "%SCRIPT_DIR%optimizer_plugins.zip" -C "!GAME_DIR!" 2>nul
-)
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%SCRIPT_DIR%optimize.ps1" -Mode "Optimize" -GameDir "!GAME_DIR!"
 exit /b 0
 

@@ -135,7 +135,7 @@ def get_optimizer_state_path() -> Path:
     return Path.home() / ".config" / "lc-mods-patcher" / "optimizer_state.txt"
 
 
-def save_optimizer_state(res: str, bc: str, sc: str, sw: str, hdrp: str, fps: str):
+def save_optimizer_state(res: str, bc: str, sc: str, sw: str, hdrp: str):
     """Saves the user's custom optimizer choices to a persistent state file."""
     try:
         p = get_optimizer_state_path()
@@ -145,8 +145,7 @@ def save_optimizer_state(res: str, bc: str, sc: str, sw: str, hdrp: str, fps: st
             f"BC={bc}",
             f"SC={sc}",
             f"SW={sw}",
-            f"HDRP={hdrp}",
-            f"FPS={fps}"
+            f"HDRP={hdrp}"
         ]
         p.write_text("\n".join(lines), encoding="utf-8")
     except Exception:
@@ -853,7 +852,7 @@ def run_optimizer_menu(game_dir: Path):
 
                 # Step 1: Resolution Scale
                 print(f"{Style.CYAN}{'-' * 75}{Style.RESET}")
-                print(f" {Style.BOLD}{Style.WHITE}[STEP 1 / 6]{Style.RESET} {Style.CYAN}Resolution Scaling Multiplier{Style.RESET}")
+                print(f" {Style.BOLD}{Style.WHITE}[STEP 1 / 5]{Style.RESET} {Style.CYAN}Resolution Scaling Multiplier{Style.RESET}")
                 print(f"{Style.CYAN}{'-' * 75}{Style.RESET}")
                 print(" Controls the 3D render resolution. Lowering provides massive GPU FPS gains.\n")
                 print(f"  {Style.BOLD}{Style.GREEN}[1]{Style.RESET} High               : {Style.YELLOW}1.2x Scale{Style.RESET}  (Crisp 1440p+ visuals, High-End GPU)")
@@ -877,7 +876,7 @@ def run_optimizer_menu(game_dir: Path):
 
                 # Step 2: BodyCam
                 print(f"{Style.CYAN}{'-' * 75}{Style.RESET}")
-                print(f" {Style.BOLD}{Style.WHITE}[STEP 2 / 6]{Style.RESET} {Style.CYAN}OpenBodyCams 3D Camera Overhead{Style.RESET}")
+                print(f" {Style.BOLD}{Style.WHITE}[STEP 2 / 5]{Style.RESET} {Style.CYAN}OpenBodyCams 3D Camera Overhead{Style.RESET}")
                 print(f"{Style.CYAN}{'-' * 75}{Style.RESET}")
                 print(" Disables redundant secondary 3D camera rendering on chest rigs & terminals.")
                 print(f" {Style.YELLOW}Benefit:{Style.RESET} {Style.CYAN}+15% to +20% FPS Boost{Style.RESET}, saves ~500MB VRAM\n")
@@ -898,7 +897,7 @@ def run_optimizer_menu(game_dir: Path):
 
                 # Step 3: Ship Cameras
                 print(f"{Style.CYAN}{'-' * 75}{Style.RESET}")
-                print(f" {Style.BOLD}{Style.WHITE}[STEP 3 / 6]{Style.RESET} {Style.CYAN}Ship Security & Monitor Camera Framerates{Style.RESET}")
+                print(f" {Style.BOLD}{Style.WHITE}[STEP 3 / 5]{Style.RESET} {Style.CYAN}Ship Security & Monitor Camera Framerates{Style.RESET}")
                 print(f"{Style.CYAN}{'-' * 75}{Style.RESET}")
                 print(" Caps ship interior and security camera refresh rates to 5 FPS.")
                 print(f" {Style.YELLOW}Benefit:{Style.RESET} {Style.CYAN}+8% to +12% FPS Boost{Style.RESET} inside the ship\n")
@@ -919,7 +918,7 @@ def run_optimizer_menu(game_dir: Path):
 
                 # Step 4: ShipWindows
                 print(f"{Style.CYAN}{'-' * 75}{Style.RESET}")
-                print(f" {Style.BOLD}{Style.WHITE}[STEP 4 / 6]{Style.RESET} {Style.CYAN}ShipWindows Exterior Skybox & Planet Culling{Style.RESET}")
+                print(f" {Style.BOLD}{Style.WHITE}[STEP 4 / 5]{Style.RESET} {Style.CYAN}ShipWindows Exterior Skybox & Planet Culling{Style.RESET}")
                 print(f"{Style.CYAN}{'-' * 75}{Style.RESET}")
                 print(" Replaces heavy real-time planet exterior skybox with space starfield.")
                 print(f" {Style.YELLOW}Benefit:{Style.RESET} {Style.CYAN}+10% to +15% FPS Boost{Style.RESET} during landing & orbit\n")
@@ -940,7 +939,7 @@ def run_optimizer_menu(game_dir: Path):
 
                 # Step 5: HDRP Fog & Shadows
                 print(f"{Style.CYAN}{'-' * 75}{Style.RESET}")
-                print(f" {Style.BOLD}{Style.WHITE}[STEP 5 / 6]{Style.RESET} {Style.CYAN}LethalSponge HDRP Fog Budget & Shadow Maps{Style.RESET}")
+                print(f" {Style.BOLD}{Style.WHITE}[STEP 5 / 5]{Style.RESET} {Style.CYAN}LethalSponge HDRP Fog Budget & Shadow Maps{Style.RESET}")
                 print(f"{Style.CYAN}{'-' * 75}{Style.RESET}")
                 print(" Lowers heavy volumetric fog budget (0.05) and shadow maps (64px).")
                 print(f" {Style.YELLOW}Benefit:{Style.RESET} {Style.CYAN}+12% to +18% FPS Boost{Style.RESET} in foggy & stormy weather\n")
@@ -958,27 +957,6 @@ def run_optimizer_menu(game_dir: Path):
                     wiz_hdrp = def_hdrp
                 opt_hdrp = "no" if wiz_hdrp.lower() in ("n", "no") else "yes"
                 print(f" {Style.GREEN}-[+] Selected:{Style.RESET} HDRP Fog & Shadows = {opt_hdrp}\n")
-
-                # Step 6: FPS Counter
-                print(f"{Style.CYAN}{'-' * 75}{Style.RESET}")
-                print(f" {Style.BOLD}{Style.WHITE}[STEP 6 / 6]{Style.RESET} {Style.CYAN}Live In-Game FPS Counter Overlay{Style.RESET}")
-                print(f"{Style.CYAN}{'-' * 75}{Style.RESET}")
-                print(" Installs a lightweight in-game FPS and frame-time HUD (Toggle with [F8]).")
-                print(f" {Style.YELLOW}Benefit:{Style.RESET} {Style.CYAN}Diagnostic Overlay{Style.RESET} (0% Performance Cost)\n")
-                if def_fps == "Y":
-                    print(f"  {Style.BOLD}{Style.GREEN}[Y]{Style.RESET} Yes - Install FPS Counter overlay {Style.GREEN}(Currently Active / Installed){Style.RESET}")
-                    print(f"  {Style.BOLD}{Style.YELLOW}[N]{Style.RESET} No  - Do not install FPS overlay\n")
-                    fps_prompt = "[Y/n] (Default: [ENTER] for Yes [Y])"
-                else:
-                    print(f"  {Style.BOLD}{Style.GREEN}[Y]{Style.RESET} Yes - Install FPS Counter overlay {Style.GREEN}(Recommended){Style.RESET}")
-                    print(f"  {Style.BOLD}{Style.YELLOW}[N]{Style.RESET} No  - Do not install FPS overlay {Style.YELLOW}(Currently Not Installed){Style.RESET}\n")
-                    fps_prompt = "[y/N] (Default: [ENTER] for No [N])"
-
-                wiz_fps = input(f"Enable FPS Counter? {fps_prompt}: ").strip()
-                if not wiz_fps:
-                    wiz_fps = def_fps
-                opt_fps = "no" if wiz_fps.lower() in ("n", "no") else "yes"
-                print(f" {Style.GREEN}-[+] Selected:{Style.RESET} FPS Counter = {opt_fps}\n")
 
                 print(f"{Style.CYAN}{'-' * 75}{Style.RESET}")
 
@@ -998,20 +976,10 @@ def run_optimizer_menu(game_dir: Path):
                             "-OptShipCameras", opt_sc,
                             "-OptShipWindows", opt_sw,
                             "-OptHDRP", opt_hdrp,
-                            "-OptFPSCounter", opt_fps,
                             "-GameDir", str(game_dir)
                         ])
 
-                    if opt_fps == "yes":
-                        temp_opt_zip = Path(temp_dir) / "optimizer_plugins.zip"
-                        if download_file_with_progress(opt_zip_url, temp_opt_zip, show_progress=False):
-                            try:
-                                with zipfile.ZipFile(temp_opt_zip, "r") as archive:
-                                    archive.extractall(path=game_dir)
-                            except Exception:
-                                pass
-
-                save_optimizer_state(target_scale, opt_bc, opt_sc, opt_sw, opt_hdrp, opt_fps)
+                save_optimizer_state(target_scale, opt_bc, opt_sc, opt_sw, opt_hdrp)
                 log_success("Custom performance settings have been applied successfully!\n")
                 input("Press Enter to continue...")
 
@@ -1045,7 +1013,7 @@ def run_optimizer_menu(game_dir: Path):
                     target_scale = "0.5"
 
                 print()
-                log_step("1/2", f"Applying Performance Optimizations ({target_scale}x Res)...")
+                log_step("1/1", f"Applying Performance Optimizations ({target_scale}x Res)...")
                 with tempfile.TemporaryDirectory() as temp_dir:
                     temp_ps = Path(temp_dir) / "optimize.ps1"
                     target_ps = local_ps if local_ps.is_file() else temp_ps
@@ -1058,18 +1026,7 @@ def run_optimizer_menu(game_dir: Path):
                             "-File", str(target_ps), "-Mode", "Optimize", "-ResolutionScale", target_scale, "-GameDir", str(game_dir)
                         ])
 
-                    print()
-                    log_step("2/2", "Synchronizing FPS Counter overlay plugin...")
-                    temp_opt_zip = Path(temp_dir) / "optimizer_plugins.zip"
-                    if download_file_with_progress(opt_zip_url, temp_opt_zip, show_progress=False):
-                        try:
-                            with zipfile.ZipFile(temp_opt_zip, "r") as archive:
-                                archive.extractall(path=game_dir)
-                            log_info("FPS Counter plugin synchronized.")
-                        except Exception:
-                            pass
-
-                save_optimizer_state(target_scale, "yes", "yes", "yes", "yes", "yes")
+                save_optimizer_state(target_scale, "yes", "yes", "yes", "yes")
                 log_success(f"Performance Optimizations Applied with {target_scale}x Resolution Scale!\n")
                 input("Press Enter to continue...")
         elif choice == "2":

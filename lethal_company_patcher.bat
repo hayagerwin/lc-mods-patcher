@@ -806,7 +806,7 @@ REM ----------------------------------------------------------------------------
 REM Step 2: BodyCam Overhead
 REM ----------------------------------------------------------------------------
 echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
-echo  %C_BOLD%%C_WHITE%[STEP 2 / 6]%C_RESET% %C_CYAN%OpenBodyCams 3D Camera Overhead%C_RESET%
+echo  %C_BOLD%%C_WHITE%[STEP 2 / 5]%C_RESET% %C_CYAN%OpenBodyCams 3D Camera Overhead%C_RESET%
 echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
 echo  Disables redundant secondary 3D camera rendering on chest rigs ^& terminals.
 echo  %C_YELLOW%Benefit:%C_RESET% %C_CYAN%+15%% to +20%% FPS Boost%C_RESET%, saves ~500MB VRAM
@@ -834,7 +834,7 @@ REM ----------------------------------------------------------------------------
 REM Step 3: Ship Security Cameras
 REM ----------------------------------------------------------------------------
 echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
-echo  %C_BOLD%%C_WHITE%[STEP 3 / 6]%C_RESET% %C_CYAN%Ship Security ^& Monitor Camera Framerates%C_RESET%
+echo  %C_BOLD%%C_WHITE%[STEP 3 / 5]%C_RESET% %C_CYAN%Ship Security ^& Monitor Camera Framerates%C_RESET%
 echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
 echo  Caps ship interior and security camera refresh rates to 5 FPS.
 echo  %C_YELLOW%Benefit:%C_RESET% %C_CYAN%+8%% to +12%% FPS Boost%C_RESET% inside the ship
@@ -862,7 +862,7 @@ REM ----------------------------------------------------------------------------
 REM Step 4: ShipWindows Exterior Skybox
 REM ----------------------------------------------------------------------------
 echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
-echo  %C_BOLD%%C_WHITE%[STEP 4 / 6]%C_RESET% %C_CYAN%ShipWindows Exterior Skybox ^& Planet Culling%C_RESET%
+echo  %C_BOLD%%C_WHITE%[STEP 4 / 5]%C_RESET% %C_CYAN%ShipWindows Exterior Skybox ^& Planet Culling%C_RESET%
 echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
 echo  Replaces heavy real-time planet exterior skybox with space starfield.
 echo  %C_YELLOW%Benefit:%C_RESET% %C_CYAN%+10%% to +15%% FPS Boost%C_RESET% during landing ^& orbit
@@ -890,7 +890,7 @@ REM ----------------------------------------------------------------------------
 REM Step 5: HDRP Fog & Shadows
 REM ----------------------------------------------------------------------------
 echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
-echo  %C_BOLD%%C_WHITE%[STEP 5 / 6]%C_RESET% %C_CYAN%LethalSponge HDRP Fog Budget ^& Shadow Maps%C_RESET%
+echo  %C_BOLD%%C_WHITE%[STEP 5 / 5]%C_RESET% %C_CYAN%LethalSponge HDRP Fog Budget ^& Shadow Maps%C_RESET%
 echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
 echo  Lowers heavy volumetric fog budget (0.05) and shadow maps (64px).
 echo  %C_YELLOW%Benefit:%C_RESET% %C_CYAN%+12%% to +18%% FPS Boost%C_RESET% in foggy ^& stormy weather
@@ -914,46 +914,10 @@ if /i "%WIZ_HDRP%"=="NO" set "OPT_HDRP=no"
 echo  %C_GREEN%-[+] Selected:%C_RESET% HDRP Fog ^& Shadows = !OPT_HDRP!
 echo.
 
-REM ----------------------------------------------------------------------------
-REM Step 6: FPS Counter Overlay
-REM ----------------------------------------------------------------------------
-echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
-echo  %C_BOLD%%C_WHITE%[STEP 6 / 6]%C_RESET% %C_CYAN%Live In-Game FPS Counter Overlay%C_RESET%
-echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
-echo  Installs a lightweight in-game FPS and frame-time HUD (Toggle with [F8]).
-echo  %C_YELLOW%Benefit:%C_RESET% %C_CYAN%Diagnostic Overlay%C_RESET% (0%% Performance Cost)
-echo.
-set "FPS_PROMPT_LABEL=[Y/n] (Default: [ENTER] for Yes)"
-set "FPS_TAG_Y=%C_GREEN%[Currently Installed]%C_RESET%"
-set "FPS_TAG_N="
-if /i "!DEF_WIZ_FPS!"=="N" set "FPS_PROMPT_LABEL=[y/N] (Default: [ENTER] for No)"
-if /i "!DEF_WIZ_FPS!"=="N" set "FPS_TAG_Y="
-if /i "!DEF_WIZ_FPS!"=="N" set "FPS_TAG_N=%C_YELLOW%[Currently Not Installed]%C_RESET%"
-
-echo   %C_GREEN%[Y]%C_RESET% Yes - Install FPS Counter overlay !FPS_TAG_Y!
-echo   %C_YELLOW%[N]%C_RESET% No  - Do not install FPS overlay !FPS_TAG_N!
-echo.
-set "WIZ_FPS="
-set /p "WIZ_FPS=Enable FPS Counter? !FPS_PROMPT_LABEL!: "
-if not defined WIZ_FPS set "WIZ_FPS=!DEF_WIZ_FPS!"
-set "OPT_FPS=yes"
-if /i "%WIZ_FPS%"=="N" set "OPT_FPS=no"
-if /i "%WIZ_FPS%"=="NO" set "OPT_FPS=no"
-echo  %C_GREEN%-[+] Selected:%C_RESET% FPS Counter = !OPT_FPS!
-echo.
-
 echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
 echo %C_CYAN%Applying custom optimization settings...%C_RESET%
 if exist "!PS_SCRIPT!" (
-    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "!PS_SCRIPT!" -Mode "Custom" -ResolutionScale "!TARGET_SCALE!" -OptBodyCam "!OPT_BC!" -OptShipCameras "!OPT_SC!" -OptShipWindows "!OPT_SW!" -OptHDRP "!OPT_HDRP!" -OptFPSCounter "!OPT_FPS!" -GameDir "!GAME_DIR!"
-)
-
-if "!OPT_FPS!"=="yes" (
-    curl.exe -s -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" "!OPT_ZIP_URL!" -o "!TEMP_OPT_ZIP!" 2>nul
-    if exist "!TEMP_OPT_ZIP!" (
-        tar.exe -xf "!TEMP_OPT_ZIP!" -C "!GAME_DIR!" 2>nul
-        del /f /q "!TEMP_OPT_ZIP!" 2>nul
-    )
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "!PS_SCRIPT!" -Mode "Custom" -ResolutionScale "!TARGET_SCALE!" -OptBodyCam "!OPT_BC!" -OptShipCameras "!OPT_SC!" -OptShipWindows "!OPT_SW!" -OptHDRP "!OPT_HDRP!" -GameDir "!GAME_DIR!"
 )
 
 if exist "!TEMP_PS!" del /f /q "!TEMP_PS!" 2>nul
@@ -964,7 +928,6 @@ if not exist "%CONFIG_DIR%" mkdir "%CONFIG_DIR%" 2>nul
     echo SC=!OPT_SC!
     echo SW=!OPT_SW!
     echo HDRP=!OPT_HDRP!
-    echo FPS=!OPT_FPS!
 )>"!OPT_STATE_FILE!" 2>nul
 echo.
 echo %C_GREEN%============================================================================
