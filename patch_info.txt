@@ -1,3 +1,11 @@
+=== [v3.6.1] - 2026-08-24 14:35 PHT ===
+* Optimized Diagnostic & Mod Debugging Mode:
+  - Eliminated Harmony IL opcode bytecode dumping (LogChannels filter), preventing 466,000+ lines of raw assembly instructions from flooding the log file on game startup.
+  - Suppressed Unity internal object instantiate spam from writing to disk while preserving all mod debug logs, error stack traces, and Harmony patch statuses.
+  - Cleaned up Diagnostic Logging Menu in patcher scripts with live status detection.
+* Fixed CMD batch parenthesis trap in Step-by-Step Custom Optimizer Wizard (Option 2 resolution choice).
+* Added real-time Startup Update Check status and persistent header indicators across batch and Python patchers.
+
 === [v3.6.0] - 2026-08-24 13:02 PHT ===
 * Overhauled [F10] Voice Resync Hotkey into an Atomic Nuclear Reset Engine:
   - Force-resets Dissonance microphone hardware capture device (MicrophoneCapture.Reset()).

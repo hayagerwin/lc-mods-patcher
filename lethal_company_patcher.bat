@@ -492,7 +492,7 @@ if exist "!PS_SCRIPT!" (
 echo %C_CYAN%============================================================================%C_RESET%
 echo.
 echo   %C_GREEN%[1]%C_RESET% Set to Clean Console ^& High Performance (%C_GREEN%Loading Visible, Zero In-Game Lag%C_RESET%) %C_GREEN%(Recommended)%C_RESET%
-echo   %C_YELLOW%[2]%C_RESET% Set to Full Verbose Debug Mode         (%C_YELLOW%Spawns Console, Dumps all Debug ^& Unity Logs%C_RESET%)
+echo   %C_YELLOW%[2]%C_RESET% Set to Diagnostic ^& Mod Debug Mode      (%C_YELLOW%Spawns Console, Captures Mod Debug/Info/Errors%C_RESET%)
 echo   %C_WHITE%[3]%C_RESET% Set to Silent Background Mode        (%C_GRAY%Console Window Hidden%C_RESET%)
 echo   %C_CYAN%[4]%C_RESET% Open LogOutput.log in Notepad
 echo   %C_CYAN%[5]%C_RESET% Clear / Reset LogOutput.log File

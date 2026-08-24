@@ -1200,7 +1200,7 @@ def run_logging_menu(game_dir: Path):
 
         print(f"{Style.CYAN}{'=' * 75}{Style.RESET}\n")
         print(f"  {Style.BOLD}{Style.GREEN}[1]{Style.RESET} Set to Clean Console & High Performance ({Style.GREEN}Loading Visible, Zero In-Game Lag{Style.RESET}) {Style.GREEN}(Recommended){Style.RESET}")
-        print(f"  {Style.BOLD}{Style.YELLOW}[2]{Style.RESET} Set to Full Verbose Debug Mode         ({Style.YELLOW}Spawns Console, Dumps all Debug & Unity Logs{Style.RESET})")
+        print(f"  {Style.BOLD}{Style.YELLOW}[2]{Style.RESET} Set to Diagnostic & Mod Debug Mode      ({Style.YELLOW}Spawns Console, Captures Mod Debug/Info/Errors{Style.RESET})")
         print(f"  {Style.BOLD}{Style.RESET}[3] Set to Silent Background Mode        (\033[90mConsole Window Hidden\033[0m)")
         print(f"  {Style.BOLD}{Style.CYAN}[4]{Style.RESET} Open LogOutput.log in Notepad")
         print(f"  {Style.BOLD}{Style.CYAN}[5]{Style.RESET} Clear / Reset LogOutput.log File")

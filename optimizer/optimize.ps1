@@ -377,27 +377,28 @@ elseif ($Mode -eq "LogMinimal") {
 }
 elseif ($Mode -eq "LogDebug") {
     Write-Host "============================================================================" -ForegroundColor Yellow
-    Write-Host "             Configuring Full Verbose Debug Logging Mode                    " -ForegroundColor Yellow
+    Write-Host "        Configuring Optimized Diagnostic & Mod Debugging Mode               " -ForegroundColor Yellow
     Write-Host "============================================================================" -ForegroundColor Yellow
     Write-Host ""
     $bepCfg = Join-Path $configDir "BepInEx.cfg"
     if (Test-Path $bepCfg) {
-        Write-Host "  [1/4] Enabling BepInEx console terminal window with ALL log levels..." -ForegroundColor Yellow
+        Write-Host "  [1/4] Enabling BepInEx console terminal window for live mod debugging..." -ForegroundColor Yellow
         Set-IniSectionValue $bepCfg "Logging.Console" "Enabled" "true"
-        Set-IniSectionValue $bepCfg "Logging.Console" "LogLevels" "All"
+        Set-IniSectionValue $bepCfg "Logging.Console" "LogLevels" "Fatal, Error, Warning, Message, Info, Debug"
 
-        Write-Host "  [2/4] Enabling full Unity engine log redirection..." -ForegroundColor Yellow
+        Write-Host "  [2/4] Enabling Unity engine exception redirection (Engine errors logged)..." -ForegroundColor Yellow
         Set-IniSectionValue $bepCfg "Logging" "UnityLogListening" "true"
-        Set-IniSectionValue $bepCfg "Logging.Disk" "WriteUnityLog" "true"
+        Set-IniSectionValue $bepCfg "Logging.Disk" "WriteUnityLog" "false"
 
-        Write-Host "  [3/4] Setting disk log levels to ALL (Verbose debugging)..." -ForegroundColor Yellow
-        Set-IniSectionValue $bepCfg "Logging.Disk" "LogLevels" "All"
+        Write-Host "  [3/4] Enabling disk log recording for all Mod Info, Messages & Errors..." -ForegroundColor Yellow
+        Set-IniSectionValue $bepCfg "Logging.Disk" "LogLevels" "Fatal, Error, Warning, Message, Info, Debug"
         Set-IniSectionValue $bepCfg "Logging.Disk" "Enabled" "true"
 
-        Write-Host "  [4/4] Setting Harmony log channels to Debug & All..." -ForegroundColor Yellow
-        Set-IniSectionValue $bepCfg "Harmony.Logger" "LogChannels" "Warn, Error, Debug, All"
+        Write-Host "  [4/4] Setting Harmony log channels to Standard (Filtering raw IL bytecode dumps)..." -ForegroundColor Yellow
+        Set-IniSectionValue $bepCfg "Harmony.Logger" "LogChannels" "Warn, Error, Info"
         Write-Host ""
-        Write-Host "  [SUCCESS] Full Debug logging configured! (All raw debug logs recorded)" -ForegroundColor Green
+        Write-Host "  [SUCCESS] Diagnostic & Mod Debugging Mode configured!" -ForegroundColor Green
+        Write-Host "            (All mod errors, stack traces, and debug logs captured without 450k+ lines of IL bytecode dump)" -ForegroundColor Green
     } else {
         Write-Host "  [ERROR] BepInEx.cfg was not found in $configDir" -ForegroundColor Red
     }
@@ -444,13 +445,15 @@ elseif ($Mode -eq "LogCheck") {
         }
     }
 
+    $isDiagnostic = ($conLevels -like "*Debug*" -or $conLevels -eq "All" -or $diskLevels -like "*Debug*" -or $diskLevels -eq "All")
+
     Write-Host "  Logging & Diagnostic Configuration Status:" -ForegroundColor Cyan
-    if ($conEnabled -eq "true" -and $conLevels -ne "All") {
+    if ($conEnabled -eq "true" -and -not $isDiagnostic) {
         Write-Host "   [" -NoNewline; Write-Host ([char]0x221A) -ForegroundColor Green -NoNewline; Write-Host "] " -NoNewline
         Write-Host "BepInEx Console Window  : " -NoNewline; Write-Host "Enabled & Clean (Shows startup loading without in-game lag)" -ForegroundColor Green
-    } elseif ($conEnabled -eq "true" -and $conLevels -eq "All") {
+    } elseif ($conEnabled -eq "true" -and $isDiagnostic) {
         Write-Host "   [" -NoNewline; Write-Host ([char]0x221A) -ForegroundColor Yellow -NoNewline; Write-Host "] " -NoNewline
-        Write-Host "BepInEx Console Window  : " -NoNewline; Write-Host "Enabled & Verbose (Dumps all raw debug messages)" -ForegroundColor Yellow
+        Write-Host "BepInEx Console Window  : " -NoNewline; Write-Host "Enabled & Diagnostic (Captures mod debug messages & stack traces)" -ForegroundColor Yellow
     } else {
         Write-Host "   [" -NoNewline; Write-Host "X" -ForegroundColor DarkGray -NoNewline; Write-Host "] " -NoNewline
         Write-Host "BepInEx Console Window  : " -NoNewline; Write-Host "Disabled / Hidden (Silent background mode)" -ForegroundColor DarkGray
@@ -464,9 +467,9 @@ elseif ($Mode -eq "LogCheck") {
         Write-Host "Unity Engine Logging    : " -NoNewline; Write-Host "Filtered / Suppressed (Fast zero-stutter I/O)" -ForegroundColor Green
     }
 
-    if ($diskLevels -eq "All") {
+    if ($isDiagnostic) {
         Write-Host "   [" -NoNewline; Write-Host ([char]0x221A) -ForegroundColor Yellow -NoNewline; Write-Host "] " -NoNewline
-        Write-Host "Disk Log Verbosity      : " -NoNewline; Write-Host "ALL (Verbose info, messages, warnings, errors)" -ForegroundColor Yellow
+        Write-Host "Disk Log Verbosity      : " -NoNewline; Write-Host "Diagnostic (All Mod Debug, Info, Warnings & Errors recorded)" -ForegroundColor Yellow
     } else {
         Write-Host "   [" -NoNewline; Write-Host ([char]0x221A) -ForegroundColor Green -NoNewline; Write-Host "] " -NoNewline
         Write-Host "Disk Log Verbosity      : " -NoNewline; Write-Host "Optimized (Errors & Warnings only)" -ForegroundColor Green
