@@ -1,7 +1,12 @@
-=== [v3.7.0] - 2026-08-24 19:45 PHT ===
+=== [v3.7.3] - 2026-08-24 19:45 PHT ===
 * Fixed Spacewar Steam Cloud Error On Game Exit:
   - Configured OnlineFix.ini to disable redundant Steam Remote Storage calls (Storage=false).
   - Prevents Steam from attempting to upload local save files to non-existent Spacewar cloud servers and eliminates the exit popup notification.
+* Added Farm & Cook Autopsy Reports (REED-DeathReportExtensions):
+  - Added custom autopsy detection for predatory flora (Anglowberry Lure & Burstberry).
+  - Replaces generic/false death causes with accurate causes ("Snapped in half by an Anglowberry Lure", "Blown apart by an exploding Burstberry").
+
+=== [v3.7.2] - 2026-08-24 19:25 PHT ===
 * Added Permanent Default On-Screen FPS Counter (v1.1.0):
   - Installed REED-LC_FPSCounter as a permanent modular default feature enabled out-of-the-box for all players.
   - High-Accuracy Instantaneous Stutter & 0 FPS Freeze Detection:
@@ -9,6 +14,11 @@
     * When the game freezes, hitches, or drops frames, the counter immediately calculates the true dropped frame rate (down to 0 FPS) and displays critical red warning status.
   - Displays color-coded real-time FPS and frame times with crisp drop-shadow rendering in the top-right corner.
   - Press [F8] in-game to toggle the FPS display on and off at any time.
+* Streamlined Optimizer Wizard:
+  - Removed separate FPS overlay prompt from optimizer (wizard is now 5 pure graphics steps).
+  - Reverting to default high specs will never disable or remove your FPS counter.
+
+=== [v3.7.1] - 2026-08-24 18:30 PHT ===
 * Added Cinematic Death Camera & Poltergeist Spectator Handoff:
   - Extended death camera focus duration from vanilla 1.5s to 5.0s (fully configurable in BepInEx config):
     * Gives players enough time to enjoy the full hilarious death animation, ragdoll flight, monster roars, and explosions before abruptly cutting away.
@@ -18,13 +28,13 @@
     * Death animation cleanly transitions directly into spectating living teammates' shoulder POVs.
     * Press [Q] at any time while dead to break out into free-flying Poltergeist Ghost mode, and press [Q] again to resume spectating friends.
   - Added instant skip keybindings: Press [Space] or [Left Click] to skip the death camera and enter spectator mode immediately.
+
+=== [v3.7.0] - 2026-08-24 18:00 PHT ===
 * Added Comprehensive Death Reporting & Autopsy Overhaul:
   - Installed Coroner (v2.4.1) & CoronerIntegrations (v0.7.0) with StaticNetcodeLib:
     Replaces generic end-of-round death categories with detailed, humorous autopsy reports for all employees on the ship monitor.
   - Added new standalone modular plugin: REED-DeathReportExtensions:
     Dynamically registers and hooks custom death causes for all modpack enemies, scrap items, and hazards:
-    * Anglowberry Lure (Farm & Cook - "Snapped in half by an Anglowberry Lure", "Fell for the glowing Anglowberry bait", "Tried to harvest an Anglowberry without checking for teeth", "Chomped by a predatory trap plant")
-    * Burstberry (Farm & Cook - "Blown apart by an exploding Burstberry", "Harvested a berry with too much internal pressure")
     * Fake Fire Exit / Mimic Door (x753-Mimics - "Devoured by a Fake Fire Exit", "Found out the fire exit had teeth", "Didn't check if the exit door was breathing", "Swallowed whole by a Mimic")
     * Death Note (ChillaxScraps - "This one's name was written in the book of death", "Suffered a sudden heart attack after their name was penned", "Ryuk claimed another soul")
     * Dance Note (ChillaxScraps - "Did not dance when asked", "Exploded while dancing")
