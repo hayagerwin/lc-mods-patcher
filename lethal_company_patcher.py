@@ -720,6 +720,65 @@ def run_optimizer_menu(game_dir: Path):
                 clear_screen()
                 log_header("Custom Step-by-Step Optimizer Wizard")
 
+                cfg_dir = game_dir / "BepInEx" / "config"
+
+                # Auto-detect currently active settings to use as intelligent defaults
+                def_res = "3"
+                def_res_label = "0.7x"
+                lc_cfg = cfg_dir / "com.github.lethalcompanymodding.LCUltrawide.cfg"
+                if lc_cfg.is_file():
+                    txt = lc_cfg.read_text(encoding="utf-8", errors="ignore")
+                    if "Gameplay Camera Resolution Multiplier = 1.2" in txt:
+                        def_res = "1"
+                        def_res_label = "1.2x"
+                    elif "Gameplay Camera Resolution Multiplier = 1" in txt:
+                        def_res = "2"
+                        def_res_label = "1.0x"
+                    elif "Gameplay Camera Resolution Multiplier = 0.7" in txt:
+                        def_res = "3"
+                        def_res_label = "0.7x"
+                    elif "Gameplay Camera Resolution Multiplier = 0.5" in txt:
+                        def_res = "4"
+                        def_res_label = "0.5x"
+
+                def_bc = "Y"
+                obc_cfg = cfg_dir / "Zaggy1024.OpenBodyCams.cfg"
+                if obc_cfg.is_file():
+                    txt = obc_cfg.read_text(encoding="utf-8", errors="ignore")
+                    if "EnableCamera = true" in txt:
+                        def_bc = "N"
+                    elif "EnableCamera = false" in txt:
+                        def_bc = "Y"
+
+                def_sc = "Y"
+                gi_cfg = cfg_dir / "ShaosilGaming.GeneralImprovements.cfg"
+                if gi_cfg.is_file():
+                    txt = gi_cfg.read_text(encoding="utf-8", errors="ignore")
+                    if "ShipExternalCamFPS = 5" in txt:
+                        def_sc = "Y"
+                    elif "ShipExternalCamFPS = 10" in txt:
+                        def_sc = "N"
+
+                def_sw = "Y"
+                sw_cfg = cfg_dir / "TestAccount666.ShipWindows.cfg"
+                if sw_cfg.is_file():
+                    txt = sw_cfg.read_text(encoding="utf-8", errors="ignore")
+                    if "Skybox Type = BLACK_AND_STARS" in txt:
+                        def_sw = "Y"
+                    elif "Skybox Type = REAL" in txt:
+                        def_sw = "N"
+
+                def_hdrp = "Y"
+                sponge_cfg = cfg_dir / "LethalSponge.cfg"
+                if sponge_cfg.is_file():
+                    txt = sponge_cfg.read_text(encoding="utf-8", errors="ignore")
+                    if "shadowsMaxResolution = 64" in txt:
+                        def_hdrp = "Y"
+                    elif "shadowsMaxResolution = 2048" in txt:
+                        def_hdrp = "N"
+
+                def_fps = "Y" if (game_dir / "BepInEx" / "plugins" / "LC_FPSCounter" / "LC_FPSCounter.dll").is_file() else "N"
+
                 # Step 1: Resolution Scale
                 print(f"{Style.CYAN}{'-' * 75}{Style.RESET}")
                 print(f" {Style.BOLD}{Style.WHITE}[STEP 1 / 6]{Style.RESET} {Style.CYAN}Resolution Scaling Multiplier{Style.RESET}")
@@ -730,7 +789,9 @@ def run_optimizer_menu(game_dir: Path):
                 print(f"  {Style.BOLD}{Style.GREEN}[3]{Style.RESET} Performance        : {Style.YELLOW}0.7x Scale{Style.RESET}  ({Style.CYAN}+25% to +35% FPS Boost{Style.RESET}) {Style.GREEN}[Recommended]{Style.RESET}")
                 print(f"  {Style.BOLD}{Style.GREEN}[4]{Style.RESET} Ultra Performance  : {Style.YELLOW}0.5x Scale{Style.RESET}  ({Style.CYAN}+45% to +60% FPS Boost{Style.RESET}) {Style.YELLOW}[Max FPS for iGPU]{Style.RESET}\n")
 
-                wiz_res = input("Select resolution [1-4] (Default: [ENTER] for Option 3 - 0.7x): ").strip()
+                wiz_res = input(f"Select resolution [1-4] (Default: [ENTER] for Option {def_res} - {def_res_label}): ").strip()
+                if not wiz_res:
+                    wiz_res = def_res
                 target_scale = "0.7"
                 if wiz_res == "1":
                     target_scale = "1.2"
@@ -740,7 +801,7 @@ def run_optimizer_menu(game_dir: Path):
                     target_scale = "0.7"
                 elif wiz_res == "4":
                     target_scale = "0.5"
-                print(f" {Style.GREEN}-[√] Selected:{Style.RESET} {target_scale}x Resolution Scale\n")
+                print(f" {Style.GREEN}-[+] Selected:{Style.RESET} {target_scale}x Resolution Scale\n")
 
                 # Step 2: BodyCam
                 print(f"{Style.CYAN}{'-' * 75}{Style.RESET}")
@@ -748,12 +809,20 @@ def run_optimizer_menu(game_dir: Path):
                 print(f"{Style.CYAN}{'-' * 75}{Style.RESET}")
                 print(" Disables redundant secondary 3D camera rendering on chest rigs & terminals.")
                 print(f" {Style.YELLOW}Benefit:{Style.RESET} {Style.CYAN}+15% to +20% FPS Boost{Style.RESET}, saves ~500MB VRAM\n")
-                print(f"  {Style.BOLD}{Style.GREEN}[Y]{Style.RESET} Yes - Disable 3D Bodycam overhead {Style.GREEN}(Recommended){Style.RESET}")
-                print(f"  {Style.BOLD}{Style.YELLOW}[N]{Style.RESET} No  - Keep original full 3D bodycam rendering\n")
+                if def_bc == "Y":
+                    print(f"  {Style.BOLD}{Style.GREEN}[Y]{Style.RESET} Yes - Disable 3D Bodycam overhead {Style.GREEN}(Currently Active / Recommended){Style.RESET}")
+                    print(f"  {Style.BOLD}{Style.YELLOW}[N]{Style.RESET} No  - Keep original full 3D bodycam rendering\n")
+                    bc_prompt = "[Y/n] (Default: [ENTER] for Yes [Y])"
+                else:
+                    print(f"  {Style.BOLD}{Style.GREEN}[Y]{Style.RESET} Yes - Disable 3D Bodycam overhead {Style.GREEN}(Recommended){Style.RESET}")
+                    print(f"  {Style.BOLD}{Style.YELLOW}[N]{Style.RESET} No  - Keep original full 3D bodycam rendering {Style.YELLOW}(Currently Active){Style.RESET}\n")
+                    bc_prompt = "[y/N] (Default: [ENTER] for No [N])"
 
-                wiz_bc = input("Apply BodyCam Optimization? [Y/n] (Default: [ENTER] for Yes): ").strip()
+                wiz_bc = input(f"Apply BodyCam Optimization? {bc_prompt}: ").strip()
+                if not wiz_bc:
+                    wiz_bc = def_bc
                 opt_bc = "no" if wiz_bc.lower() in ("n", "no") else "yes"
-                print(f" {Style.GREEN}-[√] Selected:{Style.RESET} BodyCam Optimization = {opt_bc}\n")
+                print(f" {Style.GREEN}-[+] Selected:{Style.RESET} BodyCam Optimization = {opt_bc}\n")
 
                 # Step 3: Ship Cameras
                 print(f"{Style.CYAN}{'-' * 75}{Style.RESET}")
@@ -761,12 +830,20 @@ def run_optimizer_menu(game_dir: Path):
                 print(f"{Style.CYAN}{'-' * 75}{Style.RESET}")
                 print(" Caps ship interior and security camera refresh rates to 5 FPS.")
                 print(f" {Style.YELLOW}Benefit:{Style.RESET} {Style.CYAN}+8% to +12% FPS Boost{Style.RESET} inside the ship\n")
-                print(f"  {Style.BOLD}{Style.GREEN}[Y]{Style.RESET} Yes - Cap monitor cameras to 5 FPS {Style.GREEN}(Recommended){Style.RESET}")
-                print(f"  {Style.BOLD}{Style.YELLOW}[N]{Style.RESET} No  - Keep default 10+ FPS monitor refresh\n")
+                if def_sc == "Y":
+                    print(f"  {Style.BOLD}{Style.GREEN}[Y]{Style.RESET} Yes - Cap monitor cameras to 5 FPS {Style.GREEN}(Currently Active / Recommended){Style.RESET}")
+                    print(f"  {Style.BOLD}{Style.YELLOW}[N]{Style.RESET} No  - Keep default 10+ FPS monitor refresh\n")
+                    sc_prompt = "[Y/n] (Default: [ENTER] for Yes [Y])"
+                else:
+                    print(f"  {Style.BOLD}{Style.GREEN}[Y]{Style.RESET} Yes - Cap monitor cameras to 5 FPS {Style.GREEN}(Recommended){Style.RESET}")
+                    print(f"  {Style.BOLD}{Style.YELLOW}[N]{Style.RESET} No  - Keep default 10+ FPS monitor refresh {Style.YELLOW}(Currently Active){Style.RESET}\n")
+                    sc_prompt = "[y/N] (Default: [ENTER] for No [N])"
 
-                wiz_sc = input("Cap Ship Cameras? [Y/n] (Default: [ENTER] for Yes): ").strip()
+                wiz_sc = input(f"Cap Ship Cameras? {sc_prompt}: ").strip()
+                if not wiz_sc:
+                    wiz_sc = def_sc
                 opt_sc = "no" if wiz_sc.lower() in ("n", "no") else "yes"
-                print(f" {Style.GREEN}-[√] Selected:{Style.RESET} Ship Cameras Cap = {opt_sc}\n")
+                print(f" {Style.GREEN}-[+] Selected:{Style.RESET} Ship Cameras Cap = {opt_sc}\n")
 
                 # Step 4: ShipWindows
                 print(f"{Style.CYAN}{'-' * 75}{Style.RESET}")
@@ -774,12 +851,20 @@ def run_optimizer_menu(game_dir: Path):
                 print(f"{Style.CYAN}{'-' * 75}{Style.RESET}")
                 print(" Replaces heavy real-time planet exterior skybox with space starfield.")
                 print(f" {Style.YELLOW}Benefit:{Style.RESET} {Style.CYAN}+10% to +15% FPS Boost{Style.RESET} during landing & orbit\n")
-                print(f"  {Style.BOLD}{Style.GREEN}[Y]{Style.RESET} Yes - Use space starfield & planet culling {Style.GREEN}(Recommended){Style.RESET}")
-                print(f"  {Style.BOLD}{Style.YELLOW}[N]{Style.RESET} No  - Keep default heavy exterior meshes\n")
+                if def_sw == "Y":
+                    print(f"  {Style.BOLD}{Style.GREEN}[Y]{Style.RESET} Yes - Use space starfield & planet culling {Style.GREEN}(Currently Active / Recommended){Style.RESET}")
+                    print(f"  {Style.BOLD}{Style.YELLOW}[N]{Style.RESET} No  - Keep default heavy exterior meshes\n")
+                    sw_prompt = "[Y/n] (Default: [ENTER] for Yes [Y])"
+                else:
+                    print(f"  {Style.BOLD}{Style.GREEN}[Y]{Style.RESET} Yes - Use space starfield & planet culling {Style.GREEN}(Recommended){Style.RESET}")
+                    print(f"  {Style.BOLD}{Style.YELLOW}[N]{Style.RESET} No  - Keep default heavy exterior meshes {Style.YELLOW}(Currently Active){Style.RESET}\n")
+                    sw_prompt = "[y/N] (Default: [ENTER] for No [N])"
 
-                wiz_sw = input("Optimize ShipWindows? [Y/n] (Default: [ENTER] for Yes): ").strip()
+                wiz_sw = input(f"Optimize ShipWindows? {sw_prompt}: ").strip()
+                if not wiz_sw:
+                    wiz_sw = def_sw
                 opt_sw = "no" if wiz_sw.lower() in ("n", "no") else "yes"
-                print(f" {Style.GREEN}-[√] Selected:{Style.RESET} ShipWindows Optimization = {opt_sw}\n")
+                print(f" {Style.GREEN}-[+] Selected:{Style.RESET} ShipWindows Optimization = {opt_sw}\n")
 
                 # Step 5: HDRP Fog & Shadows
                 print(f"{Style.CYAN}{'-' * 75}{Style.RESET}")
@@ -787,12 +872,20 @@ def run_optimizer_menu(game_dir: Path):
                 print(f"{Style.CYAN}{'-' * 75}{Style.RESET}")
                 print(" Lowers heavy volumetric fog budget (0.05) and shadow maps (64px).")
                 print(f" {Style.YELLOW}Benefit:{Style.RESET} {Style.CYAN}+12% to +18% FPS Boost{Style.RESET} in foggy & stormy weather\n")
-                print(f"  {Style.BOLD}{Style.GREEN}[Y]{Style.RESET} Yes - Apply low-spec shadows and fog {Style.GREEN}(Recommended){Style.RESET}")
-                print(f"  {Style.BOLD}{Style.YELLOW}[N]{Style.RESET} No  - Keep high default HDRP shadows and volumetric fog\n")
+                if def_hdrp == "Y":
+                    print(f"  {Style.BOLD}{Style.GREEN}[Y]{Style.RESET} Yes - Apply low-spec shadows and fog {Style.GREEN}(Currently Active / Recommended){Style.RESET}")
+                    print(f"  {Style.BOLD}{Style.YELLOW}[N]{Style.RESET} No  - Keep high default HDRP shadows and volumetric fog\n")
+                    hdrp_prompt = "[Y/n] (Default: [ENTER] for Yes [Y])"
+                else:
+                    print(f"  {Style.BOLD}{Style.GREEN}[Y]{Style.RESET} Yes - Apply low-spec shadows and fog {Style.GREEN}(Recommended){Style.RESET}")
+                    print(f"  {Style.BOLD}{Style.YELLOW}[N]{Style.RESET} No  - Keep high default HDRP shadows and volumetric fog {Style.YELLOW}(Currently Active){Style.RESET}\n")
+                    hdrp_prompt = "[y/N] (Default: [ENTER] for No [N])"
 
-                wiz_hdrp = input("Optimize Shadows & Fog? [Y/n] (Default: [ENTER] for Yes): ").strip()
+                wiz_hdrp = input(f"Optimize Shadows & Fog? {hdrp_prompt}: ").strip()
+                if not wiz_hdrp:
+                    wiz_hdrp = def_hdrp
                 opt_hdrp = "no" if wiz_hdrp.lower() in ("n", "no") else "yes"
-                print(f" {Style.GREEN}-[√] Selected:{Style.RESET} HDRP Fog & Shadows = {opt_hdrp}\n")
+                print(f" {Style.GREEN}-[+] Selected:{Style.RESET} HDRP Fog & Shadows = {opt_hdrp}\n")
 
                 # Step 6: FPS Counter
                 print(f"{Style.CYAN}{'-' * 75}{Style.RESET}")
@@ -800,12 +893,20 @@ def run_optimizer_menu(game_dir: Path):
                 print(f"{Style.CYAN}{'-' * 75}{Style.RESET}")
                 print(" Installs a lightweight in-game FPS and frame-time HUD (Toggle with [F8]).")
                 print(f" {Style.YELLOW}Benefit:{Style.RESET} {Style.CYAN}Diagnostic Overlay{Style.RESET} (0% Performance Cost)\n")
-                print(f"  {Style.BOLD}{Style.GREEN}[Y]{Style.RESET} Yes - Install FPS Counter overlay {Style.GREEN}(Recommended){Style.RESET}")
-                print(f"  {Style.BOLD}{Style.YELLOW}[N]{Style.RESET} No  - Do not install FPS overlay\n")
+                if def_fps == "Y":
+                    print(f"  {Style.BOLD}{Style.GREEN}[Y]{Style.RESET} Yes - Install FPS Counter overlay {Style.GREEN}(Currently Active / Installed){Style.RESET}")
+                    print(f"  {Style.BOLD}{Style.YELLOW}[N]{Style.RESET} No  - Do not install FPS overlay\n")
+                    fps_prompt = "[Y/n] (Default: [ENTER] for Yes [Y])"
+                else:
+                    print(f"  {Style.BOLD}{Style.GREEN}[Y]{Style.RESET} Yes - Install FPS Counter overlay {Style.GREEN}(Recommended){Style.RESET}")
+                    print(f"  {Style.BOLD}{Style.YELLOW}[N]{Style.RESET} No  - Do not install FPS overlay {Style.YELLOW}(Currently Not Installed){Style.RESET}\n")
+                    fps_prompt = "[y/N] (Default: [ENTER] for No [N])"
 
-                wiz_fps = input("Enable FPS Counter? [Y/n] (Default: [ENTER] for Yes): ").strip()
+                wiz_fps = input(f"Enable FPS Counter? {fps_prompt}: ").strip()
+                if not wiz_fps:
+                    wiz_fps = def_fps
                 opt_fps = "no" if wiz_fps.lower() in ("n", "no") else "yes"
-                print(f" {Style.GREEN}-[√] Selected:{Style.RESET} FPS Counter = {opt_fps}\n")
+                print(f" {Style.GREEN}-[+] Selected:{Style.RESET} FPS Counter = {opt_fps}\n")
 
                 print(f"{Style.CYAN}{'-' * 75}{Style.RESET}")
 

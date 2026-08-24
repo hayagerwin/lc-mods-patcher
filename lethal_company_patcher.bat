@@ -9,7 +9,7 @@ REM ============================================================================
 set "REPO_USER=hayagerwin"
 set "REPO_NAME=lc-mods-patcher"
 set "BRANCH=main"
-set "PATCHER_VERSION=2026082409"
+set "PATCHER_VERSION=2026082410"
 
 REM Script directory and config path
 set "SCRIPT_DIR=%~dp0"
@@ -687,10 +687,54 @@ pause
 goto :optimizer_menu
 
 REM ----------------------------------------------------------------------------
-REM STEP-BY-STEP CUSTOM WIZARD
+REM ----------------------------------------------------------------------------
+REM STEP-BY-STEP CUSTOM WIZARD (AUTO-REMEMBERS PREVIOUS SETTINGS)
 REM ----------------------------------------------------------------------------
 :do_step_by_step_wizard
 cls
+
+REM Auto-detect currently active settings to use as intelligent defaults
+set "DEF_WIZ_RES=3"
+set "DEF_WIZ_RES_LABEL=0.7x"
+set "LC_CFG=!GAME_DIR!\BepInEx\config\com.github.lethalcompanymodding.LCUltrawide.cfg"
+if exist "!LC_CFG!" (
+    findstr /i /c:"Gameplay Camera Resolution Multiplier = 1.2" "!LC_CFG!" >nul 2>&1 && (set "DEF_WIZ_RES=1" & set "DEF_WIZ_RES_LABEL=1.2x")
+    findstr /i /c:"Gameplay Camera Resolution Multiplier = 1" "!LC_CFG!" >nul 2>&1 && (set "DEF_WIZ_RES=2" & set "DEF_WIZ_RES_LABEL=1.0x")
+    findstr /i /c:"Gameplay Camera Resolution Multiplier = 0.7" "!LC_CFG!" >nul 2>&1 && (set "DEF_WIZ_RES=3" & set "DEF_WIZ_RES_LABEL=0.7x")
+    findstr /i /c:"Gameplay Camera Resolution Multiplier = 0.5" "!LC_CFG!" >nul 2>&1 && (set "DEF_WIZ_RES=4" & set "DEF_WIZ_RES_LABEL=0.5x")
+)
+
+set "DEF_WIZ_BC=Y"
+set "OBC_CFG=!GAME_DIR!\BepInEx\config\Zaggy1024.OpenBodyCams.cfg"
+if exist "!OBC_CFG!" (
+    findstr /i /c:"EnableCamera = true" "!OBC_CFG!" >nul 2>&1 && set "DEF_WIZ_BC=N"
+    findstr /i /c:"EnableCamera = false" "!OBC_CFG!" >nul 2>&1 && set "DEF_WIZ_BC=Y"
+)
+
+set "DEF_WIZ_SC=Y"
+set "GI_CFG=!GAME_DIR!\BepInEx\config\ShaosilGaming.GeneralImprovements.cfg"
+if exist "!GI_CFG!" (
+    findstr /i /c:"ShipExternalCamFPS = 5" "!GI_CFG!" >nul 2>&1 && set "DEF_WIZ_SC=Y"
+    findstr /i /c:"ShipExternalCamFPS = 10" "!GI_CFG!" >nul 2>&1 && set "DEF_WIZ_SC=N"
+)
+
+set "DEF_WIZ_SW=Y"
+set "SW_CFG=!GAME_DIR!\BepInEx\config\TestAccount666.ShipWindows.cfg"
+if exist "!SW_CFG!" (
+    findstr /i /c:"Skybox Type = BLACK_AND_STARS" "!SW_CFG!" >nul 2>&1 && set "DEF_WIZ_SW=Y"
+    findstr /i /c:"Skybox Type = REAL" "!SW_CFG!" >nul 2>&1 && set "DEF_WIZ_SW=N"
+)
+
+set "DEF_WIZ_HDRP=Y"
+set "SPONGE_CFG=!GAME_DIR!\BepInEx\config\LethalSponge.cfg"
+if exist "!SPONGE_CFG!" (
+    findstr /i /c:"shadowsMaxResolution = 64" "!SPONGE_CFG!" >nul 2>&1 && set "DEF_WIZ_HDRP=Y"
+    findstr /i /c:"shadowsMaxResolution = 2048" "!SPONGE_CFG!" >nul 2>&1 && set "DEF_WIZ_HDRP=N"
+)
+
+set "DEF_WIZ_FPS=N"
+if exist "!GAME_DIR!\BepInEx\plugins\LC_FPSCounter\LC_FPSCounter.dll" set "DEF_WIZ_FPS=Y"
+
 echo %C_CYAN%============================================================================
 echo               Custom Step-by-Step Performance Optimizer Wizard
 echo ============================================================================%C_RESET%
@@ -710,8 +754,8 @@ echo   %C_GREEN%[3]%C_RESET% Performance        : %C_YELLOW%0.7x Scale%C_RESET% 
 echo   %C_GREEN%[4]%C_RESET% Ultra Performance  : %C_YELLOW%0.5x Scale%C_RESET%  (%C_CYAN%+45%% to +60%% FPS Boost%C_RESET%) %C_YELLOW%[Max FPS for iGPU]%C_RESET%
 echo.
 set "WIZ_RES="
-set /p "WIZ_RES=Select resolution [1-4] (Default: [ENTER] for Option 3 - 0.7x): "
-if not defined WIZ_RES set "WIZ_RES=3"
+set /p "WIZ_RES=Select resolution [1-4] (Default: [ENTER] for Option !DEF_WIZ_RES! - !DEF_WIZ_RES_LABEL!): "
+if not defined WIZ_RES set "WIZ_RES=!DEF_WIZ_RES!"
 set "TARGET_SCALE=0.7"
 if "%WIZ_RES%"=="1" set "TARGET_SCALE=1.2"
 if "%WIZ_RES%"=="2" set "TARGET_SCALE=1.0"
@@ -729,12 +773,19 @@ echo %C_CYAN%-------------------------------------------------------------------
 echo  Disables redundant secondary 3D camera rendering on chest rigs ^& terminals.
 echo  %C_YELLOW%Benefit:%C_RESET% %C_CYAN%+15%% to +20%% FPS Boost%C_RESET%, saves ~500MB VRAM
 echo.
-echo   %C_GREEN%[Y]%C_RESET% Yes - Disable 3D Bodycam overhead %C_GREEN%(Recommended)%C_RESET%
-echo   %C_YELLOW%[N]%C_RESET% No  - Keep original full 3D bodycam rendering
+if /i "!DEF_WIZ_BC!"=="Y" (
+    set "BC_PROMPT_LABEL=[Y/n] (Default: [ENTER] for Yes [Y])"
+    echo   %C_GREEN%[Y]%C_RESET% Yes - Disable 3D Bodycam overhead %C_GREEN%(Currently Active / Recommended)%C_RESET%
+    echo   %C_YELLOW%[N]%C_RESET% No  - Keep original full 3D bodycam rendering
+) else (
+    set "BC_PROMPT_LABEL=[y/N] (Default: [ENTER] for No [N])"
+    echo   %C_GREEN%[Y]%C_RESET% Yes - Disable 3D Bodycam overhead %C_GREEN%(Recommended)%C_RESET%
+    echo   %C_YELLOW%[N]%C_RESET% No  - Keep original full 3D bodycam rendering %C_YELLOW%(Currently Active)%C_RESET%
+)
 echo.
 set "WIZ_BC="
-set /p "WIZ_BC=Apply BodyCam Optimization? [Y/n] (Default: [ENTER] for Yes): "
-if not defined WIZ_BC set "WIZ_BC=Y"
+set /p "WIZ_BC=Apply BodyCam Optimization? !BC_PROMPT_LABEL!: "
+if not defined WIZ_BC set "WIZ_BC=!DEF_WIZ_BC!"
 set "OPT_BC=yes"
 if /i "%WIZ_BC%"=="N" set "OPT_BC=no"
 if /i "%WIZ_BC%"=="NO" set "OPT_BC=no"
@@ -750,12 +801,19 @@ echo %C_CYAN%-------------------------------------------------------------------
 echo  Caps ship interior and security camera refresh rates to 5 FPS.
 echo  %C_YELLOW%Benefit:%C_RESET% %C_CYAN%+8%% to +12%% FPS Boost%C_RESET% inside the ship
 echo.
-echo   %C_GREEN%[Y]%C_RESET% Yes - Cap monitor cameras to 5 FPS %C_GREEN%(Recommended)%C_RESET%
-echo   %C_YELLOW%[N]%C_RESET% No  - Keep default 10+ FPS monitor refresh
+if /i "!DEF_WIZ_SC!"=="Y" (
+    set "SC_PROMPT_LABEL=[Y/n] (Default: [ENTER] for Yes [Y])"
+    echo   %C_GREEN%[Y]%C_RESET% Yes - Cap monitor cameras to 5 FPS %C_GREEN%(Currently Active / Recommended)%C_RESET%
+    echo   %C_YELLOW%[N]%C_RESET% No  - Keep default 10+ FPS monitor refresh
+) else (
+    set "SC_PROMPT_LABEL=[y/N] (Default: [ENTER] for No [N])"
+    echo   %C_GREEN%[Y]%C_RESET% Yes - Cap monitor cameras to 5 FPS %C_GREEN%(Recommended)%C_RESET%
+    echo   %C_YELLOW%[N]%C_RESET% No  - Keep default 10+ FPS monitor refresh %C_YELLOW%(Currently Active)%C_RESET%
+)
 echo.
 set "WIZ_SC="
-set /p "WIZ_SC=Cap Ship Cameras? [Y/n] (Default: [ENTER] for Yes): "
-if not defined WIZ_SC set "WIZ_SC=Y"
+set /p "WIZ_SC=Cap Ship Cameras? !SC_PROMPT_LABEL!: "
+if not defined WIZ_SC set "WIZ_SC=!DEF_WIZ_SC!"
 set "OPT_SC=yes"
 if /i "%WIZ_SC%"=="N" set "OPT_SC=no"
 if /i "%WIZ_SC%"=="NO" set "OPT_SC=no"
@@ -771,12 +829,19 @@ echo %C_CYAN%-------------------------------------------------------------------
 echo  Replaces heavy real-time planet exterior skybox with space starfield.
 echo  %C_YELLOW%Benefit:%C_RESET% %C_CYAN%+10%% to +15%% FPS Boost%C_RESET% during landing ^& orbit
 echo.
-echo   %C_GREEN%[Y]%C_RESET% Yes - Use space starfield ^& planet culling %C_GREEN%(Recommended)%C_RESET%
-echo   %C_YELLOW%[N]%C_RESET% No  - Keep default heavy exterior meshes
+if /i "!DEF_WIZ_SW!"=="Y" (
+    set "SW_PROMPT_LABEL=[Y/n] (Default: [ENTER] for Yes [Y])"
+    echo   %C_GREEN%[Y]%C_RESET% Yes - Use space starfield ^& planet culling %C_GREEN%(Currently Active / Recommended)%C_RESET%
+    echo   %C_YELLOW%[N]%C_RESET% No  - Keep default heavy exterior meshes
+) else (
+    set "SW_PROMPT_LABEL=[y/N] (Default: [ENTER] for No [N])"
+    echo   %C_GREEN%[Y]%C_RESET% Yes - Use space starfield ^& planet culling %C_GREEN%(Recommended)%C_RESET%
+    echo   %C_YELLOW%[N]%C_RESET% No  - Keep default heavy exterior meshes %C_YELLOW%(Currently Active)%C_RESET%
+)
 echo.
 set "WIZ_SW="
-set /p "WIZ_SW=Optimize ShipWindows? [Y/n] (Default: [ENTER] for Yes): "
-if not defined WIZ_SW set "WIZ_SW=Y"
+set /p "WIZ_SW=Optimize ShipWindows? !SW_PROMPT_LABEL!: "
+if not defined WIZ_SW set "WIZ_SW=!DEF_WIZ_SW!"
 set "OPT_SW=yes"
 if /i "%WIZ_SW%"=="N" set "OPT_SW=no"
 if /i "%WIZ_SW%"=="NO" set "OPT_SW=no"
@@ -792,16 +857,23 @@ echo %C_CYAN%-------------------------------------------------------------------
 echo  Lowers heavy volumetric fog budget (0.05) and shadow maps (64px).
 echo  %C_YELLOW%Benefit:%C_RESET% %C_CYAN%+12%% to +18%% FPS Boost%C_RESET% in foggy ^& stormy weather
 echo.
-echo   %C_GREEN%[Y]%C_RESET% Yes - Apply low-spec shadows and fog %C_GREEN%(Recommended)%C_RESET%
-echo   %C_YELLOW%[N]%C_RESET% No  - Keep high default HDRP shadows and volumetric fog
+if /i "!DEF_WIZ_HDRP!"=="Y" (
+    set "HDRP_PROMPT_LABEL=[Y/n] (Default: [ENTER] for Yes [Y])"
+    echo   %C_GREEN%[Y]%C_RESET% Yes - Apply low-spec shadows and fog %C_GREEN%(Currently Active / Recommended)%C_RESET%
+    echo   %C_YELLOW%[N]%C_RESET% No  - Keep high default HDRP shadows and volumetric fog
+) else (
+    set "HDRP_PROMPT_LABEL=[y/N] (Default: [ENTER] for No [N])"
+    echo   %C_GREEN%[Y]%C_RESET% Yes - Apply low-spec shadows and fog %C_GREEN%(Recommended)%C_RESET%
+    echo   %C_YELLOW%[N]%C_RESET% No  - Keep high default HDRP shadows and volumetric fog %C_YELLOW%(Currently Active)%C_RESET%
+)
 echo.
 set "WIZ_HDRP="
-set /p "WIZ_HDRP=Optimize Shadows & Fog? [Y/n] (Default: [ENTER] for Yes): "
-if not defined WIZ_HDRP set "WIZ_HDRP=Y"
+set /p "WIZ_HDRP=Optimize Shadows ^& Fog? !HDRP_PROMPT_LABEL!: "
+if not defined WIZ_HDRP set "WIZ_HDRP=!DEF_WIZ_HDRP!"
 set "OPT_HDRP=yes"
 if /i "%WIZ_HDRP%"=="N" set "OPT_HDRP=no"
 if /i "%WIZ_HDRP%"=="NO" set "OPT_HDRP=no"
-echo  %C_GREEN%-[+] Selected:%C_RESET% HDRP Fog & Shadows = !OPT_HDRP!
+echo  %C_GREEN%-[+] Selected:%C_RESET% HDRP Fog ^& Shadows = !OPT_HDRP!
 echo.
 
 REM ----------------------------------------------------------------------------
@@ -813,12 +885,19 @@ echo %C_CYAN%-------------------------------------------------------------------
 echo  Installs a lightweight in-game FPS and frame-time HUD (Toggle with [F8]).
 echo  %C_YELLOW%Benefit:%C_RESET% %C_CYAN%Diagnostic Overlay%C_RESET% (0%% Performance Cost)
 echo.
-echo   %C_GREEN%[Y]%C_RESET% Yes - Install FPS Counter overlay %C_GREEN%(Recommended)%C_RESET%
-echo   %C_YELLOW%[N]%C_RESET% No  - Do not install FPS overlay
+if /i "!DEF_WIZ_FPS!"=="Y" (
+    set "FPS_PROMPT_LABEL=[Y/n] (Default: [ENTER] for Yes [Y])"
+    echo   %C_GREEN%[Y]%C_RESET% Yes - Install FPS Counter overlay %C_GREEN%(Currently Active / Installed)%C_RESET%
+    echo   %C_YELLOW%[N]%C_RESET% No  - Do not install FPS overlay
+) else (
+    set "FPS_PROMPT_LABEL=[y/N] (Default: [ENTER] for No [N])"
+    echo   %C_GREEN%[Y]%C_RESET% Yes - Install FPS Counter overlay %C_GREEN%(Recommended)%C_RESET%
+    echo   %C_YELLOW%[N]%C_RESET% No  - Do not install FPS overlay %C_YELLOW%(Currently Not Installed)%C_RESET%
+)
 echo.
 set "WIZ_FPS="
-set /p "WIZ_FPS=Enable FPS Counter? [Y/n] (Default: [ENTER] for Yes): "
-if not defined WIZ_FPS set "WIZ_FPS=Y"
+set /p "WIZ_FPS=Enable FPS Counter? !FPS_PROMPT_LABEL!: "
+if not defined WIZ_FPS set "WIZ_FPS=!DEF_WIZ_FPS!"
 set "OPT_FPS=yes"
 if /i "%WIZ_FPS%"=="N" set "OPT_FPS=no"
 if /i "%WIZ_FPS%"=="NO" set "OPT_FPS=no"
