@@ -1,15 +1,19 @@
-=== [v3.7.0] - 2026-08-24 15:15 PHT ===
-* Added Cinematic Death Camera & Spectator Delay Controls:
+=== [v3.7.0] - 2026-08-24 18:30 PHT ===
+* Added Cinematic Death Camera & Poltergeist Ghost Handoff:
   - Extended death camera focus duration from vanilla 1.5s to 5.0s (fully configurable in BepInEx config):
     * Gives players enough time to enjoy the full hilarious death animation, ragdoll flight, monster roars, and explosions before abruptly cutting away.
     * Works both when you die AND when you are spectating a teammate who dies.
     * Preserves camera focus on the death scene even if eaten by giants/leviathans/T-Rex.
-  - Added instant skip keybindings: Press [Space] or [Left Click] to skip the death camera and enter spectator mode immediately.
+  - Intercepted Poltergeist 4-point instant ghost takeover: completely blocks ghost controls for 5.0s during death animation, then smoothly activates ghost flight afterwards.
+  - Added instant skip keybindings: Press [Space] or [Left Click] to skip the death camera and enter spectator / ghost mode immediately.
 * Added Comprehensive Death Reporting & Autopsy Overhaul:
   - Installed Coroner (v2.4.1) & CoronerIntegrations (v0.7.0) with StaticNetcodeLib:
     Replaces generic end-of-round death categories with detailed, humorous autopsy reports for all employees on the ship monitor.
   - Added new standalone modular plugin: REED-DeathReportExtensions:
-    Dynamically registers and hooks custom death causes for all modpack enemies and hazards:
+    Dynamically registers and hooks custom death causes for all modpack enemies, scrap items, and hazards:
+    * Death Note (ChillaxScraps - "This one's name was written in the book of death", "Suffered a sudden heart attack after their name was penned", "Ryuk claimed another soul")
+    * Dance Note (ChillaxScraps - "Did not dance when asked", "Exploded while dancing")
+    * Fall Damage / Gravity ("Fell to their death", "Thought they could screw gravity")
     * Haunted Harpist ("Serenaded into the afterlife by the ghost harpist")
     * Immortal Snail ("Could not outrun the inevitable snail")
     * Jurassic Park T-Rex ("Devoured by an escaped apex predator")
@@ -21,7 +25,7 @@
     * The Observer ("Looked back into the void")
     * Men Stalker ("Ambushed in the dark by Men Stalker")
     * Siren Head, Shy Guy (SCP-096), Mimic Doors, The Cabinet, and custom scrap hazards.
-  - Implemented universal EnemyAI collision fallback tracking to guarantee 100% death report coverage for all modded creatures.
+  - Filtered Coroner internal physics trigger warning spam ("Collider was not a player") when monsters bump into doors/walls/scrap.
 
 === [v3.6.1] - 2026-08-24 14:35 PHT ===
 * Optimized Diagnostic & Mod Debugging Mode:
