@@ -702,7 +702,35 @@ def run_optimizer_menu(game_dir: Path):
             choice = default_choice
 
         if choice == "1":
-            log_step("1/2", "Applying Low-Spec Performance Optimizations...")
+            clear_screen()
+            log_header("Select Graphics & Resolution Profile")
+            print(f"  {Style.BOLD}{Style.GREEN}[1]{Style.RESET} High               -> {Style.YELLOW}1.2x Res{Style.RESET}  (Crisp visuals, High-End GPU)")
+            print(f"  {Style.BOLD}{Style.GREEN}[2]{Style.RESET} Default / Balanced -> {Style.YELLOW}1.0x Res{Style.RESET}  (Native 1080p/1440p standard)")
+            print(f"  {Style.BOLD}{Style.GREEN}[3]{Style.RESET} Performance        -> {Style.YELLOW}0.7x Res{Style.RESET}  (Recommended: +35% FPS Boost for Mid/Low PC)")
+            print(f"  {Style.BOLD}{Style.GREEN}[4]{Style.RESET} Ultra Performance  -> {Style.YELLOW}0.5x Res{Style.RESET}  (Maximum FPS: +60% Boost for Potato PC / iGPU)")
+            print(f"  {Style.BOLD}{Style.CYAN}[B]{Style.RESET} Back to Optimizer Menu\n")
+
+            try:
+                prof_choice = input("Select resolution profile [1-4, B] (Default: 3): ").strip()
+            except (KeyboardInterrupt, EOFError):
+                print()
+                sys.exit(0)
+
+            if prof_choice.lower() in ("b", "back"):
+                continue
+
+            target_scale = "0.7"
+            if prof_choice == "1":
+                target_scale = "1.2"
+            elif prof_choice == "2":
+                target_scale = "1.0"
+            elif prof_choice == "3":
+                target_scale = "0.7"
+            elif prof_choice == "4":
+                target_scale = "0.5"
+
+            print()
+            log_step("1/2", f"Applying Performance Optimizations ({target_scale}x Res)...")
             with tempfile.TemporaryDirectory() as temp_dir:
                 temp_ps = Path(temp_dir) / "optimize.ps1"
                 target_ps = local_ps if local_ps.is_file() else temp_ps
@@ -712,7 +740,7 @@ def run_optimizer_menu(game_dir: Path):
                 if target_ps.is_file():
                     subprocess.run([
                         "powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
-                        "-File", str(target_ps), "-Mode", "Optimize", "-GameDir", str(game_dir)
+                        "-File", str(target_ps), "-Mode", "Optimize", "-ResolutionScale", target_scale, "-GameDir", str(game_dir)
                     ])
 
                 print()
@@ -726,7 +754,7 @@ def run_optimizer_menu(game_dir: Path):
                     except Exception:
                         pass
 
-            log_success("Low-Spec Optimizations Applied!\n")
+            log_success(f"Performance Optimizations Applied with {target_scale}x Resolution Scale!\n")
             input("Press Enter to continue...")
         elif choice == "2":
             log_step("1/1", "Reverting to Standard / High Specs...")

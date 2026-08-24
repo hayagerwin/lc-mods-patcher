@@ -4,7 +4,10 @@ param (
     [string]$Mode = "Optimize",
 
     [Parameter(Mandatory = $false)]
-    [string]$GameDir = ""
+    [string]$GameDir = "",
+
+    [Parameter(Mandatory = $false)]
+    [string]$ResolutionScale = "0.7"
 )
 
 $ErrorActionPreference = "SilentlyContinue"
@@ -37,13 +40,13 @@ if ($Mode -eq "Optimize") {
     Write-Host "============================================================================" -ForegroundColor Cyan
     Write-Host ""
 
-    Write-Host "[1/7] Optimizing LCUltrawide resolution for low-spec rendering..." -ForegroundColor Cyan
+    Write-Host "[1/7] Applying resolution scale ($($ResolutionScale)x) in LCUltrawide..." -ForegroundColor Cyan
     $lcUltra = Join-Path $configDir "com.github.lethalcompanymodding.LCUltrawide.cfg"
-    Set-ConfigValue $lcUltra "(?m)^Gameplay Camera Resolution Multiplier\s*=.*$" "Gameplay Camera Resolution Multiplier = 0.7"
+    Set-ConfigValue $lcUltra "(?m)^Gameplay Camera Resolution Multiplier\s*=.*$" "Gameplay Camera Resolution Multiplier = $ResolutionScale"
     Set-ConfigValue $lcUltra "(?m)^Terminal Resolution Multiplier\s*=.*$" "Terminal Resolution Multiplier = 1.25"
     Set-ConfigValue $lcUltra "(?m)^AspectRatio\s*=.*$" "AspectRatio = 1.777778"
 
-    Write-Host "[2/7] Optimizing OpenBodyCams (Disabled 3D camera overhead)..." -ForegroundColor Cyan
+    Write-Host "[2/7] Optimizing OpenBodyCams (Disabling heavy 3D camera overhead)..." -ForegroundColor Cyan
     $obc = Join-Path $configDir "Zaggy1024.OpenBodyCams.cfg"
     Set-ConfigValue $obc "(?m)^HorizontalResolution\s*=.*$" "HorizontalResolution = 80"
     Set-ConfigValue $obc "(?m)^Framerate\s*=.*$" "Framerate = 10"
@@ -98,53 +101,31 @@ if ($Mode -eq "Optimize") {
     $localZip = Join-Path $scriptDir "optimizer_plugins.zip"
     $fpsDll = Join-Path $pluginsDir "LC_FPSCounter\LC_FPSCounter.dll"
 
-    # Remove CullFactory if present (causes Netcode RPC signature mismatch with host)
-    $cullFolder = Join-Path $pluginsDir "Zaggy1024-CullFactory"
-    if (Test-Path $cullFolder) {
-        Remove-Item -Recurse -Force $cullFolder -ErrorAction SilentlyContinue
-    }
-
-    if (-not (Test-Path $fpsDll)) {
-        if (Test-Path $localZip) {
-            Write-Host "Extracting optimizer_plugins.zip..." -ForegroundColor Yellow
-            Expand-Archive -Path $localZip -DestinationPath $GameDir -Force
-        }
-        else {
-            Write-Host "Downloading optimizer_plugins.zip from GitHub..." -ForegroundColor Yellow
-            $tempZip = Join-Path $env:TEMP "lc_optimizer_plugins.zip"
-            curl.exe -s -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" "https://raw.githubusercontent.com/hayagerwin/lc-mods-patcher/main/optimizer/optimizer_plugins.zip" -o $tempZip
-            if (Test-Path $tempZip) {
-                Expand-Archive -Path $tempZip -DestinationPath $GameDir -Force
-                Remove-Item -Force $tempZip -ErrorAction SilentlyContinue
-            }
-        }
-    }
-
-    if (Test-Path $fpsDll) {
-        Write-Host "FPS Counter is active (Press F8 in-game to toggle)." -ForegroundColor Green
+    if (-not (Test-Path $fpsDll) -and (Test-Path $localZip)) {
+        Expand-Archive -Path $localZip -DestinationPath $GameDir -Force -ErrorAction SilentlyContinue
     }
 }
 elseif ($Mode -eq "Revert") {
     Write-Host "============================================================================" -ForegroundColor Yellow
-    Write-Host "             Reverting to Standard Default Settings (High Specs)            " -ForegroundColor Yellow
+    Write-Host "         Reverting Performance Optimizations to Standard Defaults           " -ForegroundColor Yellow
     Write-Host "============================================================================" -ForegroundColor Yellow
     Write-Host ""
 
-    Write-Host "[1/6] Reverting LCUltrawide resolution to Standard (1.0x)..." -ForegroundColor Yellow
+    Write-Host "[1/6] Reverting LCUltrawide resolution to Standard (1.0x Native)..." -ForegroundColor Yellow
     $lcUltra = Join-Path $configDir "com.github.lethalcompanymodding.LCUltrawide.cfg"
     Set-ConfigValue $lcUltra "(?m)^Gameplay Camera Resolution Multiplier\s*=.*$" "Gameplay Camera Resolution Multiplier = 1"
     Set-ConfigValue $lcUltra "(?m)^Terminal Resolution Multiplier\s*=.*$" "Terminal Resolution Multiplier = 1"
     Set-ConfigValue $lcUltra "(?m)^AspectRatio\s*=.*$" "AspectRatio = 0"
 
-    Write-Host "[2/6] Reverting OpenBodyCams to Standard..." -ForegroundColor Yellow
+    Write-Host "[2/6] Reverting OpenBodyCams to Standard 3D Camera..." -ForegroundColor Yellow
     $obc = Join-Path $configDir "Zaggy1024.OpenBodyCams.cfg"
     Set-ConfigValue $obc "(?m)^HorizontalResolution\s*=.*$" "HorizontalResolution = 160"
     Set-ConfigValue $obc "(?m)^Framerate\s*=.*$" "Framerate = 20"
     Set-ConfigValue $obc "(?m)^EnableCamera\s*=.*$" "EnableCamera = true"
-    Set-ConfigValue $obc "(?m)^DisplayOriginalScreenWhenDisabled\s*=.*$" "DisplayOriginalScreenWhenDisabled = false"
+    Set-ConfigValue $obc "(?m)^DisplayOriginalScreenWhenDisabled\s*=.*$" "DisplayOriginalScreenWhenDisabled = true"
     Set-ConfigValue $obc "(?m)^EnablePiPBodyCam\s*=.*$" "EnablePiPBodyCam = false"
 
-    Write-Host "[3/6] Reverting Terminal & Suits preview camera resolutions..." -ForegroundColor Yellow
+    Write-Host "[3/6] Reverting Terminal & Suits cameras to Standard..." -ForegroundColor Yellow
     $termStuff = Join-Path $configDir "darmuh.TerminalStuff.cfg"
     Set-ConfigValue $termStuff "(?m)^ObcResolutionMirror\s*=.*$" "ObcResolutionMirror = 1000; 700"
     Set-ConfigValue $termStuff "(?m)^ObcResolutionBodyCam\s*=.*$" "ObcResolutionBodyCam = 1000; 700"
@@ -200,36 +181,56 @@ elseif ($Mode -eq "Check") {
         return ($content -match $pattern)
     }
 
-    $isLcOpt = Test-ConfigSetting (Join-Path $configDir "com.github.lethalcompanymodding.LCUltrawide.cfg") "(?m)^Gameplay Camera Resolution Multiplier\s*=\s*0\.7"
+    function Get-ConfigValue($file, $pattern) {
+        if (-not (Test-Path $file)) { return $null }
+        $content = [System.IO.File]::ReadAllText($file, [System.Text.Encoding]::UTF8)
+        if ($content -match $pattern) {
+            return $matches[1].Trim()
+        }
+        return $null
+    }
+
+    $currentScale = Get-ConfigValue (Join-Path $configDir "com.github.lethalcompanymodding.LCUltrawide.cfg") "(?m)^Gameplay Camera Resolution Multiplier\s*=\s*(.*)$"
+    if (-not $currentScale) { $currentScale = "1.0" }
+
+    $isLcOpt = ($currentScale -ne "1" -and $currentScale -ne "1.0" -and $currentScale -ne "1.2")
+    $scaleDesc = "$($currentScale)x Res Scale"
+    if ($currentScale -eq "0.5") { $scaleGain = "+45-60%" }
+    elseif ($currentScale -eq "0.7") { $scaleGain = "+25-35%" }
+    elseif ($currentScale -eq "1.2") { $scaleGain = "-15-20% (Crisp)"; $scaleDesc = "1.2x High Res" }
+    else { $scaleGain = "Baseline"; $scaleDesc = "1.0x Native Res" }
+
     $isObcOpt = Test-ConfigSetting (Join-Path $configDir "Zaggy1024.OpenBodyCams.cfg") "(?m)^EnableCamera\s*=\s*false"
     $isCamFpsOpt = Test-ConfigSetting (Join-Path $configDir "ShaosilGaming.GeneralImprovements.cfg") "(?m)^ShipExternalCamFPS\s*=\s*5"
     $isWinOpt = Test-ConfigSetting (Join-Path $configDir "TestAccount666.ShipWindows.cfg") "(?m)^Skybox Type\s*=\s*BLACK_AND_STARS"
     $isSpongeOpt = Test-ConfigSetting (Join-Path $configDir "LethalSponge.cfg") "(?m)^shadowsMaxResolution\s*=\s*64"
     $isFpsOpt = Test-Path (Join-Path $pluginsDir "LC_FPSCounter\LC_FPSCounter.dll")
 
-    function Format-CheckItem([string]$name, [bool]$isOpt, [string]$optDesc, [string]$vanillaDesc) {
+    function Format-CheckItem([string]$name, [bool]$isOpt, [string]$optDesc, [string]$vanillaDesc, [string]$impact) {
         if ($isOpt) {
             Write-Host "   [" -NoNewline
             Write-Host ([char]0x221A) -ForegroundColor Green -NoNewline
             Write-Host "] " -NoNewline
-            Write-Host ("{0,-18}" -f $name) -ForegroundColor White -NoNewline
+            Write-Host ("{0,-16}" -f $name) -ForegroundColor White -NoNewline
             Write-Host ": " -NoNewline
-            Write-Host $optDesc -ForegroundColor Green
+            Write-Host ("{0,-36}" -f $optDesc) -ForegroundColor Green -NoNewline
+            Write-Host (" [" + $impact + " FPS]") -ForegroundColor Cyan
         } else {
             Write-Host "   [" -NoNewline
             Write-Host "X" -ForegroundColor Red -NoNewline
             Write-Host "] " -NoNewline
-            Write-Host ("{0,-18}" -f $name) -ForegroundColor DarkGray -NoNewline
+            Write-Host ("{0,-16}" -f $name) -ForegroundColor DarkGray -NoNewline
             Write-Host ": " -NoNewline
-            Write-Host $vanillaDesc -ForegroundColor Red
+            Write-Host ("{0,-36}" -f $vanillaDesc) -ForegroundColor DarkGray -NoNewline
+            Write-Host (" [" + $impact + " Available]") -ForegroundColor DarkYellow
         }
     }
 
-    Write-Host "  Optimization Feature Checklist:" -ForegroundColor Cyan
-    Format-CheckItem -name "LCUltrawide" -isOpt $isLcOpt -optDesc "0.7x Resolution Scale and 16:9 Lock" -vanillaDesc "1.0x Full Native Resolution"
-    Format-CheckItem -name "OpenBodyCams" -isOpt $isObcOpt -optDesc "3D Bodycam Rendering Disabled" -vanillaDesc "3D Camera Active (Heavy VRAM)"
-    Format-CheckItem -name "Ship Cameras" -isOpt $isCamFpsOpt -optDesc "5 FPS Camera Refresh Cap" -vanillaDesc "10 FPS Camera Refresh Rate"
-    Format-CheckItem -name "ShipWindows" -isOpt $isWinOpt -optDesc "Space Starfield and Shutters Active" -vanillaDesc "Real Skybox Active"
-    Format-CheckItem -name "LethalSponge HDRP" -isOpt $isSpongeOpt -optDesc "64px Shadow Maps and 0.05 Fog Budget" -vanillaDesc "2048px Shadows and 0.15 Fog Budget"
-    Format-CheckItem -name "FPS Counter" -isOpt $isFpsOpt -optDesc "Live In-Game Overlay Active (F8 Toggle)" -vanillaDesc "Plugin Not Installed"
+    Write-Host "  Optimization Feature Checklist & Estimated FPS Impact:" -ForegroundColor Cyan
+    Format-CheckItem -name "Resolution" -isOpt $isLcOpt -optDesc $scaleDesc -vanillaDesc $scaleDesc -impact $scaleGain
+    Format-CheckItem -name "OpenBodyCams" -isOpt $isObcOpt -optDesc "3D Bodycam Rendering Disabled" -vanillaDesc "3D Camera Active (Heavy VRAM)" -impact "+15-20%"
+    Format-CheckItem -name "Ship Cameras" -isOpt $isCamFpsOpt -optDesc "5 FPS Camera Refresh Cap" -vanillaDesc "10 FPS Camera Refresh Rate" -impact "+8-12%"
+    Format-CheckItem -name "ShipWindows" -isOpt $isWinOpt -optDesc "Space Starfield Skybox Active" -vanillaDesc "Real 3D Exterior Skybox" -impact "+10-15%"
+    Format-CheckItem -name "LethalSponge" -isOpt $isSpongeOpt -optDesc "64px Shadows & 0.05 Fog Budget" -vanillaDesc "2048px Shadows & 0.15 Fog" -impact "+12-18%"
+    Format-CheckItem -name "FPS Counter" -isOpt $isFpsOpt -optDesc "Live Overlay Active (F8 Toggle)" -vanillaDesc "Plugin Not Installed" -impact "Diagnostic"
 }

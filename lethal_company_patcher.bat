@@ -9,7 +9,7 @@ REM ============================================================================
 set "REPO_USER=hayagerwin"
 set "REPO_NAME=lc-mods-patcher"
 set "BRANCH=main"
-set "PATCHER_VERSION=2026082402"
+set "PATCHER_VERSION=2026082403"
 
 REM Script directory and config path
 set "SCRIPT_DIR=%~dp0"
@@ -499,7 +499,7 @@ set "OPT_CHOICE="
 set /p "OPT_CHOICE=Select an option [1, 2, 3, B, Q] (Default: !DEFAULT_OPT!): "
 if not defined OPT_CHOICE set "OPT_CHOICE=!DEFAULT_OPT!"
 
-if "%OPT_CHOICE%"=="1" goto :do_apply_optimizer
+if "%OPT_CHOICE%"=="1" goto :do_apply_optimizer_menu
 if "%OPT_CHOICE%"=="2" goto :do_revert_optimizer
 if "%OPT_CHOICE%"=="3" goto :do_launch_from_optimizer
 if /i "%OPT_CHOICE%"=="B" goto :main_menu
@@ -509,11 +509,35 @@ if /i "%OPT_CHOICE%"=="QUIT" exit /b 0
 if "%OPT_CHOICE%"=="0" exit /b 0
 goto :optimizer_menu
 
-:do_apply_optimizer
+:do_apply_optimizer_menu
+cls
+echo %C_CYAN%============================================================================
+echo                   Select Graphics ^& Resolution Profile
+echo ============================================================================%C_RESET%
 echo.
-echo %C_CYAN%[1/2] Applying Low-Spec Performance Optimizations...%C_RESET%
+echo   %C_GREEN%[1]%C_RESET% High               -^> %C_YELLOW%1.2x Res%C_RESET%  ^(Crisp visuals, High-End GPU^)
+echo   %C_GREEN%[2]%C_RESET% Default / Balanced -^> %C_YELLOW%1.0x Res%C_RESET%  ^(Native 1080p/1440p standard^)
+echo   %C_GREEN%[3]%C_RESET% Performance        -^> %C_YELLOW%0.7x Res%C_RESET%  ^(Recommended: +35%% FPS Boost for Mid/Low PC^)
+echo   %C_GREEN%[4]%C_RESET% Ultra Performance  -^> %C_YELLOW%0.5x Res%C_RESET%  ^(Maximum FPS: +60%% Boost for Potato PC / iGPU^)
+echo   %C_CYAN%[B]%C_RESET% Back to Optimizer Menu
+echo.
+set "PROFILE_CHOICE="
+set /p "PROFILE_CHOICE=Select resolution profile [1-4, B] (Default: 3): "
+if not defined PROFILE_CHOICE set "PROFILE_CHOICE=3"
+
+if /i "%PROFILE_CHOICE%"=="B" goto :optimizer_menu
+if /i "%PROFILE_CHOICE%"=="BACK" goto :optimizer_menu
+
+set "TARGET_SCALE=0.7"
+if "%PROFILE_CHOICE%"=="1" set "TARGET_SCALE=1.2"
+if "%PROFILE_CHOICE%"=="2" set "TARGET_SCALE=1.0"
+if "%PROFILE_CHOICE%"=="3" set "TARGET_SCALE=0.7"
+if "%PROFILE_CHOICE%"=="4" set "TARGET_SCALE=0.5"
+
+echo.
+echo %C_CYAN%[1/2] Applying Performance Optimizations (!TARGET_SCALE!x Res)...%C_RESET%
 if exist "!PS_SCRIPT!" (
-    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "!PS_SCRIPT!" -Mode "Optimize" -GameDir "!GAME_DIR!"
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "!PS_SCRIPT!" -Mode "Optimize" -ResolutionScale "!TARGET_SCALE!" -GameDir "!GAME_DIR!"
 )
 echo.
 echo %C_CYAN%[2/2] Synchronizing FPS Counter overlay plugin...%C_RESET%
@@ -524,7 +548,7 @@ if exist "!TEMP_OPT_ZIP!" (
 )
 if exist "!TEMP_PS!" del /f /q "!TEMP_PS!" 2>nul
 echo.
-echo %C_GREEN%[SUCCESS] Low-Spec Optimizations Applied!%C_RESET%
+echo %C_GREEN%[SUCCESS] Performance Optimizations Applied with !TARGET_SCALE!x Resolution Scale!%C_RESET%
 echo.
 pause
 goto :optimizer_menu
