@@ -9,7 +9,7 @@
     * Maggie (LethalThings - "Dissolved into a puddle of green goop by Maggie", "Turned into goop by Maggie's loving embrace")
     * Freddy Fazbear Plush (ChillaxScraps - "Jumpscared to death by Freddy Fazbear", "Suffered the bite of '87 from a toy Freddy", "Har Har Har Har Har...")
     * Trollface (PremiumScraps - "Got epicly trolled to death", "Fell victim to a minor amount of trolling", "Problem, Company?")
-    * Fake Airhorn (PremiumScraps - "Blew into a prank explosive airhorn", "HONK—*BOOM*")
+    * Fake Airhorn (PremiumScraps - "Blew into a prank explosive airhorn", "HONK--*BOOM*")
     * Job Application (PremiumScraps - "Suffered lethal existential dread from a Job Application", "Application rejected: Cause of death was unemployment anxiety")
     * Spanish Drink (PremiumScraps - "Spontaneously combusted after chugging a mysterious drink", "Exploded from severe heartburn")
     * Arson Plush (LethalThings - "Bitten and charred by the Arson plushie", "Discovered why it's named 'Arson'")

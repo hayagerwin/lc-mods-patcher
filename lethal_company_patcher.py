@@ -558,6 +558,32 @@ def stage_display_patch_info(patch_info_url: str, game_dir: Path):
                 return
 
             latest_ver = sections[0][0]
+            term_cols = shutil.get_terminal_size((80, 20)).columns
+            wrap_width = max(60, min(100, term_cols - 4))
+
+            def print_wrapped_lines(lines_list):
+                for l in lines_list:
+                    if not l.strip():
+                        print()
+                        continue
+                    trimmed = l.strip()
+                    lead_spaces = len(l) - len(l.lstrip())
+
+                    if trimmed.startswith("*"):
+                        if lead_spaces <= 2:
+                            # Major feature bullet
+                            wrapped = textwrap.fill(trimmed[1:].strip(), width=wrap_width, initial_indent="  * ", subsequent_indent="    ")
+                            print(f"{Style.BOLD}{Style.GREEN}{wrapped}{Style.RESET}")
+                        else:
+                            # Sub-item bullet
+                            wrapped = textwrap.fill(trimmed[1:].strip(), width=wrap_width, initial_indent="      - ", subsequent_indent="        ")
+                            print(f"{Style.CYAN}{wrapped}{Style.RESET}")
+                    elif trimmed.startswith("-"):
+                        wrapped = textwrap.fill(trimmed[1:].strip(), width=wrap_width, initial_indent="    - ", subsequent_indent="      ")
+                        print(f"{Style.WHITE}{wrapped}{Style.RESET}")
+                    else:
+                        wrapped = textwrap.fill(trimmed, width=wrap_width, initial_indent="    ", subsequent_indent="    ")
+                        print(wrapped)
 
             print(f"{Style.BOLD}{Style.CYAN}{'=' * 75}{Style.RESET}")
             print(f"{Style.BOLD}{Style.CYAN}{'LATEST PATCH DETAILS & CHANGELOG'.center(75)}{Style.RESET}")
@@ -567,11 +593,7 @@ def stage_display_patch_info(patch_info_url: str, game_dir: Path):
                 print(f"{Style.BOLD}{Style.GREEN}[STATUS]{Style.RESET} You are currently UP TO DATE on {latest_ver}.")
                 print("Showing latest release notes:")
                 print(f"{Style.BOLD}{Style.YELLOW}{sections[0][1]}{Style.RESET}")
-                for l in sections[0][2]:
-                    if l.strip().startswith("*"):
-                        print(f"   {Style.GREEN}*{Style.RESET}{l.strip()[1:]}")
-                    elif l.strip():
-                        print(f"  {l.strip()}")
+                print_wrapped_lines(sections[0][2])
             else:
                 if local_ver and local_ver != "none":
                     print(f"{Style.BOLD}{Style.YELLOW}[STATUS]{Style.RESET} Updating from {local_ver} -> {latest_ver}")
@@ -583,11 +605,7 @@ def stage_display_patch_info(patch_info_url: str, game_dir: Path):
                     if local_ver and ver.lower() == local_ver.lower():
                         break
                     print(f"{Style.BOLD}{Style.YELLOW}{head}{Style.RESET}")
-                    for l in lines:
-                        if l.strip().startswith("*"):
-                            print(f"   {Style.GREEN}*{Style.RESET}{l.strip()[1:]}")
-                        elif l.strip():
-                            print(f"  {l.strip()}")
+                    print_wrapped_lines(lines)
                     print()
 
             print(f"{Style.BOLD}{Style.CYAN}{'=' * 75}{Style.RESET}\n")
