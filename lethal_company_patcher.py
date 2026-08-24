@@ -21,7 +21,7 @@ import urllib.error
 REPO_USER = "hayagerwin"
 REPO_NAME = "lc-mods-patcher"
 BRANCH = "main"
-PATCHER_VERSION = "20260824204626"
+PATCHER_VERSION = "20260824205101"
 
 # ==============================================================================
 # TERMINAL FORMATTING HELPERS
@@ -91,17 +91,33 @@ def check_self_update(script_url: str):
             return
 
         print(f"{Style.CYAN}[1/2]{Style.RESET} Checking for patcher script updates on GitHub...")
-        remote_url = f"{script_url}?t={os.urandom(4).hex()}"
-        req = urllib.request.Request(
-            remote_url,
-            headers={
-                "User-Agent": "LC-Mods-Patcher-Client",
-                "Cache-Control": "no-cache",
-                "Pragma": "no-cache"
-            }
-        )
-        with urllib.request.urlopen(req, timeout=5) as response:
-            remote_bytes = response.read()
+        api_url = f"https://api.github.com/repos/{REPO_USER}/{REPO_NAME}/contents/lethal_company_patcher.py?ref={BRANCH}"
+        remote_bytes = None
+        try:
+            req = urllib.request.Request(
+                api_url,
+                headers={
+                    "User-Agent": "LC-Mods-Patcher-Client",
+                    "Accept": "application/vnd.github.v3.raw"
+                }
+            )
+            with urllib.request.urlopen(req, timeout=5) as response:
+                remote_bytes = response.read()
+        except Exception:
+            pass
+
+        if remote_bytes is None:
+            remote_url = f"{script_url}?t={os.urandom(4).hex()}"
+            req = urllib.request.Request(
+                remote_url,
+                headers={
+                    "User-Agent": "LC-Mods-Patcher-Client",
+                    "Cache-Control": "no-cache",
+                    "Pragma": "no-cache"
+                }
+            )
+            with urllib.request.urlopen(req, timeout=5) as response:
+                remote_bytes = response.read()
 
         remote_text = remote_bytes.decode("utf-8", errors="ignore").replace("\r\n", "\n").strip()
         local_text = current_script.read_text(encoding="utf-8", errors="ignore").replace("\r\n", "\n").strip()
@@ -537,7 +553,25 @@ def stage_display_patch_info(patch_info_url: str, game_dir: Path):
 
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_info = Path(temp_dir) / "patch_info.txt"
-        success = download_file_with_progress(f"{patch_info_url}?t={os.urandom(4).hex()}", temp_info, show_progress=False)
+        api_info_url = f"https://api.github.com/repos/{REPO_USER}/{REPO_NAME}/contents/patch_info.txt?ref={BRANCH}"
+        success = False
+        try:
+            req = urllib.request.Request(
+                api_info_url,
+                headers={
+                    "User-Agent": "LC-Mods-Patcher-Client",
+                    "Accept": "application/vnd.github.v3.raw"
+                }
+            )
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                temp_info.write_bytes(resp.read())
+                success = True
+        except Exception:
+            pass
+
+        if not success:
+            success = download_file_with_progress(f"{patch_info_url}?t={os.urandom(4).hex()}", temp_info, show_progress=False)
+
         if success and temp_info.is_file():
             content = temp_info.read_text(encoding="utf-8", errors="ignore").strip()
             if not content:

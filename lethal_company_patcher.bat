@@ -9,7 +9,7 @@ REM ============================================================================
 set "REPO_USER=hayagerwin"
 set "REPO_NAME=lc-mods-patcher"
 set "BRANCH=main"
-set "PATCHER_VERSION=20260824204626"
+set "PATCHER_VERSION=20260824205101"
 
 REM Script directory and config path
 set "SCRIPT_DIR=%~dp0"
@@ -43,7 +43,10 @@ if not defined _LC_PATCHER_SELF_UPDATED (
         set "SCRIPT_URL=https://raw.githubusercontent.com/%REPO_USER%/%REPO_NAME%/%BRANCH%/lethal_company_patcher.bat"
         set "TEMP_SCRIPT=%TEMP%\lc_patcher_update_%RANDOM%.bat"
 
-        curl.exe -s -m 5 -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" "!SCRIPT_URL!?t=%RANDOM%%RANDOM%" -o "!TEMP_SCRIPT!" 2>nul
+        curl.exe -s -m 5 -L -f -H "User-Agent: LC-Mods-Patcher" -H "Accept: application/vnd.github.v3.raw" "https://api.github.com/repos/%REPO_USER%/%REPO_NAME%/contents/lethal_company_patcher.bat?ref=%BRANCH%" -o "!TEMP_SCRIPT!" 2>nul
+        if not exist "!TEMP_SCRIPT!" (
+            curl.exe -s -m 5 -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" "!SCRIPT_URL!?t=%RANDOM%%RANDOM%" -o "!TEMP_SCRIPT!" 2>nul
+        )
         if exist "!TEMP_SCRIPT!" (
             set "REMOTE_VERSION="
             for /f "usebackq delims=" %%V in (`powershell -NoProfile -Command "$txt = Get-Content '!TEMP_SCRIPT!'; foreach($l in $txt){ if($l -match 'PATCHER_VERSION=(\d+)') { Write-Output $matches[1]; break } }"`) do (
@@ -1019,7 +1022,10 @@ set "TEMP_PATCH_INFO=%TEMP%\lc_patch_info_%RANDOM%.txt"
 REM ----------------------------------------------------------------------------
 REM 2.5 FETCH & DISPLAY LATEST PATCH CHANGELOG
 REM ----------------------------------------------------------------------------
-curl.exe -s -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" "%PATCH_INFO_URL%?t=%RANDOM%" -o "%TEMP_PATCH_INFO%" 2>nul
+curl.exe -s -m 5 -L -f -H "User-Agent: LC-Mods-Patcher" -H "Accept: application/vnd.github.v3.raw" "https://api.github.com/repos/%REPO_USER%/%REPO_NAME%/contents/patch_info.txt?ref=%BRANCH%" -o "%TEMP_PATCH_INFO%" 2>nul
+if not exist "%TEMP_PATCH_INFO%" (
+    curl.exe -s -m 5 -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" "%PATCH_INFO_URL%?t=%RANDOM%%RANDOM%" -o "%TEMP_PATCH_INFO%" 2>nul
+)
 
 if not exist "%TEMP_PATCH_INFO%" goto :skip_patch_info
 
