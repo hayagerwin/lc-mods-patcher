@@ -978,7 +978,11 @@ def run_patcher_flow(game_dir: Path):
         sys.exit(0)
 
     print()
-    log_info("Launching Lethal Company...")
+    print(f"{Style.CYAN}{'=' * 75}")
+    print("[+] Launching Lethal Company with BepInEx Modding Engine...")
+    print("[i] Loading 40+ mods (Initial boot takes ~15-30s on lower-spec systems).")
+    print("[i] The black BepInEx console window will display active plugin progress.")
+    print(f"{'=' * 75}{Style.RESET}")
     try:
         exe_path = game_dir / "Lethal Company.exe"
         if sys.platform == "win32":
@@ -1022,15 +1026,16 @@ def run_logging_menu(game_dir: Path):
                     pass
 
         print(f"{Style.CYAN}{'=' * 75}{Style.RESET}\n")
-        print(f"  {Style.BOLD}{Style.GREEN}[1]{Style.RESET} Set to Minimal / Optimized Logs ({Style.CYAN}High Performance, No Black Console, Fast{Style.RESET})")
-        print(f"  {Style.BOLD}{Style.YELLOW}[2]{Style.RESET} Set to Full Verbose Debug Mode  ({Style.YELLOW}Show Console Window, All Logs for Debugging{Style.RESET})")
-        print(f"  {Style.BOLD}{Style.CYAN}[3]{Style.RESET} Open LogOutput.log in Notepad")
-        print(f"  {Style.BOLD}{Style.CYAN}[4]{Style.RESET} Clear / Reset LogOutput.log File")
+        print(f"  {Style.BOLD}{Style.GREEN}[1]{Style.RESET} Set to Clean Console & High Performance ({Style.GREEN}Loading Visible, Zero In-Game Lag{Style.RESET}) {Style.GREEN}(Recommended){Style.RESET}")
+        print(f"  {Style.BOLD}{Style.YELLOW}[2]{Style.RESET} Set to Full Verbose Debug Mode         ({Style.YELLOW}Spawns Console, Dumps all Debug & Unity Logs{Style.RESET})")
+        print(f"  {Style.BOLD}{Style.RESET}[3] Set to Silent Background Mode        (\033[90mConsole Window Hidden\033[0m)")
+        print(f"  {Style.BOLD}{Style.CYAN}[4]{Style.RESET} Open LogOutput.log in Notepad")
+        print(f"  {Style.BOLD}{Style.CYAN}[5]{Style.RESET} Clear / Reset LogOutput.log File")
         print(f"  {Style.BOLD}{Style.CYAN}[B]{Style.RESET} Back to Main Menu")
         print(f"  {Style.BOLD}{Style.RED}[Q]{Style.RESET} Exit\n")
 
         try:
-            choice = input("Select an option [1-4, B, Q] (Default: 1): ").strip()
+            choice = input("Select an option [1-5, B, Q] (Default: 1): ").strip()
         except (KeyboardInterrupt, EOFError):
             print()
             sys.exit(0)
@@ -1069,6 +1074,21 @@ def run_logging_menu(game_dir: Path):
             print()
             input("Press Enter to continue...")
         elif choice == "3":
+            print()
+            with tempfile.TemporaryDirectory() as temp_dir:
+                temp_ps = Path(temp_dir) / "optimize.ps1"
+                target_ps = local_ps if local_ps.is_file() else temp_ps
+                if not target_ps.is_file():
+                    download_file_with_progress(ps_url, temp_ps, show_progress=False)
+                    target_ps = temp_ps
+                if target_ps.is_file():
+                    subprocess.run([
+                        "powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
+                        "-File", str(target_ps), "-Mode", "LogSilent", "-GameDir", str(game_dir)
+                    ])
+            print()
+            input("Press Enter to continue...")
+        elif choice == "4":
             log_file = game_dir / "BepInEx" / "LogOutput.log"
             if log_file.is_file():
                 if sys.platform == "win32":
@@ -1078,7 +1098,7 @@ def run_logging_menu(game_dir: Path):
             else:
                 log_warn("No LogOutput.log found in BepInEx folder.")
                 input("\nPress Enter to continue...")
-        elif choice == "4":
+        elif choice == "5":
             print()
             with tempfile.TemporaryDirectory() as temp_dir:
                 temp_ps = Path(temp_dir) / "optimize.ps1"

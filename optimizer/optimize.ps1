@@ -1,6 +1,6 @@
 param (
     [Parameter(Mandatory = $false)]
-    [ValidateSet("Optimize", "Revert", "Check", "Custom", "LogMinimal", "LogDebug", "LogCheck", "LogClear")]
+    [ValidateSet("Optimize", "Revert", "Check", "Custom", "LogMinimal", "LogDebug", "LogSilent", "LogCheck", "LogClear")]
     [string]$Mode = "Optimize",
 
     [Parameter(Mandatory = $false)]
@@ -309,16 +309,16 @@ elseif ($Mode -eq "Check") {
 }
 elseif ($Mode -eq "LogMinimal") {
     Write-Host "============================================================================" -ForegroundColor Cyan
-    Write-Host "           Configuring Minimal & High-Performance Logging Mode              " -ForegroundColor Cyan
+    Write-Host "      Configuring Clean Console & High-Performance Logging Mode             " -ForegroundColor Cyan
     Write-Host "============================================================================" -ForegroundColor Cyan
     Write-Host ""
     $bepCfg = Join-Path $configDir "BepInEx.cfg"
     if (Test-Path $bepCfg) {
-        Write-Host "  [1/4] Disabling BepInEx console terminal window..." -ForegroundColor Cyan
-        Set-IniSectionValue $bepCfg "Logging.Console" "Enabled" "false"
-        Set-IniSectionValue $bepCfg "Logging.Console" "LogLevels" "Fatal, Error, Warning"
+        Write-Host "  [1/4] Keeping BepInEx console terminal window active for visual loading..." -ForegroundColor Cyan
+        Set-IniSectionValue $bepCfg "Logging.Console" "Enabled" "true"
+        Set-IniSectionValue $bepCfg "Logging.Console" "LogLevels" "Fatal, Error, Warning, Message, Info"
 
-        Write-Host "  [2/4] Disabling Unity engine log redirection (Eliminates CPU lock contention)..." -ForegroundColor Cyan
+        Write-Host "  [2/4] Disabling Unity engine log redirection (Eliminates in-game lock lag)..." -ForegroundColor Cyan
         Set-IniSectionValue $bepCfg "Logging" "UnityLogListening" "false"
         Set-IniSectionValue $bepCfg "Logging.Disk" "WriteUnityLog" "false"
 
@@ -329,7 +329,8 @@ elseif ($Mode -eq "LogMinimal") {
         Write-Host "  [4/4] Setting Harmony log channels to Standard..." -ForegroundColor Cyan
         Set-IniSectionValue $bepCfg "Harmony.Logger" "LogChannels" "Warn, Error"
         Write-Host ""
-        Write-Host "  [SUCCESS] Minimal logging configured! (Max FPS & Zero disk I/O lag)" -ForegroundColor Green
+        Write-Host "  [SUCCESS] Clean Console & High Performance Mode configured!" -ForegroundColor Green
+        Write-Host "            (Loading progress visible on startup, zero lag during gameplay)" -ForegroundColor Green
     } else {
         Write-Host "  [ERROR] BepInEx.cfg was not found in $configDir" -ForegroundColor Red
     }
@@ -341,7 +342,7 @@ elseif ($Mode -eq "LogDebug") {
     Write-Host ""
     $bepCfg = Join-Path $configDir "BepInEx.cfg"
     if (Test-Path $bepCfg) {
-        Write-Host "  [1/4] Enabling BepInEx black console window on startup..." -ForegroundColor Yellow
+        Write-Host "  [1/4] Enabling BepInEx console terminal window with ALL log levels..." -ForegroundColor Yellow
         Set-IniSectionValue $bepCfg "Logging.Console" "Enabled" "true"
         Set-IniSectionValue $bepCfg "Logging.Console" "LogLevels" "All"
 
@@ -356,7 +357,31 @@ elseif ($Mode -eq "LogDebug") {
         Write-Host "  [4/4] Setting Harmony log channels to Debug & All..." -ForegroundColor Yellow
         Set-IniSectionValue $bepCfg "Harmony.Logger" "LogChannels" "Warn, Error, Debug, All"
         Write-Host ""
-        Write-Host "  [SUCCESS] Full Debug logging configured! (Console active & all logs recorded)" -ForegroundColor Green
+        Write-Host "  [SUCCESS] Full Debug logging configured! (All raw debug logs recorded)" -ForegroundColor Green
+    } else {
+        Write-Host "  [ERROR] BepInEx.cfg was not found in $configDir" -ForegroundColor Red
+    }
+}
+elseif ($Mode -eq "LogSilent") {
+    Write-Host "============================================================================" -ForegroundColor Yellow
+    Write-Host "              Configuring Silent Background Mode (Console Hidden)           " -ForegroundColor Yellow
+    Write-Host "============================================================================" -ForegroundColor Yellow
+    Write-Host ""
+    $bepCfg = Join-Path $configDir "BepInEx.cfg"
+    if (Test-Path $bepCfg) {
+        Write-Host "  [1/3] Hiding BepInEx console terminal window..." -ForegroundColor Yellow
+        Set-IniSectionValue $bepCfg "Logging.Console" "Enabled" "false"
+        Set-IniSectionValue $bepCfg "Logging.Console" "LogLevels" "Fatal, Error, Warning"
+
+        Write-Host "  [2/3] Disabling Unity engine log redirection..." -ForegroundColor Yellow
+        Set-IniSectionValue $bepCfg "Logging" "UnityLogListening" "false"
+        Set-IniSectionValue $bepCfg "Logging.Disk" "WriteUnityLog" "false"
+
+        Write-Host "  [3/3] Setting disk log levels to Errors & Warnings only..." -ForegroundColor Yellow
+        Set-IniSectionValue $bepCfg "Logging.Disk" "LogLevels" "Fatal, Error, Warning"
+        Set-IniSectionValue $bepCfg "Logging.Disk" "Enabled" "true"
+        Write-Host ""
+        Write-Host "  [SUCCESS] Silent background mode configured (Console window hidden)." -ForegroundColor Green
     } else {
         Write-Host "  [ERROR] BepInEx.cfg was not found in $configDir" -ForegroundColor Red
     }
@@ -380,28 +405,31 @@ elseif ($Mode -eq "LogCheck") {
     }
 
     Write-Host "  Logging & Diagnostic Configuration Status:" -ForegroundColor Cyan
-    if ($conEnabled -eq "true") {
-        Write-Host "   [" -NoNewline; Write-Host ([char]0x221A) -ForegroundColor Yellow -NoNewline; Write-Host "] " -NoNewline
-        Write-Host "BepInEx Console Window  : " -NoNewline; Write-Host "Enabled (Spawns terminal on game launch)" -ForegroundColor Yellow
-    } else {
+    if ($conEnabled -eq "true" -and $conLevels -ne "All") {
         Write-Host "   [" -NoNewline; Write-Host ([char]0x221A) -ForegroundColor Green -NoNewline; Write-Host "] " -NoNewline
-        Write-Host "BepInEx Console Window  : " -NoNewline; Write-Host "Disabled (Clean background launch)" -ForegroundColor Green
+        Write-Host "BepInEx Console Window  : " -NoNewline; Write-Host "Enabled & Clean (Shows startup loading without in-game lag)" -ForegroundColor Green
+    } elseif ($conEnabled -eq "true" -and $conLevels -eq "All") {
+        Write-Host "   [" -NoNewline; Write-Host ([char]0x221A) -ForegroundColor Yellow -NoNewline; Write-Host "] " -NoNewline
+        Write-Host "BepInEx Console Window  : " -NoNewline; Write-Host "Enabled & Verbose (Dumps all raw debug messages)" -ForegroundColor Yellow
+    } else {
+        Write-Host "   [" -NoNewline; Write-Host "X" -ForegroundColor DarkGray -NoNewline; Write-Host "] " -NoNewline
+        Write-Host "BepInEx Console Window  : " -NoNewline; Write-Host "Disabled / Hidden (Silent background mode)" -ForegroundColor DarkGray
     }
 
     if ($diskUnity -eq "true") {
         Write-Host "   [" -NoNewline; Write-Host ([char]0x221A) -ForegroundColor Yellow -NoNewline; Write-Host "] " -NoNewline
-        Write-Host "Unity Engine Logging    : " -NoNewline; Write-Host "Enabled (Heavy I/O, writing all Unity logs)" -ForegroundColor Yellow
+        Write-Host "Unity Engine Logging    : " -NoNewline; Write-Host "Enabled (Heavy I/O, writing all Unity engine logs)" -ForegroundColor Yellow
     } else {
         Write-Host "   [" -NoNewline; Write-Host ([char]0x221A) -ForegroundColor Green -NoNewline; Write-Host "] " -NoNewline
-        Write-Host "Unity Engine Logging    : " -NoNewline; Write-Host "Filtered / Minimal (Fast I/O)" -ForegroundColor Green
+        Write-Host "Unity Engine Logging    : " -NoNewline; Write-Host "Filtered / Suppressed (Fast zero-stutter I/O)" -ForegroundColor Green
     }
 
     if ($diskLevels -eq "All") {
         Write-Host "   [" -NoNewline; Write-Host ([char]0x221A) -ForegroundColor Yellow -NoNewline; Write-Host "] " -NoNewline
-        Write-Host "Disk Log Verbosity      : " -NoNewline; Write-Host "ALL (Verbose info, warnings, errors)" -ForegroundColor Yellow
+        Write-Host "Disk Log Verbosity      : " -NoNewline; Write-Host "ALL (Verbose info, messages, warnings, errors)" -ForegroundColor Yellow
     } else {
         Write-Host "   [" -NoNewline; Write-Host ([char]0x221A) -ForegroundColor Green -NoNewline; Write-Host "] " -NoNewline
-        Write-Host "Disk Log Verbosity      : " -NoNewline; Write-Host "Minimal (Errors & Warnings only)" -ForegroundColor Green
+        Write-Host "Disk Log Verbosity      : " -NoNewline; Write-Host "Optimized (Errors & Warnings only)" -ForegroundColor Green
     }
 
     Write-Host "   [i] " -ForegroundColor Cyan -NoNewline

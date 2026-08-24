@@ -9,7 +9,7 @@ REM ============================================================================
 set "REPO_USER=hayagerwin"
 set "REPO_NAME=lc-mods-patcher"
 set "BRANCH=main"
-set "PATCHER_VERSION=2026082407"
+set "PATCHER_VERSION=2026082408"
 
 REM Script directory and config path
 set "SCRIPT_DIR=%~dp0"
@@ -472,15 +472,16 @@ if exist "!PS_SCRIPT!" (
 )
 echo %C_CYAN%============================================================================%C_RESET%
 echo.
-echo   %C_GREEN%[1]%C_RESET% Set to Minimal / Optimized Logs (%C_CYAN%High Performance, No Black Console, Fast%C_RESET%)
-echo   %C_YELLOW%[2]%C_RESET% Set to Full Verbose Debug Mode  (%C_YELLOW%Show Console Window, All Logs for Debugging%C_RESET%)
-echo   %C_CYAN%[3]%C_RESET% Open LogOutput.log in Notepad
-echo   %C_CYAN%[4]%C_RESET% Clear / Reset LogOutput.log File
+echo   %C_GREEN%[1]%C_RESET% Set to Clean Console ^& High Performance (%C_GREEN%Loading Visible, Zero In-Game Lag%C_RESET%) %C_GREEN%(Recommended)%C_RESET%
+echo   %C_YELLOW%[2]%C_RESET% Set to Full Verbose Debug Mode         (%C_YELLOW%Spawns Console, Dumps all Debug ^& Unity Logs%C_RESET%)
+echo   %C_WHITE%[3]%C_RESET% Set to Silent Background Mode        (%C_GRAY%Console Window Hidden%C_RESET%)
+echo   %C_CYAN%[4]%C_RESET% Open LogOutput.log in Notepad
+echo   %C_CYAN%[5]%C_RESET% Clear / Reset LogOutput.log File
 echo   %C_CYAN%[B]%C_RESET% Back to Main Menu
 echo   %C_RED%[Q]%C_RESET% Exit
 echo.
 set "LOG_CHOICE="
-set /p "LOG_CHOICE=Select an option [1-4, B, Q] (Default: 1): "
+set /p "LOG_CHOICE=Select an option [1-5, B, Q] (Default: 1): "
 if not defined LOG_CHOICE set "LOG_CHOICE=1"
 
 if "%LOG_CHOICE%"=="1" (
@@ -500,6 +501,14 @@ if "%LOG_CHOICE%"=="2" (
     goto :logging_menu
 )
 if "%LOG_CHOICE%"=="3" (
+    echo.
+    if exist "!PS_SCRIPT!" powershell.exe -NoProfile -ExecutionPolicy Bypass -File "!PS_SCRIPT!" -Mode "LogSilent" -GameDir "!GAME_DIR!"
+    if exist "!TEMP_PS!" del /f /q "!TEMP_PS!" 2>nul
+    echo.
+    pause
+    goto :logging_menu
+)
+if "%LOG_CHOICE%"=="4" (
     if exist "!GAME_DIR!\BepInEx\LogOutput.log" (
         start notepad "!GAME_DIR!\BepInEx\LogOutput.log"
     ) else (
@@ -508,7 +517,7 @@ if "%LOG_CHOICE%"=="3" (
     )
     goto :logging_menu
 )
-if "%LOG_CHOICE%"=="4" (
+if "%LOG_CHOICE%"=="5" (
     echo.
     if exist "!PS_SCRIPT!" powershell.exe -NoProfile -ExecutionPolicy Bypass -File "!PS_SCRIPT!" -Mode "LogClear" -GameDir "!GAME_DIR!"
     if exist "!TEMP_PS!" del /f /q "!TEMP_PS!" 2>nul
@@ -839,10 +848,14 @@ goto :optimizer_menu
 
 :do_launch_from_optimizer
 echo.
-echo %C_CYAN%Launching Lethal Company...%C_RESET%
+echo %C_CYAN%============================================================================
+echo [+] Launching Lethal Company with BepInEx Modding Engine...
+echo [i] Loading 40+ mods (Initial boot takes ~15-30s on lower-spec systems).
+echo [i] The black BepInEx console window will display active plugin progress.
+echo ============================================================================%C_RESET%
 cd /d "!GAME_DIR!"
 start "" "Lethal Company.exe"
-timeout /t 1 >nul 2>&1
+timeout /t 3 >nul 2>&1
 exit
 
 
@@ -988,10 +1001,14 @@ if /i "!USER_CHOICE!"=="n" exit /b 0
 if /i "!USER_CHOICE!"=="no" exit /b 0
 
 echo.
-echo %C_CYAN%Launching Lethal Company...%C_RESET%
+echo %C_CYAN%============================================================================
+echo [+] Launching Lethal Company with BepInEx Modding Engine...
+echo [i] Loading 40+ mods (Initial boot takes ~15-30s on lower-spec systems).
+echo [i] The black BepInEx console window will display active plugin progress.
+echo ============================================================================%C_RESET%
 cd /d "!GAME_DIR!"
 start "" "Lethal Company.exe"
-timeout /t 1 >nul 2>&1
+timeout /t 3 >nul 2>&1
 exit
 
 
