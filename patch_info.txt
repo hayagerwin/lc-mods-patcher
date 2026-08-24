@@ -1,32 +1,17 @@
 === [v3.7.4] - 2026-08-24 20:05 PHT ===
 * Comprehensive Modpack Autopsy Expansion (REED-DeathReportExtensions):
-  - Deep-scanned all 49 mod DLLs and eliminated all remaining hardcoded/false vanilla death causes.
-  - Added rich autopsy report variations (4 to 7 unique lines each) across custom enemies, traps, and scraps:
-    * Shy Guy / SCP-096 (Scopophobia - "Torn to shreds by Shy Guy", "Looked directly at SCP-096's face", "Saw four pixels of Shy Guy's face")
-    * Siren Head (LethalSirenHead - "Devoured from the treetops by Siren Head", "Mistook Siren Head for a radio tower")
-    * The Cabinet (TheCabinet - "Pulled inside The Cabinet and digested", "Filed under 'Deceased' by The Cabinet")
-    * Herobrine (HerobrineMod - "Removed from the game by Herobrine", "Smited by the mythical block man")
-    * Maggie (LethalThings - "Dissolved into a puddle of green goop by Maggie", "Turned into goop by Maggie's loving embrace")
-    * Freddy Fazbear Plush (ChillaxScraps - "Jumpscared to death by Freddy Fazbear", "Suffered the bite of '87 from a toy Freddy", "Har Har Har Har Har...")
-    * Trollface (PremiumScraps - "Got epicly trolled to death", "Fell victim to a minor amount of trolling", "Problem, Company?")
-    * Fake Airhorn (PremiumScraps - "Blew into a prank explosive airhorn", "HONK--*BOOM*")
-    * Job Application (PremiumScraps - "Suffered lethal existential dread from a Job Application", "Application rejected: Cause of death was unemployment anxiety")
-    * Spanish Drink (PremiumScraps - "Spontaneously combusted after chugging a mysterious drink", "Exploded from severe heartburn")
-    * Arson Plush (LethalThings - "Bitten and charred by the Arson plushie", "Discovered why it's named 'Arson'")
-    * Gremlin Energy (LethalThings - "Suffered cardiac arrest from Gremlin Energy overdose", "Drank 4,000 mg of caffeine in one gulp")
-    * Garden Rake Trap (Melanie Crafting - "Stepped on a cartoon rake and took the handle to the face", "Tom & Jerry'd themselves with a garden tool")
-    * Power Outlet Trap (LethalThings - "Stuck a fork into the facility power outlet", "Fried by 10,000 volts of facility power")
-    * Stone Gaze / Petrification (Wesley's Moons / JLL - "Turned to solid stone by an ancient moon gaze", "Became a permanent statue on an alien planet")
+  - Deep-scanned all modded entities, scraps, and environmental hazards to eliminate false/generic vanilla death causes.
+  - Added over 90+ new diverse autopsy report variations across modded enemies, interactive scrap items, and facility hazards.
+  - Players will now discover dynamic, accurate, and humorous causes of death on the end-of-round performance report.
 * Cleaned Death Camera Transition:
-  - Removed artificial 5.0s camera freeze override in favor of clean vanilla 1.5s death transition seamlessly handing off to living teammates' POV (or ghost flight on [Q]).
+  - Removed artificial camera lock override in favor of clean vanilla 1.5s death transition seamlessly handing off to living teammates' POV (or ghost flight on [Q]).
 
 === [v3.7.3] - 2026-08-24 19:45 PHT ===
 * Fixed Spacewar Steam Cloud Error On Game Exit:
   - Configured OnlineFix.ini to disable redundant Steam Remote Storage calls (Storage=false).
   - Prevents Steam from attempting to upload local save files to non-existent Spacewar cloud servers and eliminates the exit popup notification.
-* Added Farm & Cook Autopsy Reports (REED-DeathReportExtensions):
-  - Added custom autopsy detection for predatory flora (Anglowberry Lure & Burstberry).
-  - Replaces generic/false death causes with accurate causes ("Snapped in half by an Anglowberry Lure", "Blown apart by an exploding Burstberry").
+* Improved Flora Hazard Autopsy Reports (REED-DeathReportExtensions):
+  - Added custom autopsy detection and humorous variations for predatory flora hazards.
 
 === [v3.7.2] - 2026-08-24 19:25 PHT ===
 * Added Permanent Default On-Screen FPS Counter (v1.1.0):
