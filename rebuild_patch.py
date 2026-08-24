@@ -59,6 +59,10 @@ async_cfg = os.path.join(bepinex_dir, "config", "AsyncLoggers", "LogLevels.cfg")
 if os.path.isfile(async_cfg):
     entries_to_pack.add("BepInEx/config/AsyncLoggers/LogLevels.cfg")
 
+poltergeist_cfg = os.path.join(bepinex_dir, "config", "coderCleric.Poltergeist.cfg")
+if os.path.isfile(poltergeist_cfg):
+    entries_to_pack.add("BepInEx/config/coderCleric.Poltergeist.cfg")
+
 coroner_cfg_dir = os.path.join(bepinex_dir, "config", "EliteMasterEric-Coroner")
 if os.path.isdir(coroner_cfg_dir):
     for f in os.listdir(coroner_cfg_dir):
