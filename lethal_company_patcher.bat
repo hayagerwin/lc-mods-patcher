@@ -9,7 +9,7 @@ REM ============================================================================
 set "REPO_USER=hayagerwin"
 set "REPO_NAME=lc-mods-patcher"
 set "BRANCH=main"
-set "PATCHER_VERSION=20260824205101"
+set "PATCHER_VERSION=20260824205603"
 
 REM Script directory and config path
 set "SCRIPT_DIR=%~dp0"
@@ -33,6 +33,11 @@ echo                        Lethal Company Mod Patcher
 echo ============================================================================%C_RESET%
 echo.
 
+set "COMMIT_REF=%BRANCH%"
+for /f "usebackq delims=" %%S in (`powershell -NoProfile -Command "try { (Invoke-RestMethod -Uri 'https://api.github.com/repos/%REPO_USER%/%REPO_NAME%/commits/%BRANCH%' -Headers @{'User-Agent'='LC-Mods-Patcher'} -TimeoutSec 3).sha } catch {}" 2^>nul`) do (
+    if not "%%S"=="" set "COMMIT_REF=%%S"
+)
+
 REM ----------------------------------------------------------------------------
 REM 0. SELF-UPDATE CHECK (Always executed FIRST before directory detection)
 REM ----------------------------------------------------------------------------
@@ -40,12 +45,12 @@ if not defined _LC_PATCHER_SELF_UPDATED (
     rem Don't overwrite if running inside git repo working directory
     if not exist "%SCRIPT_DIR%.git" (
         echo %C_CYAN%[1/2]%C_RESET% Checking for patcher script updates on GitHub...
-        set "SCRIPT_URL=https://raw.githubusercontent.com/%REPO_USER%/%REPO_NAME%/%BRANCH%/lethal_company_patcher.bat"
+        set "SCRIPT_URL=https://raw.githubusercontent.com/%REPO_USER%/%REPO_NAME%/!COMMIT_REF!/lethal_company_patcher.bat"
         set "TEMP_SCRIPT=%TEMP%\lc_patcher_update_%RANDOM%.bat"
 
-        curl.exe -s -m 5 -L -f -H "User-Agent: LC-Mods-Patcher" -H "Accept: application/vnd.github.v3.raw" "https://api.github.com/repos/%REPO_USER%/%REPO_NAME%/contents/lethal_company_patcher.bat?ref=%BRANCH%" -o "!TEMP_SCRIPT!" 2>nul
+        curl.exe -s -m 5 -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" "!SCRIPT_URL!" -o "!TEMP_SCRIPT!" 2>nul
         if not exist "!TEMP_SCRIPT!" (
-            curl.exe -s -m 5 -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" "!SCRIPT_URL!?t=%RANDOM%%RANDOM%" -o "!TEMP_SCRIPT!" 2>nul
+            curl.exe -s -m 5 -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" "https://raw.githubusercontent.com/%REPO_USER%/%REPO_NAME%/%BRANCH%/lethal_company_patcher.bat?t=%RANDOM%%RANDOM%" -o "!TEMP_SCRIPT!" 2>nul
         )
         if exist "!TEMP_SCRIPT!" (
             set "REMOTE_VERSION="
@@ -1012,9 +1017,9 @@ REM Switch working directory to game folder
 cd /d "!GAME_DIR!"
 
 REM Setup remote URLs and temporary paths
-set "DELETE_LIST_URL=https://raw.githubusercontent.com/%REPO_USER%/%REPO_NAME%/%BRANCH%/delete_list.txt"
-set "PATCH_ZIP_URL=https://raw.githubusercontent.com/%REPO_USER%/%REPO_NAME%/%BRANCH%/patch.zip"
-set "PATCH_INFO_URL=https://raw.githubusercontent.com/%REPO_USER%/%REPO_NAME%/%BRANCH%/patch_info.txt"
+set "DELETE_LIST_URL=https://raw.githubusercontent.com/%REPO_USER%/%REPO_NAME%/!COMMIT_REF!/delete_list.txt"
+set "PATCH_ZIP_URL=https://raw.githubusercontent.com/%REPO_USER%/%REPO_NAME%/!COMMIT_REF!/patch.zip"
+set "PATCH_INFO_URL=https://raw.githubusercontent.com/%REPO_USER%/%REPO_NAME%/!COMMIT_REF!/patch_info.txt"
 set "TEMP_DELETE_LIST=%TEMP%\lc_delete_list_%RANDOM%.txt"
 set "TEMP_PATCH_ZIP=%TEMP%\lc_patch_%RANDOM%.zip"
 set "TEMP_PATCH_INFO=%TEMP%\lc_patch_info_%RANDOM%.txt"
@@ -1022,9 +1027,9 @@ set "TEMP_PATCH_INFO=%TEMP%\lc_patch_info_%RANDOM%.txt"
 REM ----------------------------------------------------------------------------
 REM 2.5 FETCH & DISPLAY LATEST PATCH CHANGELOG
 REM ----------------------------------------------------------------------------
-curl.exe -s -m 5 -L -f -H "User-Agent: LC-Mods-Patcher" -H "Accept: application/vnd.github.v3.raw" "https://api.github.com/repos/%REPO_USER%/%REPO_NAME%/contents/patch_info.txt?ref=%BRANCH%" -o "%TEMP_PATCH_INFO%" 2>nul
+curl.exe -s -m 5 -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" "!PATCH_INFO_URL!" -o "%TEMP_PATCH_INFO%" 2>nul
 if not exist "%TEMP_PATCH_INFO%" (
-    curl.exe -s -m 5 -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" "%PATCH_INFO_URL%?t=%RANDOM%%RANDOM%" -o "%TEMP_PATCH_INFO%" 2>nul
+    curl.exe -s -m 5 -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" "https://raw.githubusercontent.com/%REPO_USER%/%REPO_NAME%/%BRANCH%/patch_info.txt?t=%RANDOM%%RANDOM%" -o "%TEMP_PATCH_INFO%" 2>nul
 )
 
 if not exist "%TEMP_PATCH_INFO%" goto :skip_patch_info
@@ -1045,7 +1050,10 @@ REM ----------------------------------------------------------------------------
 REM 3. STAGE 1: DELETE OBSOLETE FILES & FOLDERS
 REM ----------------------------------------------------------------------------
 echo %C_CYAN%[1/3]%C_RESET% Checking for obsolete files and folders to remove...
-curl.exe -s -L -f "%DELETE_LIST_URL%" -o "%TEMP_DELETE_LIST%"
+curl.exe -s -m 5 -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" "!DELETE_LIST_URL!" -o "%TEMP_DELETE_LIST%" 2>nul
+if not exist "%TEMP_DELETE_LIST%" (
+    curl.exe -s -m 5 -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" "https://raw.githubusercontent.com/%REPO_USER%/%REPO_NAME%/%BRANCH%/delete_list.txt?t=%RANDOM%%RANDOM%" -o "%TEMP_DELETE_LIST%" 2>nul
+)
 
 if exist "%TEMP_DELETE_LIST%" (
     set "DELETED_COUNT=0"
@@ -1084,9 +1092,12 @@ REM ----------------------------------------------------------------------------
 REM 4. STAGE 2: DOWNLOAD MOD ARCHIVE
 REM ----------------------------------------------------------------------------
 echo %C_CYAN%[2/3]%C_RESET% Downloading latest mod patch (patch.zip)...
-echo       Source: %REPO_USER%/%REPO_NAME% (%BRANCH%)
+echo       Source: %REPO_USER%/%REPO_NAME% (%BRANCH% @ !COMMIT_REF:~0,7!)
 echo.
-curl.exe -L -f --progress-bar "%PATCH_ZIP_URL%" -o "%TEMP_PATCH_ZIP%"
+curl.exe -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" --progress-bar "!PATCH_ZIP_URL!" -o "%TEMP_PATCH_ZIP%"
+if errorlevel 1 (
+    curl.exe -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" --progress-bar "https://raw.githubusercontent.com/%REPO_USER%/%REPO_NAME%/%BRANCH%/patch.zip?t=%RANDOM%%RANDOM%" -o "%TEMP_PATCH_ZIP%"
+)
 
 if errorlevel 1 (
     goto :err_download_failed

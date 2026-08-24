@@ -21,7 +21,7 @@ import urllib.error
 REPO_USER = "hayagerwin"
 REPO_NAME = "lc-mods-patcher"
 BRANCH = "main"
-PATCHER_VERSION = "20260824205101"
+PATCHER_VERSION = "20260824205603"
 
 # ==============================================================================
 # TERMINAL FORMATTING HELPERS
@@ -1126,15 +1126,29 @@ def run_optimizer_menu(game_dir: Path):
             sys.exit(0)
 
 
+def get_latest_commit_ref(repo_user: str, repo_name: str, branch: str) -> str:
+    """Fetches the latest commit SHA for the branch to guarantee zero-cache downloads."""
+    try:
+        url = f"https://api.github.com/repos/{repo_user}/{repo_name}/commits/{branch}"
+        req = urllib.request.Request(url, headers={"User-Agent": "LC-Mods-Patcher-Client"})
+        import json
+        with urllib.request.urlopen(req, timeout=4) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            return data.get("sha", branch)
+    except Exception:
+        return branch
+
+
 def run_patcher_flow(game_dir: Path):
     """Executes the standard 3-stage mod patching & updating flow."""
     clear_screen()
     log_header("Lethal Company Mod Patcher")
     print(f"{Style.BOLD}{Style.GREEN}[+] Target Game Directory:{Style.RESET} {game_dir}\n")
 
-    delete_list_url = f"https://raw.githubusercontent.com/{REPO_USER}/{REPO_NAME}/{BRANCH}/delete_list.txt"
-    patch_zip_url = f"https://raw.githubusercontent.com/{REPO_USER}/{REPO_NAME}/{BRANCH}/patch.zip"
-    patch_info_url = f"https://raw.githubusercontent.com/{REPO_USER}/{REPO_NAME}/{BRANCH}/patch_info.txt"
+    commit_ref = get_latest_commit_ref(REPO_USER, REPO_NAME, BRANCH)
+    delete_list_url = f"https://raw.githubusercontent.com/{REPO_USER}/{REPO_NAME}/{commit_ref}/delete_list.txt"
+    patch_zip_url = f"https://raw.githubusercontent.com/{REPO_USER}/{REPO_NAME}/{commit_ref}/patch.zip"
+    patch_info_url = f"https://raw.githubusercontent.com/{REPO_USER}/{REPO_NAME}/{commit_ref}/patch_info.txt"
 
     # Display Latest Patch Details & Changelog
     stage_display_patch_info(patch_info_url, game_dir)
