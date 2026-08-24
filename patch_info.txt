@@ -1,3 +1,10 @@
+=== [v3.6.0] - 2026-08-24 12:51 PHT ===
+* Fixed 5+ and 8-player lobby voice chat breakdown and severe framerate lag in LandingVoiceGuard (v3.6.0):
+  - Fixed SoundManagerLargeLobbyPatch registration in Awake() to ensure 32-player array expansion is always applied.
+  - Replaced vanilla SoundManager.SetPlayerVoiceFilters() with a bounds-safe, zero-exception loop, eliminating 240+ IndexOutOfRangeException errors per second that caused massive frame drops and voice breakdown in 8-player lobbies.
+  - Added safe modulo routing for AudioMixerGroup channels and voice volumes for player slots 5 to 32.
+  - Guaranteed outputAudioMixerGroup linking for all players in RefreshPlayerVoicePlaybackObjects.
+
 === [v3.5.2] - 2026-08-24 02:48 PHT ===
 * Updated LandingVoiceGuard to v3.3.1:
   - Fixed microphone guard failing to activate or instantly deactivating during "Entering Atmosphere" phase.
