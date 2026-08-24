@@ -20,6 +20,8 @@
     Replaces generic end-of-round death categories with detailed, humorous autopsy reports for all employees on the ship monitor.
   - Added new standalone modular plugin: REED-DeathReportExtensions:
     Dynamically registers and hooks custom death causes for all modpack enemies, scrap items, and hazards:
+    * Anglowberry Lure (Farm & Cook - "Snapped in half by an Anglowberry Lure", "Fell for the glowing Anglowberry bait", "Tried to harvest an Anglowberry without checking for teeth", "Chomped by a predatory trap plant")
+    * Burstberry (Farm & Cook - "Blown apart by an exploding Burstberry", "Harvested a berry with too much internal pressure")
     * Fake Fire Exit / Mimic Door (x753-Mimics - "Devoured by a Fake Fire Exit", "Found out the fire exit had teeth", "Didn't check if the exit door was breathing", "Swallowed whole by a Mimic")
     * Death Note (ChillaxScraps - "This one's name was written in the book of death", "Suffered a sudden heart attack after their name was penned", "Ryuk claimed another soul")
     * Dance Note (ChillaxScraps - "Did not dance when asked", "Exploded while dancing")
