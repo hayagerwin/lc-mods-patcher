@@ -9,7 +9,7 @@ REM ============================================================================
 set "REPO_USER=hayagerwin"
 set "REPO_NAME=lc-mods-patcher"
 set "BRANCH=main"
-set "PATCHER_VERSION=2026082403"
+set "PATCHER_VERSION=2026082404"
 
 REM Script directory and config path
 set "SCRIPT_DIR=%~dp0"
@@ -22,6 +22,9 @@ set "C_GREEN=%ESC%[92m"
 set "C_RED=%ESC%[91m"
 set "C_CYAN=%ESC%[96m"
 set "C_YELLOW=%ESC%[93m"
+set "C_WHITE=%ESC%[97m"
+set "C_GRAY=%ESC%[90m"
+set "C_BOLD=%ESC%[1m"
 set "C_RESET=%ESC%[0m"
 
 echo %C_CYAN%============================================================================
@@ -588,75 +591,136 @@ echo               Custom Step-by-Step Performance Optimizer Wizard
 echo ============================================================================%C_RESET%
 echo.
 
-REM Wizard Step 1: Resolution
-echo %C_CYAN%[Step 1/6]%C_RESET% Choose Resolution Scale:
-echo   1: High (1.2x)  ^|  2: Default (1.0x)  ^|  3: Performance (0.7x)  ^|  4: Ultra (0.5x)
+REM ----------------------------------------------------------------------------
+REM Step 1: Resolution Scale
+REM ----------------------------------------------------------------------------
+echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
+echo  %C_BOLD%%C_WHITE%[STEP 1 / 6]%C_RESET% %C_CYAN%Resolution Scaling Multiplier%C_RESET%
+echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
+echo  Controls the 3D render resolution. Lowering provides massive GPU FPS gains.
+echo.
+echo   %C_GREEN%[1]%C_RESET% High               : %C_YELLOW%1.2x Scale%C_RESET%  (Crisp 1440p+ visuals, High-End GPU)
+echo   %C_GREEN%[2]%C_RESET% Default / Baseline : %C_YELLOW%1.0x Scale%C_RESET%  (Native 1080p standard resolution)
+echo   %C_GREEN%[3]%C_RESET% Performance        : %C_YELLOW%0.7x Scale%C_RESET%  (%C_CYAN%+25%% to +35%% FPS Boost%C_RESET%) %C_GREEN%[Recommended]%C_RESET%
+echo   %C_GREEN%[4]%C_RESET% Ultra Performance  : %C_YELLOW%0.5x Scale%C_RESET%  (%C_CYAN%+45%% to +60%% FPS Boost%C_RESET%) %C_YELLOW%[Max FPS for iGPU]%C_RESET%
+echo.
 set "WIZ_RES="
-set /p "WIZ_RES=Select [1-4] (Default: 3 for 0.7x): "
+set /p "WIZ_RES=Select resolution [1-4] (Default: [ENTER] for Option 3 - 0.7x): "
 if not defined WIZ_RES set "WIZ_RES=3"
 set "TARGET_SCALE=0.7"
 if "%WIZ_RES%"=="1" set "TARGET_SCALE=1.2"
 if "%WIZ_RES%"=="2" set "TARGET_SCALE=1.0"
 if "%WIZ_RES%"=="3" set "TARGET_SCALE=0.7"
 if "%WIZ_RES%"=="4" set "TARGET_SCALE=0.5"
-echo   -^> Set to: !TARGET_SCALE!x Resolution
+echo  %C_GREEN%-[√] Selected:%C_RESET% !TARGET_SCALE!x Resolution Scale
 echo.
 
-REM Wizard Step 2: BodyCam
-echo %C_CYAN%[Step 2/6]%C_RESET% Disable heavy 3D bodycam rendering? (+15-20%% FPS, saves ~500MB VRAM)
+REM ----------------------------------------------------------------------------
+REM Step 2: BodyCam Overhead
+REM ----------------------------------------------------------------------------
+echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
+echo  %C_BOLD%%C_WHITE%[STEP 2 / 6]%C_RESET% %C_CYAN%OpenBodyCams 3D Camera Overhead%C_RESET%
+echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
+echo  Disables redundant secondary 3D camera rendering on chest rigs & terminals.
+echo  %C_YELLOW%Benefit:%C_RESET% %C_CYAN%+15%% to +20%% FPS Boost%C_RESET%, saves ~500MB VRAM
+echo.
+echo   %C_GREEN%[Y]%C_RESET% Yes - Disable 3D Bodycam overhead %C_GREEN%(Recommended)%C_RESET%
+echo   %C_YELLOW%[N]%C_RESET% No  - Keep original full 3D bodycam rendering
+echo.
 set "WIZ_BC="
-set /p "WIZ_BC=Optimize BodyCam? [Y/n] (Default: Yes): "
+set /p "WIZ_BC=Apply BodyCam Optimization? [Y/n] (Default: [ENTER] for Yes): "
 if not defined WIZ_BC set "WIZ_BC=Y"
 set "OPT_BC=yes"
 if /i "%WIZ_BC%"=="N" set "OPT_BC=no"
 if /i "%WIZ_BC%"=="NO" set "OPT_BC=no"
-echo   -^> BodyCam Optimization: !OPT_BC!
+echo  %C_GREEN%-[√] Selected:%C_RESET% BodyCam Optimization = !OPT_BC!
 echo.
 
-REM Wizard Step 3: Ship Cameras
-echo %C_CYAN%[Step 3/6]%C_RESET% Cap ship security & internal cameras to 5 FPS? (+8-12%% FPS in ship)
+REM ----------------------------------------------------------------------------
+REM Step 3: Ship Security Cameras
+REM ----------------------------------------------------------------------------
+echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
+echo  %C_BOLD%%C_WHITE%[STEP 3 / 6]%C_RESET% %C_CYAN%Ship Security & Monitor Camera Framerates%C_RESET%
+echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
+echo  Caps ship interior and security camera refresh rates to 5 FPS.
+echo  %C_YELLOW%Benefit:%C_RESET% %C_CYAN%+8%% to +12%% FPS Boost%C_RESET% inside the ship
+echo.
+echo   %C_GREEN%[Y]%C_RESET% Yes - Cap monitor cameras to 5 FPS %C_GREEN%(Recommended)%C_RESET%
+echo   %C_YELLOW%[N]%C_RESET% No  - Keep default 10+ FPS monitor refresh
+echo.
 set "WIZ_SC="
-set /p "WIZ_SC=Cap Ship Cameras? [Y/n] (Default: Yes): "
+set /p "WIZ_SC=Cap Ship Cameras? [Y/n] (Default: [ENTER] for Yes): "
 if not defined WIZ_SC set "WIZ_SC=Y"
 set "OPT_SC=yes"
 if /i "%WIZ_SC%"=="N" set "OPT_SC=no"
 if /i "%WIZ_SC%"=="NO" set "OPT_SC=no"
-echo   -^> Ship Cameras Cap: !OPT_SC!
+echo  %C_GREEN%-[√] Selected:%C_RESET% Ship Cameras Cap = !OPT_SC!
 echo.
 
-REM Wizard Step 4: ShipWindows
-echo %C_CYAN%[Step 4/6]%C_RESET% Enable Space Starfield & moon exterior culling for ShipWindows? (+10-15%% FPS)
+REM ----------------------------------------------------------------------------
+REM Step 4: ShipWindows Exterior Skybox
+REM ----------------------------------------------------------------------------
+echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
+echo  %C_BOLD%%C_WHITE%[STEP 4 / 6]%C_RESET% %C_CYAN%ShipWindows Exterior Skybox & Planet Culling%C_RESET%
+echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
+echo  Replaces heavy real-time planet exterior skybox with space starfield.
+echo  %C_YELLOW%Benefit:%C_RESET% %C_CYAN%+10%% to +15%% FPS Boost%C_RESET% during landing & orbit
+echo.
+echo   %C_GREEN%[Y]%C_RESET% Yes - Use space starfield & planet culling %C_GREEN%(Recommended)%C_RESET%
+echo   %C_YELLOW%[N]%C_RESET% No  - Keep default heavy exterior meshes
+echo.
 set "WIZ_SW="
-set /p "WIZ_SW=Optimize ShipWindows? [Y/n] (Default: Yes): "
+set /p "WIZ_SW=Optimize ShipWindows? [Y/n] (Default: [ENTER] for Yes): "
 if not defined WIZ_SW set "WIZ_SW=Y"
 set "OPT_SW=yes"
 if /i "%WIZ_SW%"=="N" set "OPT_SW=no"
 if /i "%WIZ_SW%"=="NO" set "OPT_SW=no"
-echo   -^> ShipWindows Optimization: !OPT_SW!
+echo  %C_GREEN%-[√] Selected:%C_RESET% ShipWindows Optimization = !OPT_SW!
 echo.
 
-REM Wizard Step 5: HDRP Fog & Shadows
-echo %C_CYAN%[Step 5/6]%C_RESET% Lower HDRP shadow maps (64px) & volumetric fog budget (0.05)? (+12-18%% FPS)
+REM ----------------------------------------------------------------------------
+REM Step 5: HDRP Fog & Shadows
+REM ----------------------------------------------------------------------------
+echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
+echo  %C_BOLD%%C_WHITE%[STEP 5 / 6]%C_RESET% %C_CYAN%LethalSponge HDRP Fog Budget & Shadow Maps%C_RESET%
+echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
+echo  Lowers heavy volumetric fog budget (0.05) and shadow maps (64px).
+echo  %C_YELLOW%Benefit:%C_RESET% %C_CYAN%+12%% to +18%% FPS Boost%C_RESET% in foggy & stormy weather
+echo.
+echo   %C_GREEN%[Y]%C_RESET% Yes - Apply low-spec shadows and fog %C_GREEN%(Recommended)%C_RESET%
+echo   %C_YELLOW%[N]%C_RESET% No  - Keep high default HDRP shadows and volumetric fog
+echo.
 set "WIZ_HDRP="
-set /p "WIZ_HDRP=Optimize Shadows & Fog? [Y/n] (Default: Yes): "
+set /p "WIZ_HDRP=Optimize Shadows & Fog? [Y/n] (Default: [ENTER] for Yes): "
 if not defined WIZ_HDRP set "WIZ_HDRP=Y"
 set "OPT_HDRP=yes"
 if /i "%WIZ_HDRP%"=="N" set "OPT_HDRP=no"
 if /i "%WIZ_HDRP%"=="NO" set "OPT_HDRP=no"
-echo   -^> HDRP Fog & Shadows Optimization: !OPT_HDRP!
+echo  %C_GREEN%-[√] Selected:%C_RESET% HDRP Fog & Shadows = !OPT_HDRP!
 echo.
 
-REM Wizard Step 6: FPS Counter
-echo %C_CYAN%[Step 6/6]%C_RESET% Install & enable in-game live FPS Counter overlay? (Toggle with [F8])
+REM ----------------------------------------------------------------------------
+REM Step 6: FPS Counter Overlay
+REM ----------------------------------------------------------------------------
+echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
+echo  %C_BOLD%%C_WHITE%[STEP 6 / 6]%C_RESET% %C_CYAN%Live In-Game FPS Counter Overlay%C_RESET%
+echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
+echo  Installs a lightweight in-game FPS and frame-time HUD (Toggle with [F8]).
+echo  %C_YELLOW%Benefit:%C_RESET% %C_CYAN%Diagnostic Overlay%C_RESET% (0%% Performance Cost)
+echo.
+echo   %C_GREEN%[Y]%C_RESET% Yes - Install FPS Counter overlay %C_GREEN%(Recommended)%C_RESET%
+echo   %C_YELLOW%[N]%C_RESET% No  - Do not install FPS overlay
+echo.
 set "WIZ_FPS="
-set /p "WIZ_FPS=Enable FPS Counter? [Y/n] (Default: Yes): "
+set /p "WIZ_FPS=Enable FPS Counter? [Y/n] (Default: [ENTER] for Yes): "
 if not defined WIZ_FPS set "WIZ_FPS=Y"
 set "OPT_FPS=yes"
 if /i "%WIZ_FPS%"=="N" set "OPT_FPS=no"
 if /i "%WIZ_FPS%"=="NO" set "OPT_FPS=no"
-echo   -^> FPS Counter: !OPT_FPS!
+echo  %C_GREEN%-[√] Selected:%C_RESET% FPS Counter = !OPT_FPS!
 echo.
 
+echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
 echo %C_CYAN%Applying custom optimization settings...%C_RESET%
 if exist "!PS_SCRIPT!" (
     powershell.exe -NoProfile -ExecutionPolicy Bypass -File "!PS_SCRIPT!" -Mode "Custom" -ResolutionScale "!TARGET_SCALE!" -OptBodyCam "!OPT_BC!" -OptShipCameras "!OPT_SC!" -OptShipWindows "!OPT_SW!" -OptHDRP "!OPT_HDRP!" -OptFPSCounter "!OPT_FPS!" -GameDir "!GAME_DIR!"
@@ -675,6 +739,9 @@ echo.
 echo %C_GREEN%============================================================================
 echo [SUCCESS] Custom performance settings have been applied successfully!
 echo ============================================================================%C_RESET%
+echo.
+pause
+goto :optimizer_menu
 echo.
 pause
 goto :optimizer_menu
