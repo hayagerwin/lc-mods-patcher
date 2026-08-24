@@ -15,6 +15,7 @@ REM Script directory and config path
 set "SCRIPT_DIR=%~dp0"
 set "CONFIG_DIR=%LOCALAPPDATA%\LCModsPatcher"
 set "CONFIG_FILE=%CONFIG_DIR%\lc_game_path.txt"
+set "OPT_STATE_FILE=%CONFIG_DIR%\optimizer_state.txt"
 
 REM Initialize ANSI color codes
 for /f %%A in ('echo prompt $E ^| cmd') do set "ESC=%%A"
@@ -680,6 +681,15 @@ if exist "!TEMP_OPT_ZIP!" (
     del /f /q "!TEMP_OPT_ZIP!" 2>nul
 )
 if exist "!TEMP_PS!" del /f /q "!TEMP_PS!" 2>nul
+if not exist "%CONFIG_DIR%" mkdir "%CONFIG_DIR%" 2>nul
+(
+    echo RES=!TARGET_SCALE!
+    echo BC=yes
+    echo SC=yes
+    echo SW=yes
+    echo HDRP=yes
+    echo FPS=yes
+)>"!OPT_STATE_FILE!" 2>nul
 echo.
 echo %C_GREEN%[SUCCESS] Performance Optimizations Applied with !TARGET_SCALE!x Resolution Scale!%C_RESET%
 echo.
@@ -687,53 +697,81 @@ pause
 goto :optimizer_menu
 
 REM ----------------------------------------------------------------------------
-REM ----------------------------------------------------------------------------
 REM STEP-BY-STEP CUSTOM WIZARD (AUTO-REMEMBERS PREVIOUS SETTINGS)
 REM ----------------------------------------------------------------------------
 :do_step_by_step_wizard
 cls
 
-REM Auto-detect currently active settings to use as intelligent defaults
+REM Default values
 set "DEF_WIZ_RES=3"
 set "DEF_WIZ_RES_LABEL=0.7x"
-set "LC_CFG=!GAME_DIR!\BepInEx\config\com.github.lethalcompanymodding.LCUltrawide.cfg"
-if exist "!LC_CFG!" (
-    findstr /i /c:"Gameplay Camera Resolution Multiplier = 1.2" "!LC_CFG!" >nul 2>&1 && (set "DEF_WIZ_RES=1" & set "DEF_WIZ_RES_LABEL=1.2x")
-    findstr /i /c:"Gameplay Camera Resolution Multiplier = 1" "!LC_CFG!" >nul 2>&1 && (set "DEF_WIZ_RES=2" & set "DEF_WIZ_RES_LABEL=1.0x")
-    findstr /i /c:"Gameplay Camera Resolution Multiplier = 0.7" "!LC_CFG!" >nul 2>&1 && (set "DEF_WIZ_RES=3" & set "DEF_WIZ_RES_LABEL=0.7x")
-    findstr /i /c:"Gameplay Camera Resolution Multiplier = 0.5" "!LC_CFG!" >nul 2>&1 && (set "DEF_WIZ_RES=4" & set "DEF_WIZ_RES_LABEL=0.5x")
-)
-
 set "DEF_WIZ_BC=Y"
-set "OBC_CFG=!GAME_DIR!\BepInEx\config\Zaggy1024.OpenBodyCams.cfg"
-if exist "!OBC_CFG!" (
-    findstr /i /c:"EnableCamera = true" "!OBC_CFG!" >nul 2>&1 && set "DEF_WIZ_BC=N"
-    findstr /i /c:"EnableCamera = false" "!OBC_CFG!" >nul 2>&1 && set "DEF_WIZ_BC=Y"
-)
-
 set "DEF_WIZ_SC=Y"
-set "GI_CFG=!GAME_DIR!\BepInEx\config\ShaosilGaming.GeneralImprovements.cfg"
-if exist "!GI_CFG!" (
-    findstr /i /c:"ShipExternalCamFPS = 5" "!GI_CFG!" >nul 2>&1 && set "DEF_WIZ_SC=Y"
-    findstr /i /c:"ShipExternalCamFPS = 10" "!GI_CFG!" >nul 2>&1 && set "DEF_WIZ_SC=N"
-)
-
 set "DEF_WIZ_SW=Y"
-set "SW_CFG=!GAME_DIR!\BepInEx\config\TestAccount666.ShipWindows.cfg"
-if exist "!SW_CFG!" (
-    findstr /i /c:"Skybox Type = BLACK_AND_STARS" "!SW_CFG!" >nul 2>&1 && set "DEF_WIZ_SW=Y"
-    findstr /i /c:"Skybox Type = REAL" "!SW_CFG!" >nul 2>&1 && set "DEF_WIZ_SW=N"
-)
-
 set "DEF_WIZ_HDRP=Y"
-set "SPONGE_CFG=!GAME_DIR!\BepInEx\config\LethalSponge.cfg"
-if exist "!SPONGE_CFG!" (
-    findstr /i /c:"shadowsMaxResolution = 64" "!SPONGE_CFG!" >nul 2>&1 && set "DEF_WIZ_HDRP=Y"
-    findstr /i /c:"shadowsMaxResolution = 2048" "!SPONGE_CFG!" >nul 2>&1 && set "DEF_WIZ_HDRP=N"
-)
+set "DEF_WIZ_FPS=Y"
 
-set "DEF_WIZ_FPS=N"
-if exist "!GAME_DIR!\BepInEx\plugins\LC_FPSCounter\LC_FPSCounter.dll" set "DEF_WIZ_FPS=Y"
+REM Load previously saved wizard choices if available
+if exist "!OPT_STATE_FILE!" (
+    for /f "usebackq tokens=1,2 delims==" %%A in ("!OPT_STATE_FILE!") do (
+        if /i "%%A"=="RES" (
+            if "%%B"=="1.2" (set "DEF_WIZ_RES=1" & set "DEF_WIZ_RES_LABEL=1.2x")
+            if "%%B"=="1.0" (set "DEF_WIZ_RES=2" & set "DEF_WIZ_RES_LABEL=1.0x")
+            if "%%B"=="0.7" (set "DEF_WIZ_RES=3" & set "DEF_WIZ_RES_LABEL=0.7x")
+            if "%%B"=="0.5" (set "DEF_WIZ_RES=4" & set "DEF_WIZ_RES_LABEL=0.5x")
+        )
+        if /i "%%A"=="BC" (
+            if /i "%%B"=="yes" set "DEF_WIZ_BC=Y"
+            if /i "%%B"=="no" set "DEF_WIZ_BC=N"
+        )
+        if /i "%%A"=="SC" (
+            if /i "%%B"=="yes" set "DEF_WIZ_SC=Y"
+            if /i "%%B"=="no" set "DEF_WIZ_SC=N"
+        )
+        if /i "%%A"=="SW" (
+            if /i "%%B"=="yes" set "DEF_WIZ_SW=Y"
+            if /i "%%B"=="no" set "DEF_WIZ_SW=N"
+        )
+        if /i "%%A"=="HDRP" (
+            if /i "%%B"=="yes" set "DEF_WIZ_HDRP=Y"
+            if /i "%%B"=="no" set "DEF_WIZ_HDRP=N"
+        )
+        if /i "%%A"=="FPS" (
+            if /i "%%B"=="yes" set "DEF_WIZ_FPS=Y"
+            if /i "%%B"=="no" set "DEF_WIZ_FPS=N"
+        )
+    )
+) else (
+    REM Auto-detect from currently active config files if never saved
+    set "LC_CFG=!GAME_DIR!\BepInEx\config\com.github.lethalcompanymodding.LCUltrawide.cfg"
+    if exist "!LC_CFG!" (
+        findstr /i /c:"Gameplay Camera Resolution Multiplier = 1.2" "!LC_CFG!" >nul 2>&1 && (set "DEF_WIZ_RES=1" & set "DEF_WIZ_RES_LABEL=1.2x")
+        findstr /i /c:"Gameplay Camera Resolution Multiplier = 1" "!LC_CFG!" >nul 2>&1 && (set "DEF_WIZ_RES=2" & set "DEF_WIZ_RES_LABEL=1.0x")
+        findstr /i /c:"Gameplay Camera Resolution Multiplier = 0.7" "!LC_CFG!" >nul 2>&1 && (set "DEF_WIZ_RES=3" & set "DEF_WIZ_RES_LABEL=0.7x")
+        findstr /i /c:"Gameplay Camera Resolution Multiplier = 0.5" "!LC_CFG!" >nul 2>&1 && (set "DEF_WIZ_RES=4" & set "DEF_WIZ_RES_LABEL=0.5x")
+    )
+    set "OBC_CFG=!GAME_DIR!\BepInEx\config\Zaggy1024.OpenBodyCams.cfg"
+    if exist "!OBC_CFG!" (
+        findstr /i /c:"EnableCamera = true" "!OBC_CFG!" >nul 2>&1 && set "DEF_WIZ_BC=N"
+        findstr /i /c:"EnableCamera = false" "!OBC_CFG!" >nul 2>&1 && set "DEF_WIZ_BC=Y"
+    )
+    set "GI_CFG=!GAME_DIR!\BepInEx\config\ShaosilGaming.GeneralImprovements.cfg"
+    if exist "!GI_CFG!" (
+        findstr /i /c:"ShipExternalCamFPS = 5" "!GI_CFG!" >nul 2>&1 && set "DEF_WIZ_SC=Y"
+        findstr /i /c:"ShipExternalCamFPS = 10" "!GI_CFG!" >nul 2>&1 && set "DEF_WIZ_SC=N"
+    )
+    set "SW_CFG=!GAME_DIR!\BepInEx\config\TestAccount666.ShipWindows.cfg"
+    if exist "!SW_CFG!" (
+        findstr /i /c:"Skybox Type = BLACK_AND_STARS" "!SW_CFG!" >nul 2>&1 && set "DEF_WIZ_SW=Y"
+        findstr /i /c:"Skybox Type = REAL" "!SW_CFG!" >nul 2>&1 && set "DEF_WIZ_SW=N"
+    )
+    set "SPONGE_CFG=!GAME_DIR!\BepInEx\config\LethalSponge.cfg"
+    if exist "!SPONGE_CFG!" (
+        findstr /i /c:"shadowsMaxResolution = 64" "!SPONGE_CFG!" >nul 2>&1 && set "DEF_WIZ_HDRP=Y"
+        findstr /i /c:"shadowsMaxResolution = 2048" "!SPONGE_CFG!" >nul 2>&1 && set "DEF_WIZ_HDRP=N"
+    )
+    if not exist "!GAME_DIR!\BepInEx\plugins\LC_FPSCounter\LC_FPSCounter.dll" set "DEF_WIZ_FPS=N"
+)
 
 echo %C_CYAN%============================================================================
 echo               Custom Step-by-Step Performance Optimizer Wizard
@@ -919,13 +957,19 @@ if "!OPT_FPS!"=="yes" (
 )
 
 if exist "!TEMP_PS!" del /f /q "!TEMP_PS!" 2>nul
+if not exist "%CONFIG_DIR%" mkdir "%CONFIG_DIR%" 2>nul
+(
+    echo RES=!TARGET_SCALE!
+    echo BC=!OPT_BC!
+    echo SC=!OPT_SC!
+    echo SW=!OPT_SW!
+    echo HDRP=!OPT_HDRP!
+    echo FPS=!OPT_FPS!
+)>"!OPT_STATE_FILE!" 2>nul
 echo.
 echo %C_GREEN%============================================================================
 echo [SUCCESS] Custom performance settings have been applied successfully!
 echo ============================================================================%C_RESET%
-echo.
-pause
-goto :optimizer_menu
 echo.
 pause
 goto :optimizer_menu
@@ -937,6 +981,15 @@ if exist "!PS_SCRIPT!" (
     powershell.exe -NoProfile -ExecutionPolicy Bypass -File "!PS_SCRIPT!" -Mode "Revert" -GameDir "!GAME_DIR!"
 )
 if exist "!TEMP_PS!" del /f /q "!TEMP_PS!" 2>nul
+if not exist "%CONFIG_DIR%" mkdir "%CONFIG_DIR%" 2>nul
+(
+    echo RES=1.0
+    echo BC=no
+    echo SC=no
+    echo SW=no
+    echo HDRP=no
+    echo FPS=no
+)>"!OPT_STATE_FILE!" 2>nul
 echo.
 echo %C_GREEN%[SUCCESS] Reverted to Standard Default Graphics.%C_RESET%
 echo.

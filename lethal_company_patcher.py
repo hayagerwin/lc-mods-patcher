@@ -126,6 +126,49 @@ def get_config_path() -> Path:
     return Path.home() / ".config" / "lc-mods-patcher" / "lc_game_path.txt"
 
 
+def get_optimizer_state_path() -> Path:
+    """Returns the persistent config path for storing custom optimizer choices."""
+    if sys.platform == "win32":
+        appdata = os.environ.get("LOCALAPPDATA")
+        if appdata:
+            return Path(appdata) / "LCModsPatcher" / "optimizer_state.txt"
+    return Path.home() / ".config" / "lc-mods-patcher" / "optimizer_state.txt"
+
+
+def save_optimizer_state(res: str, bc: str, sc: str, sw: str, hdrp: str, fps: str):
+    """Saves the user's custom optimizer choices to a persistent state file."""
+    try:
+        p = get_optimizer_state_path()
+        p.parent.mkdir(parents=True, exist_ok=True)
+        lines = [
+            f"RES={res}",
+            f"BC={bc}",
+            f"SC={sc}",
+            f"SW={sw}",
+            f"HDRP={hdrp}",
+            f"FPS={fps}"
+        ]
+        p.write_text("\n".join(lines), encoding="utf-8")
+    except Exception:
+        pass
+
+
+def load_optimizer_state() -> dict[str, str]:
+    """Loads saved custom optimizer choices if available."""
+    try:
+        p = get_optimizer_state_path()
+        if p.is_file():
+            res = {}
+            for line in p.read_text(encoding="utf-8").splitlines():
+                if "=" in line:
+                    k, v = line.strip().split("=", 1)
+                    res[k.strip().upper()] = v.strip().lower()
+            return res
+    except Exception:
+        pass
+    return {}
+
+
 def save_cached_game_dir(game_dir: Path):
     """Saves the verified game directory to the config file."""
     try:
@@ -722,62 +765,91 @@ def run_optimizer_menu(game_dir: Path):
 
                 cfg_dir = game_dir / "BepInEx" / "config"
 
-                # Auto-detect currently active settings to use as intelligent defaults
+                # Auto-detect currently active settings or load saved state
+                saved_state = load_optimizer_state()
                 def_res = "3"
                 def_res_label = "0.7x"
-                lc_cfg = cfg_dir / "com.github.lethalcompanymodding.LCUltrawide.cfg"
-                if lc_cfg.is_file():
-                    txt = lc_cfg.read_text(encoding="utf-8", errors="ignore")
-                    if "Gameplay Camera Resolution Multiplier = 1.2" in txt:
+                def_bc = "Y"
+                def_sc = "Y"
+                def_sw = "Y"
+                def_hdrp = "Y"
+                def_fps = "Y"
+
+                if saved_state:
+                    saved_res = saved_state.get("RES", "0.7")
+                    if saved_res == "1.2":
                         def_res = "1"
                         def_res_label = "1.2x"
-                    elif "Gameplay Camera Resolution Multiplier = 1" in txt:
+                    elif saved_res == "1.0":
                         def_res = "2"
                         def_res_label = "1.0x"
-                    elif "Gameplay Camera Resolution Multiplier = 0.7" in txt:
+                    elif saved_res == "0.7":
                         def_res = "3"
                         def_res_label = "0.7x"
-                    elif "Gameplay Camera Resolution Multiplier = 0.5" in txt:
+                    elif saved_res == "0.5":
                         def_res = "4"
                         def_res_label = "0.5x"
 
-                def_bc = "Y"
-                obc_cfg = cfg_dir / "Zaggy1024.OpenBodyCams.cfg"
-                if obc_cfg.is_file():
-                    txt = obc_cfg.read_text(encoding="utf-8", errors="ignore")
-                    if "EnableCamera = true" in txt:
+                    if saved_state.get("BC") == "no":
                         def_bc = "N"
-                    elif "EnableCamera = false" in txt:
-                        def_bc = "Y"
-
-                def_sc = "Y"
-                gi_cfg = cfg_dir / "ShaosilGaming.GeneralImprovements.cfg"
-                if gi_cfg.is_file():
-                    txt = gi_cfg.read_text(encoding="utf-8", errors="ignore")
-                    if "ShipExternalCamFPS = 5" in txt:
-                        def_sc = "Y"
-                    elif "ShipExternalCamFPS = 10" in txt:
+                    if saved_state.get("SC") == "no":
                         def_sc = "N"
-
-                def_sw = "Y"
-                sw_cfg = cfg_dir / "TestAccount666.ShipWindows.cfg"
-                if sw_cfg.is_file():
-                    txt = sw_cfg.read_text(encoding="utf-8", errors="ignore")
-                    if "Skybox Type = BLACK_AND_STARS" in txt:
-                        def_sw = "Y"
-                    elif "Skybox Type = REAL" in txt:
+                    if saved_state.get("SW") == "no":
                         def_sw = "N"
-
-                def_hdrp = "Y"
-                sponge_cfg = cfg_dir / "LethalSponge.cfg"
-                if sponge_cfg.is_file():
-                    txt = sponge_cfg.read_text(encoding="utf-8", errors="ignore")
-                    if "shadowsMaxResolution = 64" in txt:
-                        def_hdrp = "Y"
-                    elif "shadowsMaxResolution = 2048" in txt:
+                    if saved_state.get("HDRP") == "no":
                         def_hdrp = "N"
+                    if saved_state.get("FPS") == "no":
+                        def_fps = "N"
+                else:
+                    lc_cfg = cfg_dir / "com.github.lethalcompanymodding.LCUltrawide.cfg"
+                    if lc_cfg.is_file():
+                        txt = lc_cfg.read_text(encoding="utf-8", errors="ignore")
+                        if "Gameplay Camera Resolution Multiplier = 1.2" in txt:
+                            def_res = "1"
+                            def_res_label = "1.2x"
+                        elif "Gameplay Camera Resolution Multiplier = 1" in txt:
+                            def_res = "2"
+                            def_res_label = "1.0x"
+                        elif "Gameplay Camera Resolution Multiplier = 0.7" in txt:
+                            def_res = "3"
+                            def_res_label = "0.7x"
+                        elif "Gameplay Camera Resolution Multiplier = 0.5" in txt:
+                            def_res = "4"
+                            def_res_label = "0.5x"
 
-                def_fps = "Y" if (game_dir / "BepInEx" / "plugins" / "LC_FPSCounter" / "LC_FPSCounter.dll").is_file() else "N"
+                    obc_cfg = cfg_dir / "Zaggy1024.OpenBodyCams.cfg"
+                    if obc_cfg.is_file():
+                        txt = obc_cfg.read_text(encoding="utf-8", errors="ignore")
+                        if "EnableCamera = true" in txt:
+                            def_bc = "N"
+                        elif "EnableCamera = false" in txt:
+                            def_bc = "Y"
+
+                    gi_cfg = cfg_dir / "ShaosilGaming.GeneralImprovements.cfg"
+                    if gi_cfg.is_file():
+                        txt = gi_cfg.read_text(encoding="utf-8", errors="ignore")
+                        if "ShipExternalCamFPS = 5" in txt:
+                            def_sc = "Y"
+                        elif "ShipExternalCamFPS = 10" in txt:
+                            def_sc = "N"
+
+                    sw_cfg = cfg_dir / "TestAccount666.ShipWindows.cfg"
+                    if sw_cfg.is_file():
+                        txt = sw_cfg.read_text(encoding="utf-8", errors="ignore")
+                        if "Skybox Type = BLACK_AND_STARS" in txt:
+                            def_sw = "Y"
+                        elif "Skybox Type = REAL" in txt:
+                            def_sw = "N"
+
+                    sponge_cfg = cfg_dir / "LethalSponge.cfg"
+                    if sponge_cfg.is_file():
+                        txt = sponge_cfg.read_text(encoding="utf-8", errors="ignore")
+                        if "shadowsMaxResolution = 64" in txt:
+                            def_hdrp = "Y"
+                        elif "shadowsMaxResolution = 2048" in txt:
+                            def_hdrp = "N"
+
+                    def_fps = "Y" if (game_dir / "BepInEx" / "plugins" / "LC_FPSCounter" / "LC_FPSCounter.dll").is_file() else "N"
 
                 # Step 1: Resolution Scale
                 print(f"{Style.CYAN}{'-' * 75}{Style.RESET}")
@@ -939,6 +1011,7 @@ def run_optimizer_menu(game_dir: Path):
                             except Exception:
                                 pass
 
+                save_optimizer_state(target_scale, opt_bc, opt_sc, opt_sw, opt_hdrp, opt_fps)
                 log_success("Custom performance settings have been applied successfully!\n")
                 input("Press Enter to continue...")
 
@@ -996,6 +1069,7 @@ def run_optimizer_menu(game_dir: Path):
                         except Exception:
                             pass
 
+                save_optimizer_state(target_scale, "yes", "yes", "yes", "yes", "yes")
                 log_success(f"Performance Optimizations Applied with {target_scale}x Resolution Scale!\n")
                 input("Press Enter to continue...")
         elif choice == "2":
@@ -1011,6 +1085,7 @@ def run_optimizer_menu(game_dir: Path):
                         "powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
                         "-File", str(target_ps), "-Mode", "Revert", "-GameDir", str(game_dir)
                     ])
+            save_optimizer_state("1.0", "no", "no", "no", "no", "no")
             log_success("Reverted to Standard Default Graphics.\n")
             input("Press Enter to continue...")
         elif choice == "3":
