@@ -1,5 +1,10 @@
-=== [v3.6.0] - 2026-08-24 12:51 PHT ===
-* Fixed 5+ and 8-player lobby voice chat breakdown and severe framerate lag in LandingVoiceGuard (v3.6.0):
+=== [v3.6.0] - 2026-08-24 13:02 PHT ===
+* Overhauled [F10] Voice Resync Hotkey into an Atomic Nuclear Reset Engine:
+  - Force-resets Dissonance microphone hardware capture device (MicrophoneCapture.Reset()).
+  - Force-unmutes all active VoiceBroadcastTrigger instances and un-sticks stuck mute states.
+  - Re-scans, re-initializes, and re-links all PlayerVoiceIngameSettings and NfgoPlayer tracking in the scene.
+  - Force-restores AudioListener master volume and resets SoundManager deafen / diagetic audio levels.
+* Fixed 5+ and 8-player lobby voice chat breakdown and severe framerate lag:
   - Fixed SoundManagerLargeLobbyPatch registration in Awake() to ensure 32-player array expansion is always applied.
   - Replaced vanilla SoundManager.SetPlayerVoiceFilters() with a bounds-safe, zero-exception loop, eliminating 240+ IndexOutOfRangeException errors per second that caused massive frame drops and voice breakdown in 8-player lobbies.
   - Added safe modulo routing for AudioMixerGroup channels and voice volumes for player slots 5 to 32.
