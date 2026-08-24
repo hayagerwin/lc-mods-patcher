@@ -9,7 +9,7 @@ REM ============================================================================
 set "REPO_USER=hayagerwin"
 set "REPO_NAME=lc-mods-patcher"
 set "BRANCH=main"
-set "PATCHER_VERSION=20260824203637"
+set "PATCHER_VERSION=20260824203950"
 
 REM Script directory and config path
 set "SCRIPT_DIR=%~dp0"
@@ -46,7 +46,7 @@ if not defined _LC_PATCHER_SELF_UPDATED (
         curl.exe -s -m 5 -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" "!SCRIPT_URL!?t=%RANDOM%%RANDOM%" -o "!TEMP_SCRIPT!" 2>nul
         if exist "!TEMP_SCRIPT!" (
             set "REMOTE_VERSION="
-            for /f "usebackq delims=" %%V in (`powershell -NoProfile -Command "$c = [System.IO.File]::ReadAllText('!TEMP_SCRIPT!'); if ($c -match 'PATCHER_VERSION=[\`"]?([0-9]+)') { $matches[1] }" 2^>nul`) do (
+            for /f "usebackq delims=" %%V in (`powershell -NoProfile -Command "$txt = Get-Content '!TEMP_SCRIPT!'; foreach($l in $txt){ if($l -match 'PATCHER_VERSION=(\d+)') { Write-Output $matches[1]; break } }"`) do (
                 set "REMOTE_VERSION=%%V"
             )
             if defined REMOTE_VERSION (
