@@ -1,6 +1,6 @@
 param (
     [Parameter(Mandatory = $false)]
-    [ValidateSet("Optimize", "Revert", "Check", "Custom")]
+    [ValidateSet("Optimize", "Revert", "Check", "Custom", "LogMinimal", "LogDebug", "LogCheck", "LogClear")]
     [string]$Mode = "Optimize",
 
     [Parameter(Mandatory = $false)]
@@ -47,6 +47,47 @@ function Set-ConfigValue($file, $pattern, $replacement) {
             [System.IO.File]::WriteAllText($file, $content, [System.Text.Encoding]::UTF8)
         }
     }
+}
+
+function Set-IniSectionValue($file, $section, $key, $value) {
+    if (-not (Test-Path $file)) { return }
+    $lines = [System.IO.File]::ReadAllLines($file, [System.Text.Encoding]::UTF8)
+    $inSection = $false
+    $newLines = @()
+    foreach ($line in $lines) {
+        if ($line -match '^\s*\[(.*?)\]') {
+            if ($matches[1].Trim() -eq $section) {
+                $inSection = $true
+            } else {
+                $inSection = $false
+            }
+        }
+        if ($inSection -and $line -match "^\s*$([regex]::Escape($key))\s*=") {
+            $newLines += "$key = $value"
+        } else {
+            $newLines += $line
+        }
+    }
+    [System.IO.File]::WriteAllLines($file, $newLines, [System.Text.Encoding]::UTF8)
+}
+
+function Get-IniSectionValue($file, $section, $key) {
+    if (-not (Test-Path $file)) { return $null }
+    $lines = [System.IO.File]::ReadAllLines($file, [System.Text.Encoding]::UTF8)
+    $inSection = $false
+    foreach ($line in $lines) {
+        if ($line -match '^\s*\[(.*?)\]') {
+            if ($matches[1].Trim() -eq $section) {
+                $inSection = $true
+            } else {
+                $inSection = $false
+            }
+        }
+        if ($inSection -and $line -match "^\s*$([regex]::Escape($key))\s*=\s*(.*)$") {
+            return $matches[1].Trim()
+        }
+    }
+    return $null
 }
 
 if ($Mode -eq "Optimize" -or $Mode -eq "Custom") {
@@ -265,4 +306,113 @@ elseif ($Mode -eq "Check") {
     Format-CheckItem -name "ShipWindows" -isOpt $isWinOpt -optDesc "Space Starfield Skybox Active" -vanillaDesc "Real 3D Exterior Skybox" -impact "+10-15%"
     Format-CheckItem -name "LethalSponge" -isOpt $isSpongeOpt -optDesc "64px Shadows & 0.05 Fog Budget" -vanillaDesc "2048px Shadows & 0.15 Fog" -impact "+12-18%"
     Format-CheckItem -name "FPS Counter" -isOpt $isFpsOpt -optDesc "Live Overlay Active (F8 Toggle)" -vanillaDesc "Plugin Not Installed" -impact "Diagnostic"
+}
+elseif ($Mode -eq "LogMinimal") {
+    Write-Host "============================================================================" -ForegroundColor Cyan
+    Write-Host "           Configuring Minimal & High-Performance Logging Mode              " -ForegroundColor Cyan
+    Write-Host "============================================================================" -ForegroundColor Cyan
+    Write-Host ""
+    $bepCfg = Join-Path $configDir "BepInEx.cfg"
+    if (Test-Path $bepCfg) {
+        Write-Host "  [1/4] Disabling BepInEx console terminal window..." -ForegroundColor Cyan
+        Set-IniSectionValue $bepCfg "Logging.Console" "Enabled" "false"
+        Set-IniSectionValue $bepCfg "Logging.Console" "LogLevels" "Fatal, Error, Warning"
+
+        Write-Host "  [2/4] Disabling Unity engine log redirection (Eliminates CPU lock contention)..." -ForegroundColor Cyan
+        Set-IniSectionValue $bepCfg "Logging" "UnityLogListening" "false"
+        Set-IniSectionValue $bepCfg "Logging.Disk" "WriteUnityLog" "false"
+
+        Write-Host "  [3/4] Capping disk log levels to Errors & Warnings only..." -ForegroundColor Cyan
+        Set-IniSectionValue $bepCfg "Logging.Disk" "LogLevels" "Fatal, Error, Warning"
+        Set-IniSectionValue $bepCfg "Logging.Disk" "Enabled" "true"
+
+        Write-Host "  [4/4] Setting Harmony log channels to Standard..." -ForegroundColor Cyan
+        Set-IniSectionValue $bepCfg "Harmony.Logger" "LogChannels" "Warn, Error"
+        Write-Host ""
+        Write-Host "  [SUCCESS] Minimal logging configured! (Max FPS & Zero disk I/O lag)" -ForegroundColor Green
+    } else {
+        Write-Host "  [ERROR] BepInEx.cfg was not found in $configDir" -ForegroundColor Red
+    }
+}
+elseif ($Mode -eq "LogDebug") {
+    Write-Host "============================================================================" -ForegroundColor Yellow
+    Write-Host "             Configuring Full Verbose Debug Logging Mode                    " -ForegroundColor Yellow
+    Write-Host "============================================================================" -ForegroundColor Yellow
+    Write-Host ""
+    $bepCfg = Join-Path $configDir "BepInEx.cfg"
+    if (Test-Path $bepCfg) {
+        Write-Host "  [1/4] Enabling BepInEx black console window on startup..." -ForegroundColor Yellow
+        Set-IniSectionValue $bepCfg "Logging.Console" "Enabled" "true"
+        Set-IniSectionValue $bepCfg "Logging.Console" "LogLevels" "All"
+
+        Write-Host "  [2/4] Enabling full Unity engine log redirection..." -ForegroundColor Yellow
+        Set-IniSectionValue $bepCfg "Logging" "UnityLogListening" "true"
+        Set-IniSectionValue $bepCfg "Logging.Disk" "WriteUnityLog" "true"
+
+        Write-Host "  [3/4] Setting disk log levels to ALL (Verbose debugging)..." -ForegroundColor Yellow
+        Set-IniSectionValue $bepCfg "Logging.Disk" "LogLevels" "All"
+        Set-IniSectionValue $bepCfg "Logging.Disk" "Enabled" "true"
+
+        Write-Host "  [4/4] Setting Harmony log channels to Debug & All..." -ForegroundColor Yellow
+        Set-IniSectionValue $bepCfg "Harmony.Logger" "LogChannels" "Warn, Error, Debug, All"
+        Write-Host ""
+        Write-Host "  [SUCCESS] Full Debug logging configured! (Console active & all logs recorded)" -ForegroundColor Green
+    } else {
+        Write-Host "  [ERROR] BepInEx.cfg was not found in $configDir" -ForegroundColor Red
+    }
+}
+elseif ($Mode -eq "LogCheck") {
+    $bepCfg = Join-Path $configDir "BepInEx.cfg"
+    $conEnabled = Get-IniSectionValue $bepCfg "Logging.Console" "Enabled"
+    $conLevels = Get-IniSectionValue $bepCfg "Logging.Console" "LogLevels"
+    $diskUnity = Get-IniSectionValue $bepCfg "Logging.Disk" "WriteUnityLog"
+    $diskLevels = Get-IniSectionValue $bepCfg "Logging.Disk" "LogLevels"
+
+    $logFile = Join-Path $GameDir "BepInEx\LogOutput.log"
+    $logSizeStr = "0 KB"
+    if (Test-Path $logFile) {
+        $sizeBytes = (Get-Item $logFile).Length
+        if ($sizeBytes -gt 1MB) {
+            $logSizeStr = ("{0:N2} MB" -f ($sizeBytes / 1MB))
+        } else {
+            $logSizeStr = ("{0:N0} KB" -f ($sizeBytes / 1KB))
+        }
+    }
+
+    Write-Host "  Logging & Diagnostic Configuration Status:" -ForegroundColor Cyan
+    if ($conEnabled -eq "true") {
+        Write-Host "   [" -NoNewline; Write-Host ([char]0x221A) -ForegroundColor Yellow -NoNewline; Write-Host "] " -NoNewline
+        Write-Host "BepInEx Console Window  : " -NoNewline; Write-Host "Enabled (Spawns terminal on game launch)" -ForegroundColor Yellow
+    } else {
+        Write-Host "   [" -NoNewline; Write-Host ([char]0x221A) -ForegroundColor Green -NoNewline; Write-Host "] " -NoNewline
+        Write-Host "BepInEx Console Window  : " -NoNewline; Write-Host "Disabled (Clean background launch)" -ForegroundColor Green
+    }
+
+    if ($diskUnity -eq "true") {
+        Write-Host "   [" -NoNewline; Write-Host ([char]0x221A) -ForegroundColor Yellow -NoNewline; Write-Host "] " -NoNewline
+        Write-Host "Unity Engine Logging    : " -NoNewline; Write-Host "Enabled (Heavy I/O, writing all Unity logs)" -ForegroundColor Yellow
+    } else {
+        Write-Host "   [" -NoNewline; Write-Host ([char]0x221A) -ForegroundColor Green -NoNewline; Write-Host "] " -NoNewline
+        Write-Host "Unity Engine Logging    : " -NoNewline; Write-Host "Filtered / Minimal (Fast I/O)" -ForegroundColor Green
+    }
+
+    if ($diskLevels -eq "All") {
+        Write-Host "   [" -NoNewline; Write-Host ([char]0x221A) -ForegroundColor Yellow -NoNewline; Write-Host "] " -NoNewline
+        Write-Host "Disk Log Verbosity      : " -NoNewline; Write-Host "ALL (Verbose info, warnings, errors)" -ForegroundColor Yellow
+    } else {
+        Write-Host "   [" -NoNewline; Write-Host ([char]0x221A) -ForegroundColor Green -NoNewline; Write-Host "] " -NoNewline
+        Write-Host "Disk Log Verbosity      : " -NoNewline; Write-Host "Minimal (Errors & Warnings only)" -ForegroundColor Green
+    }
+
+    Write-Host "   [i] " -ForegroundColor Cyan -NoNewline
+    Write-Host "Current Log File Size   : " -NoNewline; Write-Host "$logSizeStr" -ForegroundColor White
+}
+elseif ($Mode -eq "LogClear") {
+    $logFile = Join-Path $GameDir "BepInEx\LogOutput.log"
+    if (Test-Path $logFile) {
+        Remove-Item -Force $logFile -ErrorAction SilentlyContinue
+        Write-Host "  [SUCCESS] LogOutput.log has been cleared (0 KB)." -ForegroundColor Green
+    } else {
+        Write-Host "  [INFO] No LogOutput.log found to clear." -ForegroundColor Gray
+    }
 }

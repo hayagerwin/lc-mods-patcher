@@ -993,6 +993,111 @@ def run_patcher_flow(game_dir: Path):
     sys.exit(0)
 
 
+def run_logging_menu(game_dir: Path):
+    """Interactive BepInEx Logging & Debugging Submenu."""
+    script_dir = Path(__file__).resolve().parent
+    local_ps = script_dir / "optimizer" / "optimize.ps1"
+    ps_url = f"https://raw.githubusercontent.com/{REPO_USER}/{REPO_NAME}/{BRANCH}/optimizer/optimize.ps1"
+
+    while True:
+        clear_screen()
+        log_header("BepInEx Logging & Debugging Tool")
+        print(f"  Target Game:   {Style.YELLOW}{game_dir}{Style.RESET}")
+        print(f"{Style.CYAN}{'-' * 75}{Style.RESET}")
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_ps = Path(temp_dir) / "optimize.ps1"
+            target_ps = local_ps if local_ps.is_file() else temp_ps
+            if not target_ps.is_file():
+                download_file_with_progress(ps_url, temp_ps, show_progress=False)
+                target_ps = temp_ps
+            if target_ps.is_file():
+                try:
+                    subprocess.run([
+                        "powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
+                        "-File", str(target_ps), "-Mode", "LogCheck", "-GameDir", str(game_dir)
+                    ])
+                except Exception:
+                    pass
+
+        print(f"{Style.CYAN}{'=' * 75}{Style.RESET}\n")
+        print(f"  {Style.BOLD}{Style.GREEN}[1]{Style.RESET} Set to Minimal / Optimized Logs ({Style.CYAN}High Performance, No Black Console, Fast{Style.RESET})")
+        print(f"  {Style.BOLD}{Style.YELLOW}[2]{Style.RESET} Set to Full Verbose Debug Mode  ({Style.YELLOW}Show Console Window, All Logs for Debugging{Style.RESET})")
+        print(f"  {Style.BOLD}{Style.CYAN}[3]{Style.RESET} Open LogOutput.log in Notepad")
+        print(f"  {Style.BOLD}{Style.CYAN}[4]{Style.RESET} Clear / Reset LogOutput.log File")
+        print(f"  {Style.BOLD}{Style.CYAN}[B]{Style.RESET} Back to Main Menu")
+        print(f"  {Style.BOLD}{Style.RED}[Q]{Style.RESET} Exit\n")
+
+        try:
+            choice = input("Select an option [1-4, B, Q] (Default: 1): ").strip()
+        except (KeyboardInterrupt, EOFError):
+            print()
+            sys.exit(0)
+
+        if not choice:
+            choice = "1"
+
+        if choice == "1":
+            print()
+            with tempfile.TemporaryDirectory() as temp_dir:
+                temp_ps = Path(temp_dir) / "optimize.ps1"
+                target_ps = local_ps if local_ps.is_file() else temp_ps
+                if not target_ps.is_file():
+                    download_file_with_progress(ps_url, temp_ps, show_progress=False)
+                    target_ps = temp_ps
+                if target_ps.is_file():
+                    subprocess.run([
+                        "powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
+                        "-File", str(target_ps), "-Mode", "LogMinimal", "-GameDir", str(game_dir)
+                    ])
+            print()
+            input("Press Enter to continue...")
+        elif choice == "2":
+            print()
+            with tempfile.TemporaryDirectory() as temp_dir:
+                temp_ps = Path(temp_dir) / "optimize.ps1"
+                target_ps = local_ps if local_ps.is_file() else temp_ps
+                if not target_ps.is_file():
+                    download_file_with_progress(ps_url, temp_ps, show_progress=False)
+                    target_ps = temp_ps
+                if target_ps.is_file():
+                    subprocess.run([
+                        "powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
+                        "-File", str(target_ps), "-Mode", "LogDebug", "-GameDir", str(game_dir)
+                    ])
+            print()
+            input("Press Enter to continue...")
+        elif choice == "3":
+            log_file = game_dir / "BepInEx" / "LogOutput.log"
+            if log_file.is_file():
+                if sys.platform == "win32":
+                    os.startfile(str(log_file))
+                else:
+                    subprocess.Popen(["xdg-open", str(log_file)])
+            else:
+                log_warn("No LogOutput.log found in BepInEx folder.")
+                input("\nPress Enter to continue...")
+        elif choice == "4":
+            print()
+            with tempfile.TemporaryDirectory() as temp_dir:
+                temp_ps = Path(temp_dir) / "optimize.ps1"
+                target_ps = local_ps if local_ps.is_file() else temp_ps
+                if not target_ps.is_file():
+                    download_file_with_progress(ps_url, temp_ps, show_progress=False)
+                    target_ps = temp_ps
+                if target_ps.is_file():
+                    subprocess.run([
+                        "powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
+                        "-File", str(target_ps), "-Mode", "LogClear", "-GameDir", str(game_dir)
+                    ])
+            print()
+            input("Press Enter to continue...")
+        elif choice.lower() in ("b", "back"):
+            break
+        elif choice.lower() in ("q", "quit", "exit") or choice == "0":
+            sys.exit(0)
+
+
 def main():
     log_header("Lethal Company Mod Patcher")
 
@@ -1022,6 +1127,7 @@ def main():
         print("  Select an action:")
         print(f"    {Style.BOLD}{Style.GREEN}[ENTER]{Style.RESET} -> {Style.GREEN}Update & Apply Latest Mods{Style.RESET} (Default / Recommended)")
         print(f"    {Style.BOLD}{Style.YELLOW}[1]{Style.RESET}     -> {Style.YELLOW}Performance & Low-Spec Optimizer Tool{Style.RESET}")
+        print(f"    {Style.BOLD}{Style.CYAN}[2]{Style.RESET}     -> {Style.CYAN}Debugging & Log Optimization Tool{Style.RESET} (Full Debug vs Minimal Logs)")
         print(f"    {Style.BOLD}{Style.CYAN}[C]{Style.RESET}     -> {Style.CYAN}Change / Browse Game Directory{Style.RESET}")
         print(f"    {Style.BOLD}{Style.RED}[Q]{Style.RESET}     -> {Style.RED}Exit{Style.RESET}")
         print(f"{Style.CYAN}{'-' * 75}{Style.RESET}\n")
@@ -1037,6 +1143,8 @@ def main():
             break
         elif choice == "1" or choice.lower() in ("opt", "optimize"):
             run_optimizer_menu(game_dir)
+        elif choice == "2" or choice.lower() in ("log", "logs", "debug"):
+            run_logging_menu(game_dir)
         elif choice.lower() in ("c", "change"):
             new_dir = prompt_manual_directory_picker()
             if new_dir and (new_dir / "Lethal Company.exe").is_file():

@@ -9,7 +9,7 @@ REM ============================================================================
 set "REPO_USER=hayagerwin"
 set "REPO_NAME=lc-mods-patcher"
 set "BRANCH=main"
-set "PATCHER_VERSION=2026082405"
+set "PATCHER_VERSION=2026082406"
 
 REM Script directory and config path
 set "SCRIPT_DIR=%~dp0"
@@ -407,6 +407,7 @@ echo %C_CYAN%-------------------------------------------------------------------
 echo   Select an action:
 echo     %C_GREEN%[ENTER]%C_RESET% -^> %C_GREEN%Update ^& Apply Latest Mods%C_RESET% ^(Default / Recommended^)
 echo     %C_YELLOW%[1]%C_RESET%     -^> %C_YELLOW%Performance ^& Low-Spec Optimizer Tool%C_RESET%
+echo     %C_CYAN%[2]%C_RESET%     -^> %C_CYAN%Debugging ^& Log Optimization Tool%C_RESET% ^(Full Debug vs Minimal Logs^)
 echo     %C_CYAN%[C]%C_RESET%     -^> %C_CYAN%Change / Browse Game Directory%C_RESET%
 echo     %C_RED%[Q]%C_RESET%     -^> %C_RED%Exit%C_RESET%
 echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
@@ -427,6 +428,10 @@ if /i "!USER_ACTION!"=="YES" goto :run_patcher_flow
 if "!USER_ACTION!"=="1" goto :optimizer_menu
 if /i "!USER_ACTION!"=="OPT" goto :optimizer_menu
 if /i "!USER_ACTION!"=="OPTIMIZE" goto :optimizer_menu
+if "!USER_ACTION!"=="2" goto :logging_menu
+if /i "!USER_ACTION!"=="LOG" goto :logging_menu
+if /i "!USER_ACTION!"=="LOGS" goto :logging_menu
+if /i "!USER_ACTION!"=="DEBUG" goto :logging_menu
 if /i "!USER_ACTION!"=="C" goto :prompt_custom_path
 if /i "!USER_ACTION!"=="CHANGE" goto :prompt_custom_path
 if /i "!USER_ACTION!"=="Q" exit /b 0
@@ -439,7 +444,83 @@ goto :run_patcher_flow
 
 
 REM ============================================================================
-REM FLOW 1: PERFORMANCE OPTIMIZER SUBMENU (WITH LIVE CHECKLIST)
+REM FLOW 1: LOGGING & DEBUGGING SUBMENU
+REM ============================================================================
+:logging_menu
+cls
+echo %C_CYAN%============================================================================
+echo                     BepInEx Logging ^& Debugging Tool
+echo ============================================================================%C_RESET%
+echo   Target Game:   %C_YELLOW%!GAME_DIR!%C_RESET%
+echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
+
+set "PS_SCRIPT=%SCRIPT_DIR%optimizer\optimize.ps1"
+set "PS_URL=https://raw.githubusercontent.com/%REPO_USER%/%REPO_NAME%/%BRANCH%/optimizer/optimize.ps1?t=%RANDOM%"
+set "TEMP_PS=%TEMP%\lc_optimize_%RANDOM%.ps1"
+
+if not exist "!PS_SCRIPT!" (
+    curl.exe -s -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" "!PS_URL!" -o "!TEMP_PS!" 2>nul
+    if exist "!TEMP_PS!" set "PS_SCRIPT=!TEMP_PS!"
+)
+
+if exist "!PS_SCRIPT!" (
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "!PS_SCRIPT!" -Mode "LogCheck" -GameDir "!GAME_DIR!"
+)
+echo %C_CYAN%============================================================================%C_RESET%
+echo.
+echo   %C_GREEN%[1]%C_RESET% Set to Minimal / Optimized Logs (%C_CYAN%High Performance, No Black Console, Fast%C_RESET%)
+echo   %C_YELLOW%[2]%C_RESET% Set to Full Verbose Debug Mode  (%C_YELLOW%Show Console Window, All Logs for Debugging%C_RESET%)
+echo   %C_CYAN%[3]%C_RESET% Open LogOutput.log in Notepad
+echo   %C_CYAN%[4]%C_RESET% Clear / Reset LogOutput.log File
+echo   %C_CYAN%[B]%C_RESET% Back to Main Menu
+echo   %C_RED%[Q]%C_RESET% Exit
+echo.
+set "LOG_CHOICE="
+set /p "LOG_CHOICE=Select an option [1-4, B, Q] (Default: 1): "
+if not defined LOG_CHOICE set "LOG_CHOICE=1"
+
+if "%LOG_CHOICE%"=="1" (
+    echo.
+    if exist "!PS_SCRIPT!" powershell.exe -NoProfile -ExecutionPolicy Bypass -File "!PS_SCRIPT!" -Mode "LogMinimal" -GameDir "!GAME_DIR!"
+    if exist "!TEMP_PS!" del /f /q "!TEMP_PS!" 2>nul
+    echo.
+    pause
+    goto :logging_menu
+)
+if "%LOG_CHOICE%"=="2" (
+    echo.
+    if exist "!PS_SCRIPT!" powershell.exe -NoProfile -ExecutionPolicy Bypass -File "!PS_SCRIPT!" -Mode "LogDebug" -GameDir "!GAME_DIR!"
+    if exist "!TEMP_PS!" del /f /q "!TEMP_PS!" 2>nul
+    echo.
+    pause
+    goto :logging_menu
+)
+if "%LOG_CHOICE%"=="3" (
+    if exist "!GAME_DIR!\BepInEx\LogOutput.log" (
+        start notepad "!GAME_DIR!\BepInEx\LogOutput.log"
+    ) else (
+        echo %C_YELLOW%No LogOutput.log found in BepInEx folder.%C_RESET%
+        pause
+    )
+    goto :logging_menu
+)
+if "%LOG_CHOICE%"=="4" (
+    echo.
+    if exist "!PS_SCRIPT!" powershell.exe -NoProfile -ExecutionPolicy Bypass -File "!PS_SCRIPT!" -Mode "LogClear" -GameDir "!GAME_DIR!"
+    if exist "!TEMP_PS!" del /f /q "!TEMP_PS!" 2>nul
+    echo.
+    pause
+    goto :logging_menu
+)
+if /i "%LOG_CHOICE%"=="B" goto :main_menu
+if /i "%LOG_CHOICE%"=="BACK" goto :main_menu
+if /i "%LOG_CHOICE%"=="Q" exit /b 0
+if /i "%LOG_CHOICE%"=="QUIT" exit /b 0
+goto :logging_menu
+
+
+REM ============================================================================
+REM FLOW 2: PERFORMANCE OPTIMIZER SUBMENU (WITH LIVE CHECKLIST)
 REM ============================================================================
 :optimizer_menu
 cls
