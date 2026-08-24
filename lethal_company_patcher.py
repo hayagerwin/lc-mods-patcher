@@ -21,7 +21,7 @@ import urllib.error
 REPO_USER = "hayagerwin"
 REPO_NAME = "lc-mods-patcher"
 BRANCH = "main"
-PATCHER_VERSION = "2026082411"
+PATCHER_VERSION = "20260824203637"
 
 # ==============================================================================
 # TERMINAL FORMATTING HELPERS
@@ -65,25 +65,33 @@ def clear_screen():
 # ==============================================================================
 # CORE OPERATIONS
 # ==============================================================================
+_PATCHER_STATUS_TEXT = ""
+
 def check_self_update(script_url: str):
     """Checks if a newer version of lethal_company_patcher.py exists on GitHub and self-updates."""
+    global _PATCHER_STATUS_TEXT
     if os.environ.get("_LC_PATCHER_SELF_UPDATED") == "1":
+        _PATCHER_STATUS_TEXT = f"{Style.GREEN}[JUST UPDATED] (Successfully updated from GitHub){Style.RESET}"
         return
 
     current_script = Path(__file__).resolve()
     # Cleanup legacy migration script if present (for players outside git repo)
     if not (current_script.parent / ".git").is_dir():
-        legacy_bat = current_script.parent / "sync_mods.bat"
-        legacy_py = current_script.parent / "sync_mods.py"
-        for legacy in [legacy_bat, legacy_py]:
+        for legacy in [current_script.parent / "sync_mods.bat", current_script.parent / "sync_mods.py"]:
+            if legacy.is_file():
+                try:
+                    legacy.unlink()
+                except Exception:
+                    pass
+
     try:
-        current_script = Path(__file__).resolve()
         # Don't overwrite if running from inside the git repository development folder
         if (current_script.parent / ".git").is_dir():
             _PATCHER_STATUS_TEXT = f"{Style.CYAN}[DEV MODE] (Build {PATCHER_VERSION} - Git Working Copy){Style.RESET}"
             return
 
         print(f"{Style.CYAN}[1/2]{Style.RESET} Checking for patcher script updates on GitHub...")
+        remote_url = f"{script_url}?t={os.urandom(4).hex()}"
         req = urllib.request.Request(
             remote_url,
             headers={
@@ -92,7 +100,7 @@ def check_self_update(script_url: str):
                 "Pragma": "no-cache"
             }
         )
-        with urllib.request.urlopen(req, timeout=4) as response:
+        with urllib.request.urlopen(req, timeout=5) as response:
             remote_bytes = response.read()
 
         remote_text = remote_bytes.decode("utf-8", errors="ignore").replace("\r\n", "\n").strip()
@@ -100,7 +108,7 @@ def check_self_update(script_url: str):
 
         if remote_text != local_text:
             print(f"     {Style.YELLOW}[UPDATE AVAILABLE]{Style.RESET} Newer script version detected on GitHub.")
-            print(f"     {Style.CYAN}[+] Downloading and applying latest script...{Style.RESET}\n")
+            print(f"     {Style.CYAN}[+] Downloading and replacing script...{Style.RESET}\n")
 
             current_script.write_bytes(remote_bytes)
 

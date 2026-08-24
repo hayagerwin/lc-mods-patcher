@@ -105,3 +105,32 @@ if os.path.isfile(backup_zip):
 
 print(f"[+] Total entries packed: {len(sorted_entries)}")
 print("[+] patch.zip rebuilt successfully!")
+
+# 5. Automatically bump patcher script build timestamp for seamless self-updates
+import datetime, re
+new_build_id = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+
+bat_path = os.path.join(patcher_dir, "lethal_company_patcher.bat")
+if os.path.isfile(bat_path):
+    with open(bat_path, "r", encoding="utf-8", errors="ignore") as f:
+        bat_code = f.read()
+    bat_code = re.sub(r'set "PATCHER_VERSION=[0-9]+"', f'set "PATCHER_VERSION={new_build_id}"', bat_code)
+    with open(bat_path, "w", encoding="utf-8", newline="\r\n") as f:
+        f.write(bat_code)
+    print(f"[+] Bumped lethal_company_patcher.bat PATCHER_VERSION -> {new_build_id}")
+
+py_path = os.path.join(patcher_dir, "lethal_company_patcher.py")
+if os.path.isfile(py_path):
+    with open(py_path, "r", encoding="utf-8", errors="ignore") as f:
+        py_code = f.read()
+    py_code = re.sub(r'PATCHER_VERSION = "[0-9]+"', f'PATCHER_VERSION = "{new_build_id}"', py_code)
+    with open(py_path, "w", encoding="utf-8", newline="\n") as f:
+        f.write(py_code)
+    print(f"[+] Bumped lethal_company_patcher.py PATCHER_VERSION -> {new_build_id}")
+
+# Sync to user Documents if present
+user_doc_bat = os.path.expandvars(r"%USERPROFILE%\Documents\lethal_company_patcher.bat")
+if os.path.isfile(user_doc_bat):
+    shutil.copy2(bat_path, user_doc_bat)
+    print(f"[+] Synced latest patcher batch to: {user_doc_bat}")
+
