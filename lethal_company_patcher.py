@@ -21,6 +21,7 @@ import urllib.error
 REPO_USER = "hayagerwin"
 REPO_NAME = "lc-mods-patcher"
 BRANCH = "main"
+PATCHER_VERSION = "2026082407"
 
 # ==============================================================================
 # TERMINAL FORMATTING HELPERS
@@ -1121,7 +1122,8 @@ def main():
     while True:
         clear_screen()
         log_header("Lethal Company Mod Patcher & Toolset")
-        print(f"{Style.BOLD}{Style.GREEN}[+] Target Game Directory:{Style.RESET} {game_dir}\n")
+        print(f"  {Style.BOLD}Patcher Version:{Style.RESET} {Style.YELLOW}{PATCHER_VERSION}{Style.RESET} {Style.GREEN}[Latest Release]{Style.RESET}")
+        print(f"  {Style.BOLD}Target Game Dir:{Style.RESET} {Style.CYAN}{game_dir}{Style.RESET}\n")
 
         print(f"{Style.CYAN}{'-' * 75}{Style.RESET}")
         print("  Select an action:")

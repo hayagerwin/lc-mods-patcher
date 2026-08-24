@@ -9,7 +9,7 @@ REM ============================================================================
 set "REPO_USER=hayagerwin"
 set "REPO_NAME=lc-mods-patcher"
 set "BRANCH=main"
-set "PATCHER_VERSION=2026082406"
+set "PATCHER_VERSION=2026082407"
 
 REM Script directory and config path
 set "SCRIPT_DIR=%~dp0"
@@ -400,8 +400,12 @@ cls
 echo %C_CYAN%============================================================================
 echo                     Lethal Company Mod Patcher ^& Toolset
 echo ============================================================================%C_RESET%
-echo.
-echo %C_GREEN%[+] Target Game Directory:%C_RESET% !GAME_DIR!
+echo   %C_BOLD%%C_WHITE%Patcher Version:%C_RESET% %C_YELLOW%!PATCHER_VERSION!%C_RESET% %C_GREEN%[Latest Release]%C_RESET%
+echo   %C_BOLD%%C_WHITE%Target Game Dir:%C_RESET% %C_CYAN%!GAME_DIR!%C_RESET%
+if defined _LC_PATCHER_SELF_UPDATED (
+    echo.
+    echo   %C_GREEN%[+] PATCHER UPDATED:%C_RESET% %C_CYAN%Script was successfully auto-updated to build !PATCHER_VERSION! from GitHub.%C_RESET%
+)
 echo.
 echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
 echo   Select an action:
