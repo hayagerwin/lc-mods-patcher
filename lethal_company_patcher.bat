@@ -9,7 +9,7 @@ REM ============================================================================
 set "REPO_USER=hayagerwin"
 set "REPO_NAME=lc-mods-patcher"
 set "BRANCH=main"
-set "PATCHER_VERSION=2026082408"
+set "PATCHER_VERSION=2026082409"
 
 REM Script directory and config path
 set "SCRIPT_DIR=%~dp0"
@@ -36,24 +36,42 @@ REM ----------------------------------------------------------------------------
 REM 0. SELF-UPDATE CHECK (Always executed FIRST before directory detection)
 REM ----------------------------------------------------------------------------
 if not defined _LC_PATCHER_SELF_UPDATED (
+    echo %C_CYAN%[1/2]%C_RESET% Checking for patcher script updates on GitHub...
     set "SCRIPT_URL=https://raw.githubusercontent.com/%REPO_USER%/%REPO_NAME%/%BRANCH%/lethal_company_patcher.bat"
     set "TEMP_SCRIPT=%TEMP%\lc_patcher_update_%RANDOM%.bat"
 
-    set "REMOTE_VERSION="
-    for /f "usebackq delims=" %%V in (`powershell -NoProfile -Command "$c = (Invoke-RestMethod -Uri '%SCRIPT_URL%' -Headers @{'Cache-Control'='no-cache'}); if ($c -match ('PATCHER_' + 'VERSION=([0-9]+)')) { $matches[1] }" 2^>nul`) do (
-        set "REMOTE_VERSION=%%V"
-    )
-    if defined REMOTE_VERSION (
-        if !REMOTE_VERSION! gtr !PATCHER_VERSION! (
-            echo %C_CYAN%[UPDATE]%C_RESET% A newer version of lethal_company_patcher.bat was detected.
-            echo %C_CYAN%[UPDATE]%C_RESET% Updating script from build !PATCHER_VERSION! -^> !REMOTE_VERSION!...
-            echo.
-            set "_LC_PATCHER_SELF_UPDATED=1"
-            curl.exe -s -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" "!SCRIPT_URL!" -o "!TEMP_SCRIPT!" 2>nul
-            if exist "!TEMP_SCRIPT!" (
-                copy /y "!TEMP_SCRIPT!" "%~f0" >nul & del /f /q "!TEMP_SCRIPT!" 2>nul & call "%~f0" %* & exit /b !errorlevel!
-            )
+    curl.exe -s -m 4 -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" "!SCRIPT_URL!" -o "!TEMP_SCRIPT!" 2>nul
+    if exist "!TEMP_SCRIPT!" (
+        set "REMOTE_VERSION="
+        for /f "usebackq delims=" %%V in (`powershell -NoProfile -Command "$c = [System.IO.File]::ReadAllText('!TEMP_SCRIPT!'); if ($c -match ('PATCHER_' + 'VERSION=([0-9]+)')) { $matches[1] }" 2^>nul`) do (
+            set "REMOTE_VERSION=%%V"
         )
+        if defined REMOTE_VERSION (
+            if !REMOTE_VERSION! gtr !PATCHER_VERSION! (
+                echo      %C_YELLOW%[UPDATE AVAILABLE]%C_RESET% Found newer build !REMOTE_VERSION! ^(Current: !PATCHER_VERSION!^)
+                echo      %C_CYAN%[+] Downloading and applying latest script...%C_RESET%
+                set "_LC_PATCHER_SELF_UPDATED=1"
+                set "_LC_PREV_VERSION=!PATCHER_VERSION!"
+                copy /y "!TEMP_SCRIPT!" "%~f0" >nul & del /f /q "!TEMP_SCRIPT!" 2>nul & call "%~f0" %* & exit /b !errorlevel!
+            ) else (
+                echo      %C_GREEN%[UP TO DATE]%C_RESET% Running latest build !PATCHER_VERSION! ^(No update needed^)
+                set "PATCHER_STATUS_TEXT=%C_GREEN%[UP TO DATE] (Build !PATCHER_VERSION! - Synced with GitHub)%C_RESET%"
+            )
+        ) else (
+            echo      %C_GREEN%[UP TO DATE]%C_RESET% Running build !PATCHER_VERSION!
+            set "PATCHER_STATUS_TEXT=%C_GREEN%[UP TO DATE] (Build !PATCHER_VERSION!)%C_RESET%"
+        )
+        del /f /q "!TEMP_SCRIPT!" 2>nul
+    ) else (
+        echo      %C_GRAY%[OFFLINE / LOCAL]%C_RESET% Running local build !PATCHER_VERSION!
+        set "PATCHER_STATUS_TEXT=%C_GRAY%[OFFLINE / LOCAL] (Build !PATCHER_VERSION!)%C_RESET%"
+    )
+    echo.
+) else (
+    if defined _LC_PREV_VERSION (
+        set "PATCHER_STATUS_TEXT=%C_GREEN%[JUST UPDATED] (Successfully upgraded from Build !_LC_PREV_VERSION! -> !PATCHER_VERSION!)%C_RESET%"
+    ) else (
+        set "PATCHER_STATUS_TEXT=%C_GREEN%[JUST UPDATED] (Successfully updated to Build !PATCHER_VERSION! from GitHub)%C_RESET%"
     )
 )
 
@@ -400,7 +418,7 @@ cls
 echo %C_CYAN%============================================================================
 echo                     Lethal Company Mod Patcher ^& Toolset
 echo ============================================================================%C_RESET%
-echo   %C_BOLD%%C_WHITE%Patcher Version:%C_RESET% %C_YELLOW%!PATCHER_VERSION!%C_RESET% %C_GREEN%[Latest Release]%C_RESET%
+echo   %C_BOLD%%C_WHITE%Patcher Status:%C_RESET%  !PATCHER_STATUS_TEXT!
 echo   %C_BOLD%%C_WHITE%Target Game Dir:%C_RESET% %C_CYAN%!GAME_DIR!%C_RESET%
 if defined _LC_PATCHER_SELF_UPDATED (
     echo.

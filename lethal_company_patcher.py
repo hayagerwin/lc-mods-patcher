@@ -76,48 +76,45 @@ def check_self_update(script_url: str):
         legacy_bat = current_script.parent / "sync_mods.bat"
         legacy_py = current_script.parent / "sync_mods.py"
         for legacy in [legacy_bat, legacy_py]:
-            if legacy.is_file() and legacy != current_script:
-                try:
-                    legacy.unlink()
-                except Exception:
-                    pass
-
     try:
+        current_script = Path(__file__).resolve()
+        # Don't overwrite if running from inside the git repository development folder
+        if (current_script.parent / ".git").is_dir():
+            _PATCHER_STATUS_TEXT = f"{Style.CYAN}[DEV MODE] (Build {PATCHER_VERSION} - Git Working Copy){Style.RESET}"
+            return
+
+        print(f"{Style.CYAN}[1/2]{Style.RESET} Checking for patcher script updates on GitHub...")
         req = urllib.request.Request(
-            script_url,
+            remote_url,
             headers={
-                "User-Agent": "LethalCompanyModPatcher/1.0",
+                "User-Agent": "LC-Mods-Patcher-Client",
                 "Cache-Control": "no-cache",
                 "Pragma": "no-cache"
             }
         )
-        with urllib.request.urlopen(req, timeout=10) as response:
+        with urllib.request.urlopen(req, timeout=4) as response:
             remote_bytes = response.read()
-
-        if not remote_bytes:
-            return
 
         remote_text = remote_bytes.decode("utf-8", errors="ignore").replace("\r\n", "\n").strip()
         local_text = current_script.read_text(encoding="utf-8", errors="ignore").replace("\r\n", "\n").strip()
 
         if remote_text != local_text:
-            print(f"{Style.BOLD}{Style.CYAN}[UPDATE]{Style.RESET} A newer version of lethal_company_patcher.py was detected.")
-            log_info("Updating script to the latest version...")
+            print(f"     {Style.YELLOW}[UPDATE AVAILABLE]{Style.RESET} Newer script version detected on GitHub.")
+            print(f"     {Style.CYAN}[+] Downloading and applying latest script...{Style.RESET}\n")
 
             current_script.write_bytes(remote_bytes)
-            log_info("Restarting patcher...\n")
 
             env = os.environ.copy()
             env["_LC_PATCHER_SELF_UPDATED"] = "1"
             exit_code = subprocess.call([sys.executable, str(current_script)] + sys.argv[1:], env=env)
             sys.exit(exit_code)
+        else:
+            print(f"     {Style.GREEN}[UP TO DATE]{Style.RESET} Running latest build {PATCHER_VERSION} (No update needed)\n")
+            _PATCHER_STATUS_TEXT = f"{Style.GREEN}[UP TO DATE] (Build {PATCHER_VERSION} - Synced with GitHub){Style.RESET}"
 
-    except urllib.error.HTTPError:
-        pass
-    except urllib.error.URLError:
-        pass
     except Exception:
-        pass
+        print(f"     {Style.RESET}\033[90m[OFFLINE / LOCAL]\033[0m Running local build {PATCHER_VERSION}\n")
+        _PATCHER_STATUS_TEXT = f"\033[90m[OFFLINE / LOCAL] (Build {PATCHER_VERSION})\033[0m"
 
 
 def get_config_path() -> Path:
@@ -1142,7 +1139,7 @@ def main():
     while True:
         clear_screen()
         log_header("Lethal Company Mod Patcher & Toolset")
-        print(f"  {Style.BOLD}Patcher Version:{Style.RESET} {Style.YELLOW}{PATCHER_VERSION}{Style.RESET} {Style.GREEN}[Latest Release]{Style.RESET}")
+        print(f"  {Style.BOLD}Patcher Status:{Style.RESET}  {_PATCHER_STATUS_TEXT}")
         print(f"  {Style.BOLD}Target Game Dir:{Style.RESET} {Style.CYAN}{game_dir}{Style.RESET}\n")
 
         print(f"{Style.CYAN}{'-' * 75}{Style.RESET}")
