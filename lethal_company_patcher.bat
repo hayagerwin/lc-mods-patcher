@@ -9,7 +9,7 @@ REM ============================================================================
 set "REPO_USER=hayagerwin"
 set "REPO_NAME=lc-mods-patcher"
 set "BRANCH=main"
-set "PATCHER_VERSION=20260824203950"
+set "PATCHER_VERSION=20260824204115"
 
 REM Script directory and config path
 set "SCRIPT_DIR=%~dp0"
@@ -139,7 +139,7 @@ for /f "tokens=3*" %%A in ('reg query "HKCU\Software\Microsoft\Windows\CurrentVe
 REM Scan Windows Recent Shortcuts
 if exist "%APPDATA%\Microsoft\Windows\Recent" (
     for %%F in ("%APPDATA%\Microsoft\Windows\Recent\*Lethal*.lnk") do (
-        for /f "usebackq delims=" %%T in (`powershell -NoProfile -Command "$s=(New-Object -COM WScript.Shell).CreateShortcut('%%~fF').TargetPath; if(Test-Path $s){$s}" 2^>nul`) do (
+        for /f "usebackq delims=" %%T in (`powershell -NoProfile -Command "$s=(New-Object -COM WScript.Shell).CreateShortcut(\"%%~fF\").TargetPath; if(Test-Path $s){$s}" 2^>nul`) do (
             set "LNK_TARGET=%%~dpT"
             if defined LNK_TARGET if "!LNK_TARGET:~-1!"=="\" set "LNK_TARGET=!LNK_TARGET:~0,-1!"
             if exist "!LNK_TARGET!\Lethal Company.exe" (
@@ -357,7 +357,7 @@ goto :validate_custom_path
 echo.
 echo   %C_CYAN%-^> Opening Windows folder browser...%C_RESET%
 set "INPUT_DIR="
-for /f "usebackq delims=" %%D in (`powershell -NoProfile -Command "Add-Type -AssemblyName System.Windows.Forms; $f = New-Object System.Windows.Forms.FolderBrowserDialog; $f.Description = 'Select your Lethal Company game folder'; if($f.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK){$f.SelectedPath}"`) do set "INPUT_DIR=%%D"
+for /f "usebackq delims=" %%D in (`powershell -NoProfile -Command "Add-Type -AssemblyName System.Windows.Forms; $f = New-Object System.Windows.Forms.FolderBrowserDialog; $f.Description = \"Select your Lethal Company game folder\"; if($f.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK){$f.SelectedPath}"`) do set "INPUT_DIR=%%D"
 if not defined INPUT_DIR (
     echo   Folder selection cancelled.
     goto :prompt_custom_path
