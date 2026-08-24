@@ -40,7 +40,7 @@ if not defined _LC_PATCHER_SELF_UPDATED (
     set "TEMP_SCRIPT=%TEMP%\lc_patcher_update_%RANDOM%.bat"
 
     set "REMOTE_VERSION="
-    for /f "usebackq delims=" %%V in (`powershell -NoProfile -Command "$c = (Invoke-RestMethod -Uri '%SCRIPT_URL%' -Headers @{'Cache-Control'='no-cache'}); if ($c -match 'PATCHER_VERSION=([0-9]+)') { $matches[1] }" 2^>nul`) do (
+    for /f "usebackq delims=" %%V in (`powershell -NoProfile -Command "$c = (Invoke-RestMethod -Uri '%SCRIPT_URL%' -Headers @{'Cache-Control'='no-cache'}); if ($c -match ('PATCHER_' + 'VERSION=([0-9]+)')) { $matches[1] }" 2^>nul`) do (
         set "REMOTE_VERSION=%%V"
     )
     if defined REMOTE_VERSION (
