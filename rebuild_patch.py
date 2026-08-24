@@ -63,6 +63,14 @@ poltergeist_cfg = os.path.join(bepinex_dir, "config", "coderCleric.Poltergeist.c
 if os.path.isfile(poltergeist_cfg):
     entries_to_pack.add("BepInEx/config/coderCleric.Poltergeist.cfg")
 
+fps_cfg = os.path.join(bepinex_dir, "config", "com.hayagerwin.lcfpscounter.cfg")
+if os.path.isfile(fps_cfg):
+    entries_to_pack.add("BepInEx/config/com.hayagerwin.lcfpscounter.cfg")
+
+fps_dll = os.path.join(bepinex_dir, "plugins", "LC_FPSCounter", "LC_FPSCounter.dll")
+if os.path.isfile(fps_dll):
+    entries_to_pack.add("BepInEx/plugins/LC_FPSCounter/LC_FPSCounter.dll")
+
 coroner_cfg_dir = os.path.join(bepinex_dir, "config", "EliteMasterEric-Coroner")
 if os.path.isdir(coroner_cfg_dir):
     for f in os.listdir(coroner_cfg_dir):

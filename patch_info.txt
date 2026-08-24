@@ -1,16 +1,23 @@
-=== [v3.7.0] - 2026-08-24 18:30 PHT ===
-* Added Cinematic Death Camera & Poltergeist Ghost Handoff:
+=== [v3.7.0] - 2026-08-24 19:00 PHT ===
+* Added Permanent Default On-Screen FPS Counter:
+  - Installed LC_FPSCounter as a permanent default feature enabled out-of-the-box for all players.
+  - Displays color-coded real-time FPS and frame times with crisp drop-shadow rendering in the top-right corner.
+  - Press [F8] in-game to toggle the FPS display on and off at any time.
+* Added Cinematic Death Camera & Poltergeist Spectator Handoff:
   - Extended death camera focus duration from vanilla 1.5s to 5.0s (fully configurable in BepInEx config):
     * Gives players enough time to enjoy the full hilarious death animation, ragdoll flight, monster roars, and explosions before abruptly cutting away.
     * Works both when you die AND when you are spectating a teammate who dies.
     * Preserves camera focus on the death scene even if eaten by giants/leviathans/T-Rex.
-  - Intercepted Poltergeist 4-point instant ghost takeover: completely blocks ghost controls for 5.0s during death animation, then smoothly activates ghost flight afterwards.
-  - Added instant skip keybindings: Press [Space] or [Left Click] to skip the death camera and enter spectator / ghost mode immediately.
+  - Configured Poltergeist with Option A (DefaultToVanilla):
+    * Death animation cleanly transitions directly into spectating living teammates' shoulder POVs.
+    * Press [Q] at any time while dead to break out into free-flying Poltergeist Ghost mode, and press [Q] again to resume spectating friends.
+  - Added instant skip keybindings: Press [Space] or [Left Click] to skip the death camera and enter spectator mode immediately.
 * Added Comprehensive Death Reporting & Autopsy Overhaul:
   - Installed Coroner (v2.4.1) & CoronerIntegrations (v0.7.0) with StaticNetcodeLib:
     Replaces generic end-of-round death categories with detailed, humorous autopsy reports for all employees on the ship monitor.
   - Added new standalone modular plugin: REED-DeathReportExtensions:
     Dynamically registers and hooks custom death causes for all modpack enemies, scrap items, and hazards:
+    * Fake Fire Exit / Mimic Door (x753-Mimics - "Devoured by a Fake Fire Exit", "Found out the fire exit had teeth", "Didn't check if the exit door was breathing", "Swallowed whole by a Mimic")
     * Death Note (ChillaxScraps - "This one's name was written in the book of death", "Suffered a sudden heart attack after their name was penned", "Ryuk claimed another soul")
     * Dance Note (ChillaxScraps - "Did not dance when asked", "Exploded while dancing")
     * Fall Damage / Gravity ("Fell to their death", "Thought they could screw gravity")
