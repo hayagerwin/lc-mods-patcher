@@ -512,6 +512,31 @@ goto :optimizer_menu
 :do_apply_optimizer_menu
 cls
 echo %C_CYAN%============================================================================
+echo                     Apply Performance Optimizations
+echo ============================================================================%C_RESET%
+echo.
+echo   %C_GREEN%[1]%C_RESET% Quick Apply Preset       -^> Apply recommended FPS optimizations in 1 click
+echo   %C_GREEN%[2]%C_RESET% Step-by-Step Custom Mode -^> Choose each setting individually ^(Bodycam, Fog, etc.^)
+echo   %C_CYAN%[B]%C_RESET% Back to Optimizer Menu
+echo.
+set "APPLY_MODE="
+set /p "APPLY_MODE=Select mode [1, 2, B] (Default: [ENTER] for Quick Apply): "
+if not defined APPLY_MODE set "APPLY_MODE=1"
+
+if /i "%APPLY_MODE%"=="B" goto :optimizer_menu
+if /i "%APPLY_MODE%"=="BACK" goto :optimizer_menu
+if /i "%APPLY_MODE%"=="Y" set "APPLY_MODE=1"
+if /i "%APPLY_MODE%"=="YES" set "APPLY_MODE=1"
+if /i "%APPLY_MODE%"=="N" set "APPLY_MODE=2"
+if /i "%APPLY_MODE%"=="NO" set "APPLY_MODE=2"
+
+if "%APPLY_MODE%"=="2" goto :do_step_by_step_wizard
+
+REM ----------------------------------------------------------------------------
+REM QUICK APPLY RESOLUTION PRESET
+REM ----------------------------------------------------------------------------
+cls
+echo %C_CYAN%============================================================================
 echo                   Select Graphics ^& Resolution Profile
 echo ============================================================================%C_RESET%
 echo.
@@ -549,6 +574,107 @@ if exist "!TEMP_OPT_ZIP!" (
 if exist "!TEMP_PS!" del /f /q "!TEMP_PS!" 2>nul
 echo.
 echo %C_GREEN%[SUCCESS] Performance Optimizations Applied with !TARGET_SCALE!x Resolution Scale!%C_RESET%
+echo.
+pause
+goto :optimizer_menu
+
+REM ----------------------------------------------------------------------------
+REM STEP-BY-STEP CUSTOM WIZARD
+REM ----------------------------------------------------------------------------
+:do_step_by_step_wizard
+cls
+echo %C_CYAN%============================================================================
+echo               Custom Step-by-Step Performance Optimizer Wizard
+echo ============================================================================%C_RESET%
+echo.
+
+REM Wizard Step 1: Resolution
+echo %C_CYAN%[Step 1/6]%C_RESET% Choose Resolution Scale:
+echo   1: High (1.2x)  ^|  2: Default (1.0x)  ^|  3: Performance (0.7x)  ^|  4: Ultra (0.5x)
+set "WIZ_RES="
+set /p "WIZ_RES=Select [1-4] (Default: 3 for 0.7x): "
+if not defined WIZ_RES set "WIZ_RES=3"
+set "TARGET_SCALE=0.7"
+if "%WIZ_RES%"=="1" set "TARGET_SCALE=1.2"
+if "%WIZ_RES%"=="2" set "TARGET_SCALE=1.0"
+if "%WIZ_RES%"=="3" set "TARGET_SCALE=0.7"
+if "%WIZ_RES%"=="4" set "TARGET_SCALE=0.5"
+echo   -^> Set to: !TARGET_SCALE!x Resolution
+echo.
+
+REM Wizard Step 2: BodyCam
+echo %C_CYAN%[Step 2/6]%C_RESET% Disable heavy 3D bodycam rendering? (+15-20%% FPS, saves ~500MB VRAM)
+set "WIZ_BC="
+set /p "WIZ_BC=Optimize BodyCam? [Y/n] (Default: Yes): "
+if not defined WIZ_BC set "WIZ_BC=Y"
+set "OPT_BC=yes"
+if /i "%WIZ_BC%"=="N" set "OPT_BC=no"
+if /i "%WIZ_BC%"=="NO" set "OPT_BC=no"
+echo   -^> BodyCam Optimization: !OPT_BC!
+echo.
+
+REM Wizard Step 3: Ship Cameras
+echo %C_CYAN%[Step 3/6]%C_RESET% Cap ship security & internal cameras to 5 FPS? (+8-12%% FPS in ship)
+set "WIZ_SC="
+set /p "WIZ_SC=Cap Ship Cameras? [Y/n] (Default: Yes): "
+if not defined WIZ_SC set "WIZ_SC=Y"
+set "OPT_SC=yes"
+if /i "%WIZ_SC%"=="N" set "OPT_SC=no"
+if /i "%WIZ_SC%"=="NO" set "OPT_SC=no"
+echo   -^> Ship Cameras Cap: !OPT_SC!
+echo.
+
+REM Wizard Step 4: ShipWindows
+echo %C_CYAN%[Step 4/6]%C_RESET% Enable Space Starfield & moon exterior culling for ShipWindows? (+10-15%% FPS)
+set "WIZ_SW="
+set /p "WIZ_SW=Optimize ShipWindows? [Y/n] (Default: Yes): "
+if not defined WIZ_SW set "WIZ_SW=Y"
+set "OPT_SW=yes"
+if /i "%WIZ_SW%"=="N" set "OPT_SW=no"
+if /i "%WIZ_SW%"=="NO" set "OPT_SW=no"
+echo   -^> ShipWindows Optimization: !OPT_SW!
+echo.
+
+REM Wizard Step 5: HDRP Fog & Shadows
+echo %C_CYAN%[Step 5/6]%C_RESET% Lower HDRP shadow maps (64px) & volumetric fog budget (0.05)? (+12-18%% FPS)
+set "WIZ_HDRP="
+set /p "WIZ_HDRP=Optimize Shadows & Fog? [Y/n] (Default: Yes): "
+if not defined WIZ_HDRP set "WIZ_HDRP=Y"
+set "OPT_HDRP=yes"
+if /i "%WIZ_HDRP%"=="N" set "OPT_HDRP=no"
+if /i "%WIZ_HDRP%"=="NO" set "OPT_HDRP=no"
+echo   -^> HDRP Fog & Shadows Optimization: !OPT_HDRP!
+echo.
+
+REM Wizard Step 6: FPS Counter
+echo %C_CYAN%[Step 6/6]%C_RESET% Install & enable in-game live FPS Counter overlay? (Toggle with [F8])
+set "WIZ_FPS="
+set /p "WIZ_FPS=Enable FPS Counter? [Y/n] (Default: Yes): "
+if not defined WIZ_FPS set "WIZ_FPS=Y"
+set "OPT_FPS=yes"
+if /i "%WIZ_FPS%"=="N" set "OPT_FPS=no"
+if /i "%WIZ_FPS%"=="NO" set "OPT_FPS=no"
+echo   -^> FPS Counter: !OPT_FPS!
+echo.
+
+echo %C_CYAN%Applying custom optimization settings...%C_RESET%
+if exist "!PS_SCRIPT!" (
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "!PS_SCRIPT!" -Mode "Custom" -ResolutionScale "!TARGET_SCALE!" -OptBodyCam "!OPT_BC!" -OptShipCameras "!OPT_SC!" -OptShipWindows "!OPT_SW!" -OptHDRP "!OPT_HDRP!" -OptFPSCounter "!OPT_FPS!" -GameDir "!GAME_DIR!"
+)
+
+if "!OPT_FPS!"=="yes" (
+    curl.exe -s -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" "!OPT_ZIP_URL!" -o "!TEMP_OPT_ZIP!" 2>nul
+    if exist "!TEMP_OPT_ZIP!" (
+        tar.exe -xf "!TEMP_OPT_ZIP!" -C "!GAME_DIR!" 2>nul
+        del /f /q "!TEMP_OPT_ZIP!" 2>nul
+    )
+)
+
+if exist "!TEMP_PS!" del /f /q "!TEMP_PS!" 2>nul
+echo.
+echo %C_GREEN%============================================================================
+echo [SUCCESS] Custom performance settings have been applied successfully!
+echo ============================================================================%C_RESET%
 echo.
 pause
 goto :optimizer_menu

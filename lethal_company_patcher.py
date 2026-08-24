@@ -703,59 +703,158 @@ def run_optimizer_menu(game_dir: Path):
 
         if choice == "1":
             clear_screen()
-            log_header("Select Graphics & Resolution Profile")
-            print(f"  {Style.BOLD}{Style.GREEN}[1]{Style.RESET} High               -> {Style.YELLOW}1.2x Res{Style.RESET}  (Crisp visuals, High-End GPU)")
-            print(f"  {Style.BOLD}{Style.GREEN}[2]{Style.RESET} Default / Balanced -> {Style.YELLOW}1.0x Res{Style.RESET}  (Native 1080p/1440p standard)")
-            print(f"  {Style.BOLD}{Style.GREEN}[3]{Style.RESET} Performance        -> {Style.YELLOW}0.7x Res{Style.RESET}  (Recommended: +35% FPS Boost for Mid/Low PC)")
-            print(f"  {Style.BOLD}{Style.GREEN}[4]{Style.RESET} Ultra Performance  -> {Style.YELLOW}0.5x Res{Style.RESET}  (Maximum FPS: +60% Boost for Potato PC / iGPU)")
+            log_header("Apply Performance Optimizations")
+            print(f"  {Style.BOLD}{Style.GREEN}[1]{Style.RESET} Quick Apply Preset       -> Apply recommended FPS optimizations in 1 click")
+            print(f"  {Style.BOLD}{Style.GREEN}[2]{Style.RESET} Step-by-Step Custom Mode -> Choose each setting individually (Bodycam, Fog, etc.)")
             print(f"  {Style.BOLD}{Style.CYAN}[B]{Style.RESET} Back to Optimizer Menu\n")
 
             try:
-                prof_choice = input("Select resolution profile [1-4, B] (Default: 3): ").strip()
+                apply_mode = input("Select mode [1, 2, B] (Default: [ENTER] for Quick Apply): ").strip()
             except (KeyboardInterrupt, EOFError):
                 print()
                 sys.exit(0)
 
-            if prof_choice.lower() in ("b", "back"):
+            if apply_mode.lower() in ("b", "back"):
                 continue
 
-            target_scale = "0.7"
-            if prof_choice == "1":
-                target_scale = "1.2"
-            elif prof_choice == "2":
-                target_scale = "1.0"
-            elif prof_choice == "3":
-                target_scale = "0.7"
-            elif prof_choice == "4":
-                target_scale = "0.5"
+            if apply_mode == "2" or apply_mode.lower() in ("n", "no", "custom", "step"):
+                # Step-by-Step Wizard
+                clear_screen()
+                log_header("Custom Step-by-Step Optimizer Wizard")
 
-            print()
-            log_step("1/2", f"Applying Performance Optimizations ({target_scale}x Res)...")
-            with tempfile.TemporaryDirectory() as temp_dir:
-                temp_ps = Path(temp_dir) / "optimize.ps1"
-                target_ps = local_ps if local_ps.is_file() else temp_ps
-                if not target_ps.is_file():
-                    download_file_with_progress(ps_url, temp_ps, show_progress=False)
-                    target_ps = temp_ps
-                if target_ps.is_file():
-                    subprocess.run([
-                        "powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
-                        "-File", str(target_ps), "-Mode", "Optimize", "-ResolutionScale", target_scale, "-GameDir", str(game_dir)
-                    ])
+                # Step 1: Resolution Scale
+                print(f"{Style.BOLD}{Style.CYAN}[Step 1/6]{Style.RESET} Choose Resolution Scale:")
+                print("  1: High (1.2x)  |  2: Default (1.0x)  |  3: Performance (0.7x)  |  4: Ultra (0.5x)")
+                wiz_res = input("Select [1-4] (Default: 3 for 0.7x): ").strip()
+                target_scale = "0.7"
+                if wiz_res == "1":
+                    target_scale = "1.2"
+                elif wiz_res == "2":
+                    target_scale = "1.0"
+                elif wiz_res == "3":
+                    target_scale = "0.7"
+                elif wiz_res == "4":
+                    target_scale = "0.5"
+                print(f"  -> Set to: {target_scale}x Resolution\n")
+
+                # Step 2: BodyCam
+                print(f"{Style.BOLD}{Style.CYAN}[Step 2/6]{Style.RESET} Disable heavy 3D bodycam rendering? (+15-20% FPS, saves ~500MB VRAM)")
+                wiz_bc = input("Optimize BodyCam? [Y/n] (Default: Yes): ").strip()
+                opt_bc = "no" if wiz_bc.lower() in ("n", "no") else "yes"
+                print(f"  -> BodyCam Optimization: {opt_bc}\n")
+
+                # Step 3: Ship Cameras
+                print(f"{Style.BOLD}{Style.CYAN}[Step 3/6]{Style.RESET} Cap ship security & internal cameras to 5 FPS? (+8-12% FPS in ship)")
+                wiz_sc = input("Cap Ship Cameras? [Y/n] (Default: Yes): ").strip()
+                opt_sc = "no" if wiz_sc.lower() in ("n", "no") else "yes"
+                print(f"  -> Ship Cameras Cap: {opt_sc}\n")
+
+                # Step 4: ShipWindows
+                print(f"{Style.BOLD}{Style.CYAN}[Step 4/6]{Style.RESET} Enable Space Starfield & exterior culling for ShipWindows? (+10-15% FPS)")
+                wiz_sw = input("Optimize ShipWindows? [Y/n] (Default: Yes): ").strip()
+                opt_sw = "no" if wiz_sw.lower() in ("n", "no") else "yes"
+                print(f"  -> ShipWindows Optimization: {opt_sw}\n")
+
+                # Step 5: HDRP Fog & Shadows
+                print(f"{Style.BOLD}{Style.CYAN}[Step 5/6]{Style.RESET} Lower HDRP shadow maps (64px) & volumetric fog budget (0.05)? (+12-18% FPS)")
+                wiz_hdrp = input("Optimize Shadows & Fog? [Y/n] (Default: Yes): ").strip()
+                opt_hdrp = "no" if wiz_hdrp.lower() in ("n", "no") else "yes"
+                print(f"  -> HDRP Fog & Shadows: {opt_hdrp}\n")
+
+                # Step 6: FPS Counter
+                print(f"{Style.BOLD}{Style.CYAN}[Step 6/6]{Style.RESET} Install & enable in-game live FPS Counter overlay? (Toggle with [F8])")
+                wiz_fps = input("Enable FPS Counter? [Y/n] (Default: Yes): ").strip()
+                opt_fps = "no" if wiz_fps.lower() in ("n", "no") else "yes"
+                print(f"  -> FPS Counter: {opt_fps}\n")
+
+                log_step("1/1", "Applying custom optimization settings...")
+                with tempfile.TemporaryDirectory() as temp_dir:
+                    temp_ps = Path(temp_dir) / "optimize.ps1"
+                    target_ps = local_ps if local_ps.is_file() else temp_ps
+                    if not target_ps.is_file():
+                        download_file_with_progress(ps_url, temp_ps, show_progress=False)
+                        target_ps = temp_ps
+                    if target_ps.is_file():
+                        subprocess.run([
+                            "powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
+                            "-File", str(target_ps), "-Mode", "Custom",
+                            "-ResolutionScale", target_scale,
+                            "-OptBodyCam", opt_bc,
+                            "-OptShipCameras", opt_sc,
+                            "-OptShipWindows", opt_sw,
+                            "-OptHDRP", opt_hdrp,
+                            "-OptFPSCounter", opt_fps,
+                            "-GameDir", str(game_dir)
+                        ])
+
+                    if opt_fps == "yes":
+                        temp_opt_zip = Path(temp_dir) / "optimizer_plugins.zip"
+                        if download_file_with_progress(opt_zip_url, temp_opt_zip, show_progress=False):
+                            try:
+                                with zipfile.ZipFile(temp_opt_zip, "r") as archive:
+                                    archive.extractall(path=game_dir)
+                            except Exception:
+                                pass
+
+                log_success("Custom performance settings have been applied successfully!\n")
+                input("Press Enter to continue...")
+
+            else:
+                # Quick Apply Preset
+                clear_screen()
+                log_header("Select Graphics & Resolution Profile")
+                print(f"  {Style.BOLD}{Style.GREEN}[1]{Style.RESET} High               -> {Style.YELLOW}1.2x Res{Style.RESET}  (Crisp visuals, High-End GPU)")
+                print(f"  {Style.BOLD}{Style.GREEN}[2]{Style.RESET} Default / Balanced -> {Style.YELLOW}1.0x Res{Style.RESET}  (Native 1080p/1440p standard)")
+                print(f"  {Style.BOLD}{Style.GREEN}[3]{Style.RESET} Performance        -> {Style.YELLOW}0.7x Res{Style.RESET}  (Recommended: +35% FPS Boost for Mid/Low PC)")
+                print(f"  {Style.BOLD}{Style.GREEN}[4]{Style.RESET} Ultra Performance  -> {Style.YELLOW}0.5x Res{Style.RESET}  (Maximum FPS: +60% Boost for Potato PC / iGPU)")
+                print(f"  {Style.BOLD}{Style.CYAN}[B]{Style.RESET} Back to Optimizer Menu\n")
+
+                try:
+                    prof_choice = input("Select resolution profile [1-4, B] (Default: 3): ").strip()
+                except (KeyboardInterrupt, EOFError):
+                    print()
+                    sys.exit(0)
+
+                if prof_choice.lower() in ("b", "back"):
+                    continue
+
+                target_scale = "0.7"
+                if prof_choice == "1":
+                    target_scale = "1.2"
+                elif prof_choice == "2":
+                    target_scale = "1.0"
+                elif prof_choice == "3":
+                    target_scale = "0.7"
+                elif prof_choice == "4":
+                    target_scale = "0.5"
 
                 print()
-                log_step("2/2", "Synchronizing FPS Counter overlay plugin...")
-                temp_opt_zip = Path(temp_dir) / "optimizer_plugins.zip"
-                if download_file_with_progress(opt_zip_url, temp_opt_zip, show_progress=False):
-                    try:
-                        with zipfile.ZipFile(temp_opt_zip, "r") as archive:
-                            archive.extractall(path=game_dir)
-                        log_info("FPS Counter plugin synchronized.")
-                    except Exception:
-                        pass
+                log_step("1/2", f"Applying Performance Optimizations ({target_scale}x Res)...")
+                with tempfile.TemporaryDirectory() as temp_dir:
+                    temp_ps = Path(temp_dir) / "optimize.ps1"
+                    target_ps = local_ps if local_ps.is_file() else temp_ps
+                    if not target_ps.is_file():
+                        download_file_with_progress(ps_url, temp_ps, show_progress=False)
+                        target_ps = temp_ps
+                    if target_ps.is_file():
+                        subprocess.run([
+                            "powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
+                            "-File", str(target_ps), "-Mode", "Optimize", "-ResolutionScale", target_scale, "-GameDir", str(game_dir)
+                        ])
 
-            log_success(f"Performance Optimizations Applied with {target_scale}x Resolution Scale!\n")
-            input("Press Enter to continue...")
+                    print()
+                    log_step("2/2", "Synchronizing FPS Counter overlay plugin...")
+                    temp_opt_zip = Path(temp_dir) / "optimizer_plugins.zip"
+                    if download_file_with_progress(opt_zip_url, temp_opt_zip, show_progress=False):
+                        try:
+                            with zipfile.ZipFile(temp_opt_zip, "r") as archive:
+                                archive.extractall(path=game_dir)
+                            log_info("FPS Counter plugin synchronized.")
+                        except Exception:
+                            pass
+
+                log_success(f"Performance Optimizations Applied with {target_scale}x Resolution Scale!\n")
+                input("Press Enter to continue...")
         elif choice == "2":
             log_step("1/1", "Reverting to Standard / High Specs...")
             with tempfile.TemporaryDirectory() as temp_dir:

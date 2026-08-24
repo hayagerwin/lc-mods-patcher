@@ -1,13 +1,28 @@
 param (
     [Parameter(Mandatory = $false)]
-    [ValidateSet("Optimize", "Revert", "Check")]
+    [ValidateSet("Optimize", "Revert", "Check", "Custom")]
     [string]$Mode = "Optimize",
 
     [Parameter(Mandatory = $false)]
     [string]$GameDir = "",
 
     [Parameter(Mandatory = $false)]
-    [string]$ResolutionScale = "0.7"
+    [string]$ResolutionScale = "0.7",
+
+    [Parameter(Mandatory = $false)]
+    [string]$OptBodyCam = "yes",
+
+    [Parameter(Mandatory = $false)]
+    [string]$OptShipCameras = "yes",
+
+    [Parameter(Mandatory = $false)]
+    [string]$OptShipWindows = "yes",
+
+    [Parameter(Mandatory = $false)]
+    [string]$OptHDRP = "yes",
+
+    [Parameter(Mandatory = $false)]
+    [string]$OptFPSCounter = "yes"
 )
 
 $ErrorActionPreference = "SilentlyContinue"
@@ -34,75 +49,92 @@ function Set-ConfigValue($file, $pattern, $replacement) {
     }
 }
 
-if ($Mode -eq "Optimize") {
+if ($Mode -eq "Optimize" -or $Mode -eq "Custom") {
     Write-Host "============================================================================" -ForegroundColor Cyan
     Write-Host "           Applying Low-Spec Performance Optimizations (Network-Safe)       " -ForegroundColor Cyan
     Write-Host "============================================================================" -ForegroundColor Cyan
     Write-Host ""
 
-    Write-Host "[1/7] Applying resolution scale ($($ResolutionScale)x) in LCUltrawide..." -ForegroundColor Cyan
-    $lcUltra = Join-Path $configDir "com.github.lethalcompanymodding.LCUltrawide.cfg"
-    Set-ConfigValue $lcUltra "(?m)^Gameplay Camera Resolution Multiplier\s*=.*$" "Gameplay Camera Resolution Multiplier = $ResolutionScale"
-    Set-ConfigValue $lcUltra "(?m)^Terminal Resolution Multiplier\s*=.*$" "Terminal Resolution Multiplier = 1.25"
-    Set-ConfigValue $lcUltra "(?m)^AspectRatio\s*=.*$" "AspectRatio = 1.777778"
+    # 1. Resolution
+    if ($ResolutionScale) {
+        Write-Host "[1/6] Applying resolution scale ($($ResolutionScale)x) in LCUltrawide..." -ForegroundColor Cyan
+        $lcUltra = Join-Path $configDir "com.github.lethalcompanymodding.LCUltrawide.cfg"
+        Set-ConfigValue $lcUltra "(?m)^Gameplay Camera Resolution Multiplier\s*=.*$" "Gameplay Camera Resolution Multiplier = $ResolutionScale"
+        Set-ConfigValue $lcUltra "(?m)^Terminal Resolution Multiplier\s*=.*$" "Terminal Resolution Multiplier = 1.25"
+        Set-ConfigValue $lcUltra "(?m)^AspectRatio\s*=.*$" "AspectRatio = 1.777778"
+    }
 
-    Write-Host "[2/7] Optimizing OpenBodyCams (Disabling heavy 3D camera overhead)..." -ForegroundColor Cyan
-    $obc = Join-Path $configDir "Zaggy1024.OpenBodyCams.cfg"
-    Set-ConfigValue $obc "(?m)^HorizontalResolution\s*=.*$" "HorizontalResolution = 80"
-    Set-ConfigValue $obc "(?m)^Framerate\s*=.*$" "Framerate = 10"
-    Set-ConfigValue $obc "(?m)^EnableCamera\s*=.*$" "EnableCamera = false"
-    Set-ConfigValue $obc "(?m)^DisplayOriginalScreenWhenDisabled\s*=.*$" "DisplayOriginalScreenWhenDisabled = true"
-    Set-ConfigValue $obc "(?m)^EnablePiPBodyCam\s*=.*$" "EnablePiPBodyCam = false"
+    # 2. BodyCam
+    if ($OptBodyCam -eq "yes") {
+        Write-Host "[2/6] Optimizing OpenBodyCams (Disabling heavy 3D camera overhead)..." -ForegroundColor Cyan
+        $obc = Join-Path $configDir "Zaggy1024.OpenBodyCams.cfg"
+        Set-ConfigValue $obc "(?m)^HorizontalResolution\s*=.*$" "HorizontalResolution = 80"
+        Set-ConfigValue $obc "(?m)^Framerate\s*=.*$" "Framerate = 10"
+        Set-ConfigValue $obc "(?m)^EnableCamera\s*=.*$" "EnableCamera = false"
+        Set-ConfigValue $obc "(?m)^DisplayOriginalScreenWhenDisabled\s*=.*$" "DisplayOriginalScreenWhenDisabled = true"
+        Set-ConfigValue $obc "(?m)^EnablePiPBodyCam\s*=.*$" "EnablePiPBodyCam = false"
 
-    Write-Host "[3/7] Optimizing Terminal & Suits preview cameras..." -ForegroundColor Cyan
-    $termStuff = Join-Path $configDir "darmuh.TerminalStuff.cfg"
-    Set-ConfigValue $termStuff "(?m)^ObcResolutionMirror\s*=.*$" "ObcResolutionMirror = 320; 240"
-    Set-ConfigValue $termStuff "(?m)^ObcResolutionBodyCam\s*=.*$" "ObcResolutionBodyCam = 320; 240"
-    $suitsTerm = Join-Path $configDir "com.github.darmuh.suitsTerminal.cfg"
-    Set-ConfigValue $suitsTerm "(?m)^OpenBodyCams Resolution\s*=.*$" "OpenBodyCams Resolution = 320; 240"
+        $termStuff = Join-Path $configDir "darmuh.TerminalStuff.cfg"
+        Set-ConfigValue $termStuff "(?m)^ObcResolutionMirror\s*=.*$" "ObcResolutionMirror = 320; 240"
+        Set-ConfigValue $termStuff "(?m)^ObcResolutionBodyCam\s*=.*$" "ObcResolutionBodyCam = 320; 240"
+        $suitsTerm = Join-Path $configDir "com.github.darmuh.suitsTerminal.cfg"
+        Set-ConfigValue $suitsTerm "(?m)^OpenBodyCams Resolution\s*=.*$" "OpenBodyCams Resolution = 320; 240"
+    }
 
-    Write-Host "[4/7] Capping ship security camera framerates (GeneralImprovements)..." -ForegroundColor Cyan
-    $genImp = Join-Path $configDir "ShaosilGaming.GeneralImprovements.cfg"
-    Set-ConfigValue $genImp "(?m)^ShipExternalCamFPS\s*=.*$" "ShipExternalCamFPS = 5"
-    Set-ConfigValue $genImp "(?m)^ShipInternalCamFPS\s*=.*$" "ShipInternalCamFPS = 5"
-    Set-ConfigValue $genImp "(?m)^AlwaysRenderMonitors\s*=.*$" "AlwaysRenderMonitors = false"
+    # 3. Ship Cameras
+    if ($OptShipCameras -eq "yes") {
+        Write-Host "[3/6] Capping ship security camera framerates (GeneralImprovements)..." -ForegroundColor Cyan
+        $genImp = Join-Path $configDir "ShaosilGaming.GeneralImprovements.cfg"
+        Set-ConfigValue $genImp "(?m)^ShipExternalCamFPS\s*=.*$" "ShipExternalCamFPS = 5"
+        Set-ConfigValue $genImp "(?m)^ShipInternalCamFPS\s*=.*$" "ShipInternalCamFPS = 5"
+        Set-ConfigValue $genImp "(?m)^AlwaysRenderMonitors\s*=.*$" "AlwaysRenderMonitors = false"
+    }
 
-    Write-Host "[5/7] Optimizing ShipWindows exterior background rendering..." -ForegroundColor Cyan
-    $shipWin = Join-Path $configDir "TestAccount666.ShipWindows.cfg"
-    Set-ConfigValue $shipWin "(?m)^Skybox Type\s*=.*$" "Skybox Type = BLACK_AND_STARS"
-    Set-ConfigValue $shipWin "(?m)^Hide Moon Landing\s*=.*$" "Hide Moon Landing = true"
-    Set-ConfigValue $shipWin "(?m)^Hide Moon Transitions\s*=.*$" "Hide Moon Transitions = true"
+    # 4. ShipWindows
+    if ($OptShipWindows -eq "yes") {
+        Write-Host "[4/6] Optimizing ShipWindows exterior background rendering..." -ForegroundColor Cyan
+        $shipWin = Join-Path $configDir "TestAccount666.ShipWindows.cfg"
+        Set-ConfigValue $shipWin "(?m)^Skybox Type\s*=.*$" "Skybox Type = BLACK_AND_STARS"
+        Set-ConfigValue $shipWin "(?m)^Hide Moon Landing\s*=.*$" "Hide Moon Landing = true"
+        Set-ConfigValue $shipWin "(?m)^Hide Moon Transitions\s*=.*$" "Hide Moon Transitions = true"
+    }
 
-    Write-Host "[6/7] Optimizing LethalSponge HDRP fog, shadows, and textures..." -ForegroundColor Cyan
-    $sponge = Join-Path $configDir "LethalSponge.cfg"
-    Set-ConfigValue $sponge "(?m)^securityCameraFramerate\s*=.*$" "securityCameraFramerate = 5"
-    Set-ConfigValue $sponge "(?m)^shipCameraFramerate\s*=.*$" "shipCameraFramerate = 5"
-    Set-ConfigValue $sponge "(?m)^mapCameraFramerate\s*=.*$" "mapCameraFramerate = 10"
-    Set-ConfigValue $sponge "(?m)^shadowsMaxResolution\s*=.*$" "shadowsMaxResolution = 64"
-    Set-ConfigValue $sponge "(?m)^shadowsAtlasSize\s*=.*$" "shadowsAtlasSize = 1024"
-    Set-ConfigValue $sponge "(?m)^fogBudget\s*=.*$" "fogBudget = 0.05"
-    Set-ConfigValue $sponge "(?m)^disableDOF\s*=.*$" "disableDOF = true"
-    Set-ConfigValue $sponge "(?m)^disableShadows\s*=.*$" "disableShadows = false"
-    Set-ConfigValue $sponge "(?m)^disableReflections\s*=.*$" "disableReflections = false"
-    Set-ConfigValue $sponge "(?m)^disableBloom\s*=.*$" "disableBloom = true"
-    Set-ConfigValue $sponge "(?m)^disableMotionBlur\s*=.*$" "disableMotionBlur = true"
-    Set-ConfigValue $sponge "(?m)^maxCubeReflectionProbes\s*=.*$" "maxCubeReflectionProbes = 6"
-    Set-ConfigValue $sponge "(?m)^maxPlanarReflectionProbes\s*=.*$" "maxPlanarReflectionProbes = 4"
-    Set-ConfigValue $sponge "(?m)^unloadUnused\s*=.*$" "unloadUnused = false"
-    Set-ConfigValue $sponge "(?m)^runDaily\s*=.*$" "runDaily = false"
-    Set-ConfigValue $sponge "(?m)^deDupeMeshes\s*=.*$" "deDupeMeshes = false"
-    Set-ConfigValue $sponge "(?m)^deDupeTextures\s*=.*$" "deDupeTextures = false"
-    Set-ConfigValue $sponge "(?m)^deDupeAudio\s*=.*$" "deDupeAudio = false"
-    Set-ConfigValue $sponge "(?m)^resizeTextures\s*=.*$" "resizeTextures = false"
-    Set-ConfigValue $sponge "(?m)^maxResizeTextureSize\s*=.*$" "maxResizeTextureSize = 1024"
+    # 5. HDRP / LethalSponge
+    if ($OptHDRP -eq "yes") {
+        Write-Host "[5/6] Optimizing LethalSponge HDRP fog, shadows, and textures..." -ForegroundColor Cyan
+        $sponge = Join-Path $configDir "LethalSponge.cfg"
+        Set-ConfigValue $sponge "(?m)^securityCameraFramerate\s*=.*$" "securityCameraFramerate = 5"
+        Set-ConfigValue $sponge "(?m)^shipCameraFramerate\s*=.*$" "shipCameraFramerate = 5"
+        Set-ConfigValue $sponge "(?m)^mapCameraFramerate\s*=.*$" "mapCameraFramerate = 10"
+        Set-ConfigValue $sponge "(?m)^shadowsMaxResolution\s*=.*$" "shadowsMaxResolution = 64"
+        Set-ConfigValue $sponge "(?m)^shadowsAtlasSize\s*=.*$" "shadowsAtlasSize = 1024"
+        Set-ConfigValue $sponge "(?m)^fogBudget\s*=.*$" "fogBudget = 0.05"
+        Set-ConfigValue $sponge "(?m)^disableDOF\s*=.*$" "disableDOF = true"
+        Set-ConfigValue $sponge "(?m)^disableShadows\s*=.*$" "disableShadows = false"
+        Set-ConfigValue $sponge "(?m)^disableReflections\s*=.*$" "disableReflections = false"
+        Set-ConfigValue $sponge "(?m)^disableBloom\s*=.*$" "disableBloom = true"
+        Set-ConfigValue $sponge "(?m)^disableMotionBlur\s*=.*$" "disableMotionBlur = true"
+        Set-ConfigValue $sponge "(?m)^maxCubeReflectionProbes\s*=.*$" "maxCubeReflectionProbes = 6"
+        Set-ConfigValue $sponge "(?m)^maxPlanarReflectionProbes\s*=.*$" "maxPlanarReflectionProbes = 4"
+        Set-ConfigValue $sponge "(?m)^unloadUnused\s*=.*$" "unloadUnused = false"
+        Set-ConfigValue $sponge "(?m)^runDaily\s*=.*$" "runDaily = false"
+        Set-ConfigValue $sponge "(?m)^deDupeMeshes\s*=.*$" "deDupeMeshes = false"
+        Set-ConfigValue $sponge "(?m)^deDupeTextures\s*=.*$" "deDupeTextures = false"
+        Set-ConfigValue $sponge "(?m)^deDupeAudio\s*=.*$" "deDupeAudio = false"
+        Set-ConfigValue $sponge "(?m)^resizeTextures\s*=.*$" "resizeTextures = false"
+        Set-ConfigValue $sponge "(?m)^maxResizeTextureSize\s*=.*$" "maxResizeTextureSize = 1024"
+    }
 
-    Write-Host "[7/7] Verifying FPS Counter overlay plugin..." -ForegroundColor Cyan
-    $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-    $localZip = Join-Path $scriptDir "optimizer_plugins.zip"
-    $fpsDll = Join-Path $pluginsDir "LC_FPSCounter\LC_FPSCounter.dll"
+    # 6. FPS Counter
+    if ($OptFPSCounter -eq "yes") {
+        Write-Host "[6/6] Verifying FPS Counter overlay plugin..." -ForegroundColor Cyan
+        $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+        $localZip = Join-Path $scriptDir "optimizer_plugins.zip"
+        $fpsDll = Join-Path $pluginsDir "LC_FPSCounter\LC_FPSCounter.dll"
 
-    if (-not (Test-Path $fpsDll) -and (Test-Path $localZip)) {
-        Expand-Archive -Path $localZip -DestinationPath $GameDir -Force -ErrorAction SilentlyContinue
+        if (-not (Test-Path $fpsDll) -and (Test-Path $localZip)) {
+            Expand-Archive -Path $localZip -DestinationPath $GameDir -Force -ErrorAction SilentlyContinue
+        }
     }
 }
 elseif ($Mode -eq "Revert") {
