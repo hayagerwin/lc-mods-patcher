@@ -9,7 +9,7 @@ REM ============================================================================
 set "REPO_USER=hayagerwin"
 set "REPO_NAME=lc-mods-patcher"
 set "BRANCH=main"
-set "PATCHER_VERSION=2026082303"
+set "PATCHER_VERSION=2026082401"
 
 REM Script directory and config path
 set "SCRIPT_DIR=%~dp0"
@@ -81,68 +81,94 @@ if exist "%SCRIPT_DIR%Lethal Company.exe" (
 REM Case 2: External Execution - Scan for available Lethal Company installations
 set "COUNT=0"
 
-REM Scan Nested folder inside SCRIPT_DIR (e.g. extracted alongside game subfolder)
-for /d %%S in ("%SCRIPT_DIR%*Lethal*" "%SCRIPT_DIR%*") do (
-    if exist "%%~fS\Lethal Company.exe" (
-        if not defined FOUND_DIR_%%~fS (
-            set "FOUND_DIR_%%~fS=1"
-            set /a COUNT+=1
-            for %%K in (!COUNT!) do (
-                set "CANDIDATE_%%K=%%~fS"
-                set "LABEL_%%K=Inside Current Folder"
-            )
-        )
-    )
-    for /d %%T in ("%%~fS\*") do (
-        if exist "%%~fT\Lethal Company.exe" (
-            if not defined FOUND_DIR_%%~fT (
-                set "FOUND_DIR_%%~fT=1"
-                set /a COUNT+=1
-                for %%K in (!COUNT!) do (
-                    set "CANDIDATE_%%K=%%~fT"
-                    set "LABEL_%%K=Inside Current Folder"
-                )
-            )
-        )
-    )
-)
-
 REM Scan Saved Location
 if exist "%CONFIG_FILE%" (
     set /p SAVED_P=<"%CONFIG_FILE%"
     if defined SAVED_P (
         set "SAVED_P=!SAVED_P:"=!"
         if exist "!SAVED_P!\Lethal Company.exe" (
-            if not defined FOUND_DIR_!SAVED_P! (
-                set "FOUND_DIR_!SAVED_P!=1"
+            set "FOUND_DIR_!SAVED_P!=1"
+            set /a COUNT+=1
+            for %%K in (!COUNT!) do (
+                set "CANDIDATE_%%K=!SAVED_P!"
+                set "LABEL_%%K=Saved Location"
+            )
+        )
+    )
+)
+
+REM Scan MRU / OpenSavePidlMRU in registry
+for /f "tokens=3*" %%A in ('reg query "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\ComDlg32\OpenSavePidlMRU" /s 2^>nul ^| findstr /i "Lethal"') do (
+    set "REG_PATH=%%A %%B"
+    set "REG_PATH=!REG_PATH:~0,-1!"
+    if exist "!REG_PATH!\Lethal Company.exe" (
+        if not defined FOUND_DIR_!REG_PATH! (
+            set "FOUND_DIR_!REG_PATH!=1"
+            set /a COUNT+=1
+            for %%K in (!COUNT!) do (
+                set "CANDIDATE_%%K=!REG_PATH!"
+                set "LABEL_%%K=Recently Used"
+            )
+        )
+    )
+)
+
+REM Scan Windows Recent Shortcuts
+if exist "%APPDATA%\Microsoft\Windows\Recent" (
+    for %%F in ("%APPDATA%\Microsoft\Windows\Recent\*Lethal*.lnk") do (
+        for /f "usebackq delims=" %%T in (`powershell -NoProfile -Command "$s=(New-Object -COM WScript.Shell).CreateShortcut('%%~fF').TargetPath; if(Test-Path $s){$s}" 2^>nul`) do (
+            set "LNK_TARGET=%%~dpT"
+            if defined LNK_TARGET if "!LNK_TARGET:~-1!"=="\" set "LNK_TARGET=!LNK_TARGET:~0,-1!"
+            if exist "!LNK_TARGET!\Lethal Company.exe" (
+                if not defined FOUND_DIR_!LNK_TARGET! (
+                    set "FOUND_DIR_!LNK_TARGET!=1"
+                    set /a COUNT+=1
+                    for %%K in (!COUNT!) do (
+                        set "CANDIDATE_%%K=!LNK_TARGET!"
+                        set "LABEL_%%K=Recent Shortcut"
+                    )
+                )
+            )
+        )
+    )
+)
+
+REM Scan LocalAppData and AppData
+for %%P in ("%LOCALAPPDATA%\Programs\Lethal Company" "%APPDATA%\Lethal Company") do (
+    if exist "%%~P\Lethal Company.exe" (
+        if not defined FOUND_DIR_%%~P (
+            set "FOUND_DIR_%%~P=1"
+            set /a COUNT+=1
+            for %%K in (!COUNT!) do (
+                set "CANDIDATE_%%K=%%~P"
+                set "LABEL_%%K=AppData Install"
+            )
+        )
+    )
+)
+
+REM Scan 7-Zip & WinRAR History in Registry
+for /f "tokens=2*" %%A in ('reg query "HKCU\Software\7-Zip\FM" /v "History" 2^>nul ^| findstr /i "History"') do (
+    set "RAW_HIST=%%B"
+    for %%S in (!RAW_HIST!) do (
+        if exist "%%~fS\Lethal Company.exe" (
+            if not defined FOUND_DIR_%%~fS (
+                set "FOUND_DIR_%%~fS=1"
                 set /a COUNT+=1
                 for %%K in (!COUNT!) do (
-                    set "CANDIDATE_%%K=!SAVED_P!"
+                    set "CANDIDATE_%%K=%%~fS"
                     set "LABEL_%%K=Previously Used"
                 )
             )
-        ) else (
-            for /d %%S in ("!SAVED_P!\*") do (
-                if exist "%%~fS\Lethal Company.exe" (
-                    if not defined FOUND_DIR_%%~fS (
-                        set "FOUND_DIR_%%~fS=1"
-                        set /a COUNT+=1
-                        for %%K in (!COUNT!) do (
-                            set "CANDIDATE_%%K=%%~fS"
-                            set "LABEL_%%K=Previously Used"
-                        )
-                    )
-                )
-                for /d %%T in ("%%~fS\*") do (
-                    if exist "%%~fT\Lethal Company.exe" (
-                        if not defined FOUND_DIR_%%~fT (
-                            set "FOUND_DIR_%%~fT=1"
-                            set /a COUNT+=1
-                            for %%K in (!COUNT!) do (
-                                set "CANDIDATE_%%K=%%~fT"
-                                set "LABEL_%%K=Previously Used"
-                            )
-                        )
+        )
+        for /d %%T in ("%%~fS\*") do (
+            if exist "%%~fT\Lethal Company.exe" (
+                if not defined FOUND_DIR_%%~fT (
+                    set "FOUND_DIR_%%~fT=1"
+                    set /a COUNT+=1
+                    for %%K in (!COUNT!) do (
+                        set "CANDIDATE_%%K=%%~fT"
+                        set "LABEL_%%K=Previously Used"
                     )
                 )
             )
@@ -215,7 +241,7 @@ for %%B in ("%USERPROFILE%\Downloads" "%USERPROFILE%\Desktop" "%USERPROFILE%\Doc
                     )
                 )
             )
-            REM Subfolder depth 1 check (e.g. Downloads/Lethal Company/Lethal Company)
+            REM Subfolder depth 1 check
             for /d %%S in ("%%~fD\*") do (
                 if exist "%%~fS\Lethal Company.exe" (
                     if not defined FOUND_DIR_%%~fS (
@@ -263,7 +289,7 @@ if !COUNT! gtr 1 (
     echo.
     :prompt_multi_choice
     set "CHOICE="
-    set /p "CHOICE=Select which folder to patch [1-!CUSTOM_OPT!] (Default: 1): "
+    set /p "CHOICE=Select which folder to use [1-!CUSTOM_OPT!] (Default: 1): "
     if not defined CHOICE set "CHOICE=1"
     if "!CHOICE!"=="!CUSTOM_OPT!" goto :prompt_custom_path
 
@@ -283,40 +309,8 @@ if !COUNT! gtr 1 (
 
 REM Single installation found
 if !COUNT! equ 1 (
-    echo %C_CYAN%Found Lethal Company installation:%C_RESET%
-    echo   %C_GREEN%[+]%C_RESET% !CANDIDATE_1! %C_YELLOW%^(!LABEL_1!^)%C_RESET%
-    echo.
-    echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
-    echo   * Press %C_GREEN%[ENTER]%C_RESET% to continue with this folder ^(Recommended^)
-    echo   * Or type %C_YELLOW%[C]%C_RESET% to change, browse, or drag-and-drop a different folder
-    echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
-    echo.
-    set "USER_CONFIRM="
-    set /p "USER_CONFIRM=Press [ENTER] to continue, or type 'C' to change: "
-    if defined USER_CONFIRM (
-        set "USER_CONFIRM=!USER_CONFIRM:"=!"
-        for /f "tokens=* delims= " %%S in ("!USER_CONFIRM!") do set "USER_CONFIRM=%%S"
-    )
-    if not defined USER_CONFIRM (
-        set "GAME_DIR=!CANDIDATE_1!"
-        goto :game_dir_confirmed
-    )
-    if /i "!USER_CONFIRM!"=="Y" (
-        set "GAME_DIR=!CANDIDATE_1!"
-        goto :game_dir_confirmed
-    )
-    if /i "!USER_CONFIRM!"=="YES" (
-        set "GAME_DIR=!CANDIDATE_1!"
-        goto :game_dir_confirmed
-    )
-    if /i "!USER_CONFIRM!"=="C" goto :prompt_custom_path
-    if /i "!USER_CONFIRM!"=="CHANGE" goto :prompt_custom_path
-    if /i "!USER_CONFIRM!"=="B" goto :prompt_browse_path
-    if /i "!USER_CONFIRM!"=="BROWSE" goto :prompt_browse_path
-
-    REM In case user dragged/typed a path directly here anyway
-    set "INPUT_DIR=!USER_CONFIRM!"
-    goto :validate_custom_path
+    set "GAME_DIR=!CANDIDATE_1!"
+    goto :game_dir_confirmed
 )
 
 REM No installations detected - prompt manually
@@ -348,14 +342,15 @@ if not defined INPUT_DIR (
 goto :validate_custom_path
 
 :validate_custom_path
-set "INPUT_DIR=!INPUT_DIR:"=!"
-if "!INPUT_DIR:~-1!"=="\" set "INPUT_DIR=!INPUT_DIR:~0,-1!"
-
-REM If user dragged executable directly or another file
-if /i "!INPUT_DIR:~-18!"=="Lethal Company.exe" (
-    for %%F in ("!INPUT_DIR!") do set "INPUT_DIR=%%~dpF"
-    if "!INPUT_DIR:~-1!"=="\" set "INPUT_DIR=!INPUT_DIR:~0,-1!"
+if defined INPUT_DIR (
+    set "INPUT_DIR=!INPUT_DIR:"=!"
+    for /f "tokens=* delims= " %%S in ("!INPUT_DIR!") do set "INPUT_DIR=%%S"
+    if defined INPUT_DIR (
+        if "!INPUT_DIR:~-1!"=="\" set "INPUT_DIR=!INPUT_DIR:~0,-1!"
+    )
 )
+
+if not defined INPUT_DIR goto :prompt_custom_path
 
 REM 1. Check direct folder
 if exist "!INPUT_DIR!\Lethal Company.exe" (
@@ -363,7 +358,7 @@ if exist "!INPUT_DIR!\Lethal Company.exe" (
     goto :game_dir_confirmed
 )
 
-REM 2. Check subfolder depth 1 (e.g. user dragged Downloads/Lethal Company)
+REM 2. Check subfolder depth 1
 for /d %%S in ("!INPUT_DIR!\*") do (
     if exist "%%~fS\Lethal Company.exe" (
         set "GAME_DIR=%%~fS"
@@ -381,7 +376,7 @@ for /d %%S in ("!INPUT_DIR!\*") do (
     )
 )
 
-REM 4. Check parent directories (in case user dragged BepInEx or Lethal Company_Data)
+REM 4. Check parent directories
 if exist "!INPUT_DIR!\..\Lethal Company.exe" (
     for %%F in ("!INPUT_DIR!\..") do set "GAME_DIR=%%~fF"
     goto :game_dir_confirmed
@@ -404,7 +399,142 @@ REM Save game path to config
 if not exist "%CONFIG_DIR%" mkdir "%CONFIG_DIR%" 2>nul
 echo !GAME_DIR!>"%CONFIG_FILE%" 2>nul
 
-REM Clear screen after directory has been determined
+:main_menu
+cls
+echo %C_CYAN%============================================================================
+echo                     Lethal Company Mod Patcher & Toolset
+echo ============================================================================%C_RESET%
+echo.
+echo %C_GREEN%[+] Target Game Directory:%C_RESET% !GAME_DIR!
+echo.
+echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
+echo   Select an action:
+echo     %C_GREEN%[ENTER]%C_RESET% -^> %C_GREEN%Update ^& Apply Latest Mods%C_RESET% ^(Default / Recommended^)
+echo     %C_YELLOW%[1]%C_RESET%     -^> %C_YELLOW%Run Performance Optimizer%C_RESET% ^(Low-Spec PC / HDD FPS Boost^)
+echo     %C_YELLOW%[2]%C_RESET%     -^> %C_YELLOW%Revert Optimizer Settings%C_RESET% ^(Restore Default Graphics^)
+echo     %C_CYAN%[C]%C_RESET%     -^> %C_CYAN%Change / Browse Game Directory%C_RESET%
+echo     %C_RED%[Q]%C_RESET%     -^> %C_RED%Exit%C_RESET%
+echo %C_CYAN%----------------------------------------------------------------------------%C_RESET%
+echo.
+set "USER_ACTION="
+set /p "USER_ACTION=Enter choice (Default: [ENTER] to Update): "
+if defined USER_ACTION (
+    set "USER_ACTION=!USER_ACTION:"=!"
+    for /f "tokens=* delims= " %%S in ("!USER_ACTION!") do set "USER_ACTION=%%S"
+)
+if not defined USER_ACTION goto :run_patcher_flow
+if /i "!USER_ACTION!"=="U" goto :run_patcher_flow
+if /i "!USER_ACTION!"=="UPDATE" goto :run_patcher_flow
+if /i "!USER_ACTION!"=="P" goto :run_patcher_flow
+if /i "!USER_ACTION!"=="PATCH" goto :run_patcher_flow
+if /i "!USER_ACTION!"=="Y" goto :run_patcher_flow
+if /i "!USER_ACTION!"=="YES" goto :run_patcher_flow
+if "!USER_ACTION!"=="1" goto :run_optimizer_flow
+if /i "!USER_ACTION!"=="OPT" goto :run_optimizer_flow
+if /i "!USER_ACTION!"=="OPTIMIZE" goto :run_optimizer_flow
+if "!USER_ACTION!"=="2" goto :run_revert_optimizer_flow
+if /i "!USER_ACTION!"=="REVERT" goto :run_revert_optimizer_flow
+if /i "!USER_ACTION!"=="C" goto :prompt_custom_path
+if /i "!USER_ACTION!"=="CHANGE" goto :prompt_custom_path
+if /i "!USER_ACTION!"=="Q" exit /b 0
+if /i "!USER_ACTION!"=="QUIT" exit /b 0
+if /i "!USER_ACTION!"=="EXIT" exit /b 0
+if "!USER_ACTION!"=="0" exit /b 0
+
+REM If user typed anything else unrecognized, assume patcher flow
+goto :run_patcher_flow
+
+REM ============================================================================
+REM FLOW 1: PERFORMANCE OPTIMIZER
+REM ============================================================================
+:run_optimizer_flow
+echo.
+echo %C_CYAN%============================================================================
+echo                   Running Low-Spec Performance Optimizer
+echo ============================================================================%C_RESET%
+echo.
+
+set "PS_SCRIPT=%SCRIPT_DIR%optimizer\optimize.ps1"
+set "PS_URL=https://raw.githubusercontent.com/%REPO_USER%/%REPO_NAME%/%BRANCH%/optimizer/optimize.ps1?t=%RANDOM%"
+set "OPT_ZIP_URL=https://raw.githubusercontent.com/%REPO_USER%/%REPO_NAME%/%BRANCH%/optimizer/optimizer_plugins.zip?t=%RANDOM%"
+set "TEMP_PS=%TEMP%\lc_optimize_%RANDOM%.ps1"
+set "TEMP_OPT_ZIP=%TEMP%\lc_opt_plugins_%RANDOM%.zip"
+
+if not exist "!PS_SCRIPT!" (
+    echo %C_CYAN%[1/2] Downloading latest optimization definitions...%C_RESET%
+    curl.exe -s -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" "!PS_URL!" -o "!TEMP_PS!" 2>nul
+    if exist "!TEMP_PS!" (
+        set "PS_SCRIPT=!TEMP_PS!"
+    )
+)
+
+if not exist "!PS_SCRIPT!" (
+    echo %C_RED%[ERROR] Failed to obtain optimize.ps1. Check your internet connection.%C_RESET%
+    pause
+    goto :main_menu
+)
+
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "!PS_SCRIPT!" -Mode "Optimize" -GameDir "!GAME_DIR!"
+
+echo.
+echo %C_CYAN%[2/2] Checking FPS Counter overlay plugin...%C_RESET%
+curl.exe -s -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" "!OPT_ZIP_URL!" -o "!TEMP_OPT_ZIP!" 2>nul
+if exist "!TEMP_OPT_ZIP!" (
+    tar.exe -xf "!TEMP_OPT_ZIP!" -C "!GAME_DIR!" 2>nul
+    del /f /q "!TEMP_OPT_ZIP!" 2>nul
+)
+
+if exist "!TEMP_PS!" del /f /q "!TEMP_PS!" 2>nul
+
+echo.
+echo %C_GREEN%============================================================================
+echo [SUCCESS] Performance optimizations have been applied successfully!
+echo ============================================================================%C_RESET%
+echo.
+echo   * Gameplay camera scale set to 0.7x (16:9 aspect lock)
+echo   * Heavy 3D OpenBodyCam rendering disabled
+echo   * Ship external & internal cameras capped to 5 FPS
+echo   * Low-spec shadow maps and fog budget applied
+echo   * FPS Counter overlay active (Toggle in-game with [F8])
+echo.
+pause
+goto :main_menu
+
+REM ============================================================================
+REM FLOW 2: REVERT OPTIMIZER
+REM ============================================================================
+:run_revert_optimizer_flow
+echo.
+echo %C_CYAN%============================================================================
+echo                    Reverting Performance Optimizations
+echo ============================================================================%C_RESET%
+echo.
+
+set "PS_SCRIPT=%SCRIPT_DIR%optimizer\optimize.ps1"
+set "PS_URL=https://raw.githubusercontent.com/%REPO_USER%/%REPO_NAME%/%BRANCH%/optimizer/optimize.ps1?t=%RANDOM%"
+set "TEMP_PS=%TEMP%\lc_revert_%RANDOM%.ps1"
+
+if not exist "!PS_SCRIPT!" (
+    curl.exe -s -L -f -H "Cache-Control: no-cache" -H "Pragma: no-cache" "!PS_URL!" -o "!TEMP_PS!" 2>nul
+    if exist "!TEMP_PS!" set "PS_SCRIPT=!TEMP_PS!"
+)
+
+if exist "!PS_SCRIPT!" (
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "!PS_SCRIPT!" -Mode "Revert" -GameDir "!GAME_DIR!"
+    if exist "!TEMP_PS!" del /f /q "!TEMP_PS!" 2>nul
+    echo.
+    echo %C_GREEN%[SUCCESS] Graphics and camera settings restored to defaults.%C_RESET%
+) else (
+    echo %C_RED%[ERROR] Could not load optimize.ps1 to revert.%C_RESET%
+)
+echo.
+pause
+goto :main_menu
+
+REM ============================================================================
+REM FLOW 3: MOD PATCHER & UPDATE (DEFAULT)
+REM ============================================================================
+:run_patcher_flow
 cls
 echo %C_CYAN%============================================================================
 echo                        Lethal Company Mod Patcher

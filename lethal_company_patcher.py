@@ -632,29 +632,94 @@ def stage_extract_patch(game_dir: Path, zip_path: Path) -> bool:
         return False
 
 
-def main():
-    log_header("Lethal Company Mod Patcher")
+def run_optimizer_flow(game_dir: Path):
+    """Executes the low-spec performance optimizer."""
+    log_header("Running Low-Spec Performance Optimizer")
+    
+    script_dir = Path(__file__).resolve().parent
+    local_ps = script_dir / "optimizer" / "optimize.ps1"
+    ps_url = f"https://raw.githubusercontent.com/{REPO_USER}/{REPO_NAME}/{BRANCH}/optimizer/optimize.ps1"
+    opt_zip_url = f"https://raw.githubusercontent.com/{REPO_USER}/{REPO_NAME}/{BRANCH}/optimizer/optimizer_plugins.zip"
 
-    # Step 0: Self-update check (always runs FIRST before anything else)
-    script_url = f"https://raw.githubusercontent.com/{REPO_USER}/{REPO_NAME}/{BRANCH}/lethal_company_patcher.py"
-    check_self_update(script_url)
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_ps = Path(temp_dir) / "optimize.ps1"
+        target_ps = local_ps if local_ps.is_file() else temp_ps
 
-    # Step 1: Game Directory Detection
-    game_dir = resolve_game_directory()
+        if not target_ps.is_file():
+            log_step("1/2", "Downloading latest optimization definitions...")
+            download_file_with_progress(ps_url, temp_ps, show_progress=False)
+            target_ps = temp_ps
 
-    if not game_dir or not (game_dir / "Lethal Company.exe").is_file():
-        log_error('Could not locate "Lethal Company.exe"!')
-        print("\nPlease make sure you have Lethal Company installed (Steam, Online-Fix, or standalone),")
-        print("and run this script from inside the game folder or provide the correct path when prompted.\n")
-        input("Press Enter to exit...")
-        sys.exit(1)
+        if not target_ps.is_file():
+            log_error("Failed to load optimize.ps1. Please check your network connection.")
+            input("\nPress Enter to return...")
+            return
 
-    save_cached_game_dir(game_dir)
+        try:
+            subprocess.run([
+                "powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
+                "-File", str(target_ps), "-Mode", "Optimize", "-GameDir", str(game_dir)
+            ], check=True)
+        except Exception as e:
+            log_error(f"Failed to execute optimize.ps1: {e}")
 
-    # Clear previous detection messages and show clean dashboard
+        # Download & install FPS Counter overlay plugin if available
+        print()
+        log_step("2/2", "Checking FPS Counter overlay plugin...")
+        temp_opt_zip = Path(temp_dir) / "optimizer_plugins.zip"
+        if download_file_with_progress(opt_zip_url, temp_opt_zip, show_progress=False):
+            try:
+                with zipfile.ZipFile(temp_opt_zip, "r") as archive:
+                    archive.extractall(path=game_dir)
+                log_info("FPS Counter plugin synchronized.")
+            except Exception:
+                pass
+
+    log_success("Performance optimizations have been applied successfully!\n")
+    print("  * Gameplay camera scale set to 0.7x (16:9 aspect lock)")
+    print("  * Heavy 3D OpenBodyCam rendering disabled")
+    print("  * Ship cameras capped to 5 FPS")
+    print("  * Low-spec shadow maps and fog budget applied")
+    print("  * FPS Counter overlay active (Toggle in-game with [F8])\n")
+    input("Press Enter to continue...")
+
+
+def run_revert_optimizer_flow(game_dir: Path):
+    """Reverts graphics and camera performance optimizations back to standard defaults."""
+    log_header("Reverting Performance Optimizations")
+    
+    script_dir = Path(__file__).resolve().parent
+    local_ps = script_dir / "optimizer" / "optimize.ps1"
+    ps_url = f"https://raw.githubusercontent.com/{REPO_USER}/{REPO_NAME}/{BRANCH}/optimizer/optimize.ps1"
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_ps = Path(temp_dir) / "optimize.ps1"
+        target_ps = local_ps if local_ps.is_file() else temp_ps
+
+        if not target_ps.is_file():
+            download_file_with_progress(ps_url, temp_ps, show_progress=False)
+            target_ps = temp_ps
+
+        if target_ps.is_file():
+            try:
+                subprocess.run([
+                    "powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
+                    "-File", str(target_ps), "-Mode", "Revert", "-GameDir", str(game_dir)
+                ], check=True)
+                log_success("Graphics and camera settings restored to defaults.\n")
+            except Exception as e:
+                log_error(f"Failed to revert settings: {e}")
+        else:
+            log_error("Could not load optimize.ps1 to revert.")
+
+    input("Press Enter to continue...")
+
+
+def run_patcher_flow(game_dir: Path):
+    """Executes the standard 3-stage mod patching & updating flow."""
     clear_screen()
     log_header("Lethal Company Mod Patcher")
-    print(f"{Style.BOLD}{Style.GREEN}[+] Selected Game Directory:{Style.RESET} {game_dir}\n")
+    print(f"{Style.BOLD}{Style.GREEN}[+] Target Game Directory:{Style.RESET} {game_dir}\n")
 
     delete_list_url = f"https://raw.githubusercontent.com/{REPO_USER}/{REPO_NAME}/{BRANCH}/delete_list.txt"
     patch_zip_url = f"https://raw.githubusercontent.com/{REPO_USER}/{REPO_NAME}/{BRANCH}/patch.zip"
@@ -708,5 +773,62 @@ def main():
     sys.exit(0)
 
 
+def main():
+    log_header("Lethal Company Mod Patcher")
+
+    # Step 0: Self-update check (always runs FIRST before anything else)
+    script_url = f"https://raw.githubusercontent.com/{REPO_USER}/{REPO_NAME}/{BRANCH}/lethal_company_patcher.py"
+    check_self_update(script_url)
+
+    # Step 1: Game Directory Detection
+    game_dir = resolve_game_directory()
+
+    if not game_dir or not (game_dir / "Lethal Company.exe").is_file():
+        log_error('Could not locate "Lethal Company.exe"!')
+        print("\nPlease make sure you have Lethal Company installed (Steam, Online-Fix, or standalone),")
+        print("and run this script from inside the game folder or provide the correct path when prompted.\n")
+        input("Press Enter to exit...")
+        sys.exit(1)
+
+    save_cached_game_dir(game_dir)
+
+    # Main Action Menu Loop
+    while True:
+        clear_screen()
+        log_header("Lethal Company Mod Patcher & Toolset")
+        print(f"{Style.BOLD}{Style.GREEN}[+] Target Game Directory:{Style.RESET} {game_dir}\n")
+
+        print(f"{Style.CYAN}{'-' * 75}{Style.RESET}")
+        print("  Select an action:")
+        print(f"    {Style.BOLD}{Style.GREEN}[ENTER]{Style.RESET} -> {Style.GREEN}Update & Apply Latest Mods{Style.RESET} (Default / Recommended)")
+        print(f"    {Style.BOLD}{Style.YELLOW}[1]{Style.RESET}     -> {Style.YELLOW}Run Performance Optimizer{Style.RESET} (Low-Spec PC / HDD FPS Boost)")
+        print(f"    {Style.BOLD}{Style.YELLOW}[2]{Style.RESET}     -> {Style.YELLOW}Revert Optimizer Settings{Style.RESET} (Restore Default Graphics)")
+        print(f"    {Style.BOLD}{Style.CYAN}[C]{Style.RESET}     -> {Style.CYAN}Change / Browse Game Directory{Style.RESET}")
+        print(f"    {Style.BOLD}{Style.RED}[Q]{Style.RESET}     -> {Style.RED}Exit{Style.RESET}")
+        print(f"{Style.CYAN}{'-' * 75}{Style.RESET}\n")
+
+        try:
+            choice = input("Enter choice (Default: [ENTER] to Update): ").strip()
+        except (KeyboardInterrupt, EOFError):
+            print()
+            sys.exit(0)
+
+        if not choice or choice.lower() in ("u", "update", "p", "patch", "y", "yes"):
+            run_patcher_flow(game_dir)
+            break
+        elif choice == "1" or choice.lower() in ("opt", "optimize"):
+            run_optimizer_flow(game_dir)
+        elif choice == "2" or choice.lower() in ("revert", "restore"):
+            run_revert_optimizer_flow(game_dir)
+        elif choice.lower() in ("c", "change"):
+            new_dir = prompt_manual_directory_picker()
+            if new_dir and (new_dir / "Lethal Company.exe").is_file():
+                game_dir = new_dir
+                save_cached_game_dir(game_dir)
+        elif choice == "0" or choice.lower() in ("q", "quit", "exit"):
+            sys.exit(0)
+
+
 if __name__ == "__main__":
     main()
+
