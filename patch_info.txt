@@ -1,3 +1,7 @@
+=== [v3.9.5] - 2026-08-26 22:01 PHT ===
+* Restored standard Line of Sight requirements for Main Exit, Main Entrance, and Fire Exits in Better Scanner (ScrapSyncFix). Exits can no longer be scanned through facility walls.
+* Maintained wall penetration exclusively for Scrap (and optional Enemies) at Tier 3 Better Scanner.
+
 === [v3.9.4] - 2026-08-26 21:09 PHT ===
 * Enhanced patcher self-update logic using a detached spawn-and-replace process to prevent file-locking and 32-bit batch integer overflow bugs.
 * Bundled lethal_company_patcher.bat and update_patcher.bat directly into patch.zip so any patch run will deliver the latest patcher into the game directory.
