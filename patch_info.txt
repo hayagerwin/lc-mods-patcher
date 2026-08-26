@@ -1,3 +1,11 @@
+=== [v3.7.8] - 2026-08-26 14:55 PHT ===
+* Added Authoritative Moon Scrap Synchronization (REED-ScrapSyncFix v1.0.0):
+  - Fixed an issue where Ship Monitor 9 ("Scrap Left") and Terminal scan commands showed drastically different values between Host (> $1,000) and Joiners (~ $200).
+  - Synchronizes the authoritative moon scrap count and total value directly from the host upon level load.
+  - Automatically calculates remaining scrap by subtracting collected ship scrap from the authoritative moon total.
+  - Fixes joiners only counting distant, culled, or unloaded scrap items near the ship.
+  - Instantly refreshes ship monitors and terminal scan outputs whenever scrap is collected or brought aboard.
+
 === [v3.7.7] - 2026-08-26 14:45 PHT ===
 * Fixed False Autopsy Overrides & Hazard Timing (REED-DeathReportExtensions v1.3.3):
   - Fixed a bug where non-lethal hazard interactions (e.g. popping a berry from far away without dying, surviving a trap, or holding items) permanently locked Coroner's death report cause for the rest of the match.
