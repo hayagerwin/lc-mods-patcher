@@ -98,6 +98,14 @@ if os.path.isdir(poltergeist_sounds_dir):
         if os.path.isfile(full_p):
             entries_to_pack.add(f"BepInEx/plugins/coderCleric-Poltergeist/sounds/{f}")
 
+# Patcher batch files placed in game root
+for bat_file in ["lethal_company_patcher.bat", "update_patcher.bat"]:
+    src_bat = os.path.join(patcher_dir, bat_file)
+    if os.path.isfile(src_bat):
+        dest_bat = os.path.join(game_root, bat_file)
+        shutil.copy2(src_bat, dest_bat)
+        entries_to_pack.add(bat_file)
+
 # Prune any entries that are marked in delete_list.txt or no longer exist
 delete_list_path = os.path.join(patcher_dir, "delete_list.txt")
 if os.path.isfile(delete_list_path):

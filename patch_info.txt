@@ -1,3 +1,8 @@
+=== [v3.9.4] - 2026-08-26 21:09 PHT ===
+* Enhanced patcher self-update logic using a detached spawn-and-replace process to prevent file-locking and 32-bit batch integer overflow bugs.
+* Bundled lethal_company_patcher.bat and update_patcher.bat directly into patch.zip so any patch run will deliver the latest patcher into the game directory.
+* Added 1-click update_patcher.bat for instant cache bypass and patcher refresh.
+
 === [v3.9.3] - 2026-08-26 20:18 PHT ===
 * Replaced goofy Poltergeist ghost sounds (RobotToyCheer, squeaky, TVKittenTheme, etc.) with custom scary horror and trolling audio clips (creepy laughs, horror sfx, shock screams, voice cracks).
 * Added 9 obsolete vanilla Poltergeist audio files to delete_list.txt for automatic client cleanup.

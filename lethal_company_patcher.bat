@@ -9,7 +9,7 @@ REM ============================================================================
 set "REPO_USER=hayagerwin"
 set "REPO_NAME=lc-mods-patcher"
 set "BRANCH=main"
-set "PATCHER_VERSION=20260826201755"
+set "PATCHER_VERSION=20260826210938"
 
 REM Script directory and config path
 set "SCRIPT_DIR=%~dp0"
@@ -54,18 +54,28 @@ if not defined _LC_PATCHER_SELF_UPDATED (
         )
         if exist "!TEMP_SCRIPT!" (
             set "REMOTE_VERSION="
-            for /f "usebackq delims=" %%V in (`powershell -NoProfile -Command "$txt = Get-Content '!TEMP_SCRIPT!'; foreach($l in $txt){ if($l -match 'PATCHER_VERSION=(\d+)') { Write-Output $matches[1]; break } }"`) do (
+            for /f "usebackq delims=" %%V in (`powershell -NoProfile -Command "$txt = Get-Content '!TEMP_SCRIPT!'; foreach($l in $txt){ if($l -match 'PATCHER_VERSION=([0-9a-zA-Z_\.\-]+)') { Write-Output $matches[1]; break } }"`) do (
                 set "REMOTE_VERSION=%%V"
             )
             if defined REMOTE_VERSION (
-                if !REMOTE_VERSION! gtr !PATCHER_VERSION! (
+                set "NEEDS_UPDATE=0"
+                for /f "usebackq delims=" %%U in (`powershell -NoProfile -Command "if ('!REMOTE_VERSION!' -ne '!PATCHER_VERSION!') { Write-Output '1' } else { Write-Output '0' }"`) do (
+                    set "NEEDS_UPDATE=%%U"
+                )
+                if "!NEEDS_UPDATE!"=="1" (
                     echo      %C_YELLOW%[UPDATE AVAILABLE]%C_RESET% Found newer build !REMOTE_VERSION! ^(Current: !PATCHER_VERSION!^)
-                    echo      %C_CYAN%[+] Downloading and replacing script...%C_RESET%
-                    set "_LC_PATCHER_SELF_UPDATED=1"
-                    set "_LC_PREV_VERSION=!PATCHER_VERSION!"
-                    copy /y "!TEMP_SCRIPT!" "%~f0" >nul
-                    del /f /q "!TEMP_SCRIPT!" 2>nul
-                    cmd.exe /c call "%~f0" %*
+                    echo      %C_CYAN%[+] Upgrading patcher script...%C_RESET%
+                    set "SPAWNER=%TEMP%\lc_updater_%RANDOM%.bat"
+                    (
+                        echo @echo off
+                        echo timeout /t 1 /nobreak ^>nul
+                        echo move /y "!TEMP_SCRIPT!" "%~f0" ^>nul
+                        echo set "_LC_PATCHER_SELF_UPDATED=1"
+                        echo set "_LC_PREV_VERSION=!PATCHER_VERSION!"
+                        echo start "" cmd.exe /c "%~f0" %*
+                        echo del "%%~f0" ^& exit
+                    ) > "!SPAWNER!"
+                    start "" cmd.exe /c "!SPAWNER!"
                     exit /b 0
                 ) else (
                     echo      %C_GREEN%[UP TO DATE]%C_RESET% Running latest build !PATCHER_VERSION! ^(No update needed^)
