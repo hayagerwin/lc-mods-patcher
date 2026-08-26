@@ -1,3 +1,13 @@
+=== [v3.9.0] - 2026-08-26 18:00 PHT ===
+* Thematic Dungeon & Interior Spawn Rate Rebalancing (LethalLevelLoader):
+  - Balanced and normalized all 15 custom modded interiors across all 29 vanilla and modded moons:
+    * Liminal Facility (The Backrooms): Drastically boosted on anomaly/sci-fi moons (Arcadia, Argent, Zenit, Flicker, Shutter, Pareidolia, Bozoros, The Iris) and active across all moons.
+    * Accursed Crypts & Gothic Monastery: Elevated to high signature spawn rates on ancient, snowy, and haunted moons (Rend, Dine, E-Gypt, Sanguine, Spectralis, PsychSanctum, Vigilance).
+    * Bunker, Drains, Dreary Pipeworks, Gearbolt Foundry, Niven Reactor, Storehouse, & Substation: High signature rates on industrial and heavy factory moons (Offense, Vow, March, Adamance, Titan, Artifice, Embrion, Assurance, Abaddon, Cabal).
+    * Circus Facility: High signature rates on creepy/psychiatric/weird anomaly moons (Bozoros, Flicker, Shutter, PsychSanctum, Pareidolia).
+    * Guardia Fortress & Zeranos: High signature rates on fortified moons (Artifice, Titan, Vigilance, Abaddon, Cabal).
+  - Nerfed vanilla Facility, Mineshaft, and Haunted Mansion across all moons down to 10–25 weight so they only appear as rare classic throwbacks instead of dominating every run.
+
 === [v3.8.9] - 2026-08-26 17:00 PHT ===
 * Optimized Lever Pull & Level Transition Performance (REED-LandingVoiceGuard v3.7.1 & REED-MoonRouteBuffer v1.2.1):
   - Fixed an un-cached scene graph search in `StartOfRound.Update` where `FindObjectOfType<StartMatchLever>` was being invoked every single render frame (60–144 times/sec).
