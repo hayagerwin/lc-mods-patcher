@@ -1,3 +1,8 @@
+=== [v3.9.2] - 2026-08-26 19:10 PHT ===
+* Accursed Crypts Thematic Rebalancing (LethalLevelLoader):
+  - Tuned Accursed Crypts spawn weights so 10 E-Gypt remains the primary signature pyramid home (Weight 300 / 75.0% chance).
+  - Capped Accursed Crypts weights to 100 and below on all other moons (Sanguine: 100, Spectralis: 100, Lament: 80, Rend: 60, Dine: 60, The Iris: 60, PsychSanctum: 40) so other signature interiors shine while keeping Crypts as a secondary encounter.
+
 === [v3.9.1] - 2026-08-26 18:15 PHT ===
 * Full Thematic Moon & Interior Exclusivity Revamp (LethalLevelLoader):
   - Completely revamped interior spawn pools with 100% theme exclusivity:

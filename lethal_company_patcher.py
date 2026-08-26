@@ -21,7 +21,7 @@ import urllib.error
 REPO_USER = "hayagerwin"
 REPO_NAME = "lc-mods-patcher"
 BRANCH = "main"
-PATCHER_VERSION = "20260826181409"
+PATCHER_VERSION = "20260826190844"
 
 # ==============================================================================
 # TERMINAL FORMATTING HELPERS
