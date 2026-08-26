@@ -1,3 +1,10 @@
+=== [v3.7.5] - 2026-08-26 14:15 PHT ===
+* Fixed Moon Routing Asset Caching & Lever Lock Desync (REED-MoonRouteBuffer v1.2.0):
+  - Fixed Netcode 64-bit buffer size overflow on client readiness acknowledgments.
+  - Implemented real-time two-way unlock broadcast from host to all clients upon asset caching completion.
+  - Added client-side safety timeout redundancy to guarantee lever interactability never gets stuck.
+  - Ensures all crew members can pull the start match lever simultaneously without permission lockouts.
+
 === [v3.7.4] - 2026-08-24 20:05 PHT ===
 * Comprehensive Modpack Autopsy Expansion (REED-DeathReportExtensions):
   - Deep-scanned all modded entities, scraps, and environmental hazards to eliminate false/generic vanilla death causes.
