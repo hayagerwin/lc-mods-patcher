@@ -1,3 +1,8 @@
+=== [v3.8.8] - 2026-08-26 16:48 PHT ===
+* Added Wall-Penetration Scanning for Main Exit, Fire Exits, & Doors (REED-ScrapSyncFix v1.1.4):
+  - Fixed an issue where the Main Exit and Fire Exits inside the facility were blocked by line-of-sight and could not be scanned through walls.
+  - Enabled 100-meter wall-penetrating scanner reach for Main Entrance, Main Exit, Fire Exits, and the Ship when Better Scanner is active, making facility navigation and finding your way back out effortless.
+
 === [v3.8.6] - 2026-08-26 16:20 PHT ===
 * Balanced Better Scanner Distance & Reverted Test Starting Credits (REED-ScrapSyncFix v1.1.3):
   - Balanced Better Scanner upgrade progression to prevent overpowered room-clearing scans:
