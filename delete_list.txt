@@ -6,3 +6,12 @@ BepInEx/plugins/REED-MidSessionJoinFix
 BepInEx/plugins/pokefranzi-Himiko_Toga/MoreSuits.dll
 BepInEx/plugins/LandingVoiceGuard
 BepInEx/plugins/LC_FPSCounter
+BepInEx/plugins/coderCleric-Poltergeist/sounds/gong.mp3
+BepInEx/plugins/coderCleric-Poltergeist/sounds/Leap2.ogg
+BepInEx/plugins/coderCleric-Poltergeist/sounds/Lunge1.ogg
+BepInEx/plugins/coderCleric-Poltergeist/sounds/LungMachineDisconnect.ogg
+BepInEx/plugins/coderCleric-Poltergeist/sounds/RobotToyCheer.ogg
+BepInEx/plugins/coderCleric-Poltergeist/sounds/SpikeRoofSlam.ogg
+BepInEx/plugins/coderCleric-Poltergeist/sounds/squeaky.mp3
+BepInEx/plugins/coderCleric-Poltergeist/sounds/TVKittenTheme.ogg
+BepInEx/plugins/coderCleric-Poltergeist/sounds/growl.ogg

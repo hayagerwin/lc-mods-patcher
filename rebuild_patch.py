@@ -90,6 +90,22 @@ for extra_plugin in ["EliteMasterEric-Coroner", "Turkeysteaks-CoronerIntegration
                 rel_path = os.path.relpath(full_path, game_root).replace(os.sep, "/")
                 entries_to_pack.add(rel_path)
 
+# Poltergeist sounds
+poltergeist_sounds_dir = os.path.join(bepinex_dir, "plugins", "coderCleric-Poltergeist", "sounds")
+if os.path.isdir(poltergeist_sounds_dir):
+    for f in os.listdir(poltergeist_sounds_dir):
+        full_p = os.path.join(poltergeist_sounds_dir, f)
+        if os.path.isfile(full_p):
+            entries_to_pack.add(f"BepInEx/plugins/coderCleric-Poltergeist/sounds/{f}")
+
+# Prune any entries that are marked in delete_list.txt or no longer exist
+delete_list_path = os.path.join(patcher_dir, "delete_list.txt")
+if os.path.isfile(delete_list_path):
+    with open(delete_list_path, "r", encoding="utf-8", errors="ignore") as f:
+        del_lines = [line.strip().replace("\\", "/") for line in f if line.strip() and not line.startswith("#")]
+    for del_item in del_lines:
+        entries_to_pack = {e for e in entries_to_pack if not (e == del_item or e.startswith(del_item + "/"))}
+
 # 4. Rebuild patch.zip
 sorted_entries = sorted(list(entries_to_pack))
 with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_DEFLATED) as z:
@@ -137,4 +153,3 @@ user_doc_bat = os.path.expandvars(r"%USERPROFILE%\Documents\lethal_company_patch
 if os.path.isfile(user_doc_bat):
     shutil.copy2(bat_path, user_doc_bat)
     print(f"[+] Synced latest patcher batch to: {user_doc_bat}")
-
