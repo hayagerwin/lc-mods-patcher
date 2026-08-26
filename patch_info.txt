@@ -1,3 +1,11 @@
+=== [v3.8.4] - 2026-08-26 15:55 PHT ===
+* Fixed Better Scanner Long Range & Frustum Culling (REED-ScrapSyncFix v1.1.2):
+  - Fixed an issue where scan nodes beyond 20 meters were being artificially discarded by the camera's far clipping plane (`GeometryUtility.TestPlanesAABB`).
+  - Replaced camera frustum clipping with true perspective viewport projection (`WorldToViewportPoint`), allowing you to scan items at full distance across wide rooms and long hallways.
+  - Implemented progressive tier range multipliers (+20m at Tier 1, +40m at Tier 2, and +60m+ at Tier 3 max, +150m for Main Entrance and Ship).
+  - Expanded scan collider buffer to 300 objects to ensure zero dropped items on large custom moons.
+  - Retains full wall-penetration scanning for scrap and enemies when Better Scanner Tier 3 is unlocked.
+
 === [v3.8.1] - 2026-08-26 15:15 PHT ===
 * Added Live VoIP Diagnostics (F9) & Telemetry Logging (REED-LandingVoiceGuard v3.7.0):
   - Added Deep Voice Diagnostic Hotkey ([F9]): Instantly scans the complete audio pipeline and dumps an exhaustive diagnostic snapshot to BepInEx/LogOutput.log.
