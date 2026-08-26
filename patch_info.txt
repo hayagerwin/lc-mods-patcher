@@ -1,3 +1,17 @@
+=== [v3.9.1] - 2026-08-26 18:15 PHT ===
+* Full Thematic Moon & Interior Exclusivity Revamp (LethalLevelLoader):
+  - Completely revamped interior spawn pools with 100% theme exclusivity:
+    * Bozoros is now the dedicated home of the Circus Facility (93.8%).
+    * E-Gypt is dedicated to Accursed Crypts (75.0%) and ancient temples.
+    * Rend & Dine are dedicated to Gothic Monastery (42.9%) and Haunted Mansion (35.7%).
+    * Sanguine & Spectralis are dedicated to Accursed Crypts (46.2%) and Gothic Monastery (46.2%).
+    * Flicker, Shutter, Pareidolia, and The Iris are dedicated to Liminal Facility / The Backrooms (42.9%) and Towers.
+    * Arcadia, Argent, and Zenit are dedicated to Niven Reactor, Substation, and Towers.
+    * Vow and March feature Drains (37.0%), CIDOM Metro (37.0%), and Storehouse (18.5%).
+    * Titan, Artifice, Offense, and Abaddon feature Gearbolt Foundry, Bunker, Dreary Pipeworks, and Niven Reactor.
+    * Vigilance features Guardia Fortress / Zeranos (52.2%), Gothic Monastery (26.1%), and Bunker (21.7%).
+    * Liquidation features flooded Drains (50.0%) and poolrooms Liminal Facility (33.3%).
+
 === [v3.9.0] - 2026-08-26 18:00 PHT ===
 * Thematic Dungeon & Interior Spawn Rate Rebalancing (LethalLevelLoader):
   - Balanced and normalized all 15 custom modded interiors across all 29 vanilla and modded moons:
