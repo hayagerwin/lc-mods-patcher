@@ -1,3 +1,9 @@
+=== [v3.8.0] - 2026-08-26 15:10 PHT ===
+* Fixed Swapped Gnome Scan Node Types (REED-ScrapSyncFix v1.1.1):
+  - Fixed an issue with the Gnomes mod where the Gnome scrap item mistakenly displayed as a RED danger node (like an enemy) despite being valuable loot.
+  - Fixed the Gnome enemy (the Weeping-Angel style stalking monster that teleports players) mistakenly displaying as a GREEN harmless node.
+  - Automatically corrects scan node types so all scrap items display as Green/Blue loot nodes with sell values, and all enemy monsters display as Red warning nodes.
+
 === [v3.7.9] - 2026-08-26 15:00 PHT ===
 * Fixed LGU Better Scanner Compatibility with GeneralImprovements & Custom Scrap (REED-ScrapSyncFix v1.1.0):
   - Fixed an issue where the Better Scanner upgrade from LateGame Upgrades (tier 3 wall-penetrating scan and +20m distance boost) was severely restricted or ignored.
