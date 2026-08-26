@@ -1,3 +1,14 @@
+=== [v3.7.6] - 2026-08-26 14:40 PHT ===
+* Fixed Spectator Mode Snap & Audio Alignment (REED-DeathReportExtensions v1.3.2):
+  - Fixed an issue where switching back to vanilla spectating on [Q] left the host's POV locked inside the ship instead of following alive teammates.
+  - Automatically acquires and snaps to the nearest living player upon mode switch.
+  - Ensures the 3D AudioListener immediately attaches to the spectated teammate's head so facility voices and sounds are heard crystal clear.
+* Fixed Orbit Respawn Voice Chat Desync (REED-LandingVoiceGuard v3.6.1):
+  - Fixed a race condition where dying and reviving in orbit could leave player voices stuck at 0.0 volume (muted).
+  - Unconditionally restores full voice volume, spatial audio blend, and gameplay camera AudioListener binding during orbit in-ship phase.
+  - Added a multi-stage delayed reconciliation watchdog (0.25s / 0.50s) to guarantee zero voice dropouts even with network packet latency.
+  - Cleaned up redundant Harmony hooks to eliminate console warnings.
+
 === [v3.7.5] - 2026-08-26 14:15 PHT ===
 * Fixed Moon Routing Asset Caching & Lever Lock Desync (REED-MoonRouteBuffer v1.2.0):
   - Fixed Netcode 64-bit buffer size overflow on client readiness acknowledgments.
