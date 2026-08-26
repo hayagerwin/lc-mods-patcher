@@ -1,3 +1,8 @@
+=== [v3.8.9] - 2026-08-26 17:00 PHT ===
+* Optimized Lever Pull & Level Transition Performance (REED-LandingVoiceGuard v3.7.1 & REED-MoonRouteBuffer v1.2.1):
+  - Fixed an un-cached scene graph search in `StartOfRound.Update` where `FindObjectOfType<StartMatchLever>` was being invoked every single render frame (60–144 times/sec).
+  - Pre-cached the `StartMatchLever` instance statically across `LandingVoiceGuard` and `MoonRouteBuffer`, completely eliminating micro-freezes, FPS drops, and stutter when routing to moons and pulling the launch lever.
+
 === [v3.8.8] - 2026-08-26 16:48 PHT ===
 * Added Wall-Penetration Scanning for Main Exit, Fire Exits, & Doors (REED-ScrapSyncFix v1.1.4):
   - Fixed an issue where the Main Exit and Fire Exits inside the facility were blocked by line-of-sight and could not be scanned through walls.
