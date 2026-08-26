@@ -1,3 +1,9 @@
+=== [v3.9.6] - 2026-08-27 05:32 PHT ===
+* Added Dynamic Weather & Moon Risk Scrap Scaling in ScrapSyncFix (v1.2.0).
+* Scrap item amount and value dynamically scale on the host based on Weather (Foggy, Rainy, Flooded, Stormy, Eclipsed) and Moon Risk Tiers (Safe to S++), encouraging intense hauling runs under high-danger conditions.
+* Added full auto-detection and fallback scaling for all custom modded moons (Wesley's Moons, Bozoros, E-Gypt, Arcadia, etc.) and modded weathers (Blackout, Solar Flare, Blizzard).
+* Configurable multipliers with safety caps in com.reed.scrapsyncfix.cfg.
+
 === [v3.9.5] - 2026-08-26 22:01 PHT ===
 * Restored standard Line of Sight requirements for Main Exit, Main Entrance, and Fire Exits in Better Scanner (ScrapSyncFix). Exits can no longer be scanned through facility walls.
 * Maintained wall penetration exclusively for Scrap (and optional Enemies) at Tier 3 Better Scanner.
