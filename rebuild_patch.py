@@ -81,14 +81,15 @@ if os.path.isdir(coroner_cfg_dir):
         if f.endswith(".xml"):
             entries_to_pack.add(f"BepInEx/config/EliteMasterEric-Coroner/{f}")
 
-for extra_plugin in ["EliteMasterEric-Coroner", "Turkeysteaks-CoronerIntegrations", "xilophor-StaticNetcodeLib"]:
+for extra_plugin in ["EliteMasterEric-Coroner", "Turkeysteaks-CoronerIntegrations", "xilophor-StaticNetcodeLib", "Sconeys-Gnomes"]:
     ep_dir = os.path.join(bepinex_dir, "plugins", extra_plugin)
     if os.path.isdir(ep_dir):
         for froot, _, ffiles in os.walk(ep_dir):
             for file_name in ffiles:
-                full_path = os.path.join(froot, file_name)
-                rel_path = os.path.relpath(full_path, game_root).replace(os.sep, "/")
-                entries_to_pack.add(rel_path)
+                if not file_name.endswith(".bak") and not file_name.endswith(".original"):
+                    full_path = os.path.join(froot, file_name)
+                    rel_path = os.path.relpath(full_path, game_root).replace(os.sep, "/")
+                    entries_to_pack.add(rel_path)
 
 # Poltergeist sounds
 poltergeist_sounds_dir = os.path.join(bepinex_dir, "plugins", "coderCleric-Poltergeist", "sounds")
