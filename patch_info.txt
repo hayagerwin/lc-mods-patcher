@@ -1,7 +1,7 @@
 === [v3.9.7] - 2026-08-27 06:23 PHT ===
 * Fixed Enemy Gnome Scan Bug: Enemy Gnomes (Red Gnome & Blue Flashbang Gnome) previously scanned as green $30 scrap items due to inverted ScanNodeProperties in the mod assetbundle.
-* Repaired gnomes-dev assetbundle to assign nodeType=1 (Enemy) and scrapValue=0 to Enemy Gnomes, and nodeType=2 (Scrap) to Scrap Gnomes.
-* Implemented universal runtime ScanNode auto-correction in ScrapSyncFix to guarantee any EnemyAI entity scans as an enemy (Red) and all GrabbableObject items scan as scrap (Green).
+* Implemented universal dynamic in-memory ScanNode auto-correction in ScrapSyncFix without modifying any third-party mod files or scripts on disk.
+* Guarantees all EnemyAI entities scan strictly as enemies (Red HUD box) and all GrabbableObject items scan as scrap (Green HUD box).
 
 === [v3.9.6] - 2026-08-27 05:32 PHT ===
 * Added Dynamic Weather & Moon Risk Scrap Scaling in ScrapSyncFix (v1.2.0).
