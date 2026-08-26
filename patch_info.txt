@@ -1,3 +1,9 @@
+=== [v3.9.8] - 2026-08-27 06:43 PHT ===
+* Balanced Moon Routing Economy: Synchronized terminal routing costs with Dynamic Scrap Multipliers to establish a balanced progression curve.
+* S+ Tier Moons Rebalanced: 10 E-Gypt ($550, was $60) and 111 PsychSanctum ($550, was $340) now require appropriate investment to prevent Day 1 endgame farming.
+* Lethal Threat Moons Rebalanced: 607 Vigilance ($700), 37 Zenit ($750), 161 Abaddon ($800), and The Iris ($1,000) reflect their extreme danger profiles.
+* Mid-Hazard Moons Rebalanced: 556 Flicker ($250, was $500), 551 Lament ($300, was $550), 31 Arcadia ($200), and 823 Bozoros ($350) now sit within fair Tier 1.5 - Tier 2 entry brackets.
+
 === [v3.9.7] - 2026-08-27 06:23 PHT ===
 * Fixed Enemy Gnome Scan Bug: Enemy Gnomes (Red Gnome & Blue Flashbang Gnome) previously scanned as green $30 scrap items due to inverted ScanNodeProperties in the mod assetbundle.
 * Implemented universal dynamic in-memory ScanNode auto-correction in ScrapSyncFix without modifying any third-party mod files or scripts on disk.
@@ -17,8 +23,3 @@
 * Enhanced patcher self-update logic using a detached spawn-and-replace process to prevent file-locking and 32-bit batch integer overflow bugs.
 * Bundled lethal_company_patcher.bat and update_patcher.bat directly into patch.zip so any patch run will deliver the latest patcher into the game directory.
 * Added 1-click update_patcher.bat for instant cache bypass and patcher refresh.
-
-=== [v3.9.3] - 2026-08-26 20:18 PHT ===
-* Replaced goofy Poltergeist ghost sounds (RobotToyCheer, squeaky, TVKittenTheme, etc.) with custom scary horror and trolling audio clips (creepy laughs, horror sfx, shock screams, voice cracks).
-* Added 9 obsolete vanilla Poltergeist audio files to delete_list.txt for automatic client cleanup.
-* Updated rebuild_patch.py to synchronize custom Poltergeist audio assets and filter obsolete files.
