@@ -1,3 +1,9 @@
+=== [v3.9.9] - 2026-08-27 07:52 PHT ===
+* Critical VoIP Engine Fix in LandingVoiceGuard (v3.8.0): Switched level load muting to pure software broadcast suppression instead of calling Microphone.End(). Preserves continuous OS/USB microphone recording streams so headsets never disconnect or stall during moon transitions.
+* ModelReplacement Exception Shield in SnowyLibFix (v1.2.0): Hooked BodyReplacementBase.UpdateItemTransform to safely clamp HotbarPlus slots, eliminating 20,000+ IndexOutOfRangeException exceptions that previously choked Unity's main thread and audio mixing engine.
+* Audio Stutter Elimination: Removed verbose per-packet buffer logging from PacketWriter expander to prevent main-thread I/O hitches during heavy voice activity.
+* Enhanced F10 Hotkey: Now performs a deep hardware capture restart and mixer resync if Windows audio drivers ever hang.
+
 === [v3.9.8] - 2026-08-27 06:43 PHT ===
 * Balanced Moon Routing Economy: Synchronized terminal routing costs with Dynamic Scrap Multipliers to establish a balanced progression curve.
 * S+ Tier Moons Rebalanced: 10 E-Gypt ($550, was $60) and 111 PsychSanctum ($550, was $340) now require appropriate investment to prevent Day 1 endgame farming.
@@ -8,18 +14,3 @@
 * Fixed Enemy Gnome Scan Bug: Enemy Gnomes (Red Gnome & Blue Flashbang Gnome) previously scanned as green $30 scrap items due to inverted ScanNodeProperties in the mod assetbundle.
 * Implemented universal dynamic in-memory ScanNode auto-correction in ScrapSyncFix without modifying any third-party mod files or scripts on disk.
 * Guarantees all EnemyAI entities scan strictly as enemies (Red HUD box) and all GrabbableObject items scan as scrap (Green HUD box).
-
-=== [v3.9.6] - 2026-08-27 05:32 PHT ===
-* Added Dynamic Weather & Moon Risk Scrap Scaling in ScrapSyncFix (v1.2.0).
-* Scrap item amount and value dynamically scale on the host based on Weather (Foggy, Rainy, Flooded, Stormy, Eclipsed) and Moon Risk Tiers (Safe to S++), encouraging intense hauling runs under high-danger conditions.
-* Added full auto-detection and fallback scaling for all custom modded moons (Wesley's Moons, Bozoros, E-Gypt, Arcadia, etc.) and modded weathers (Blackout, Solar Flare, Blizzard).
-* Configurable multipliers with safety caps in com.reed.scrapsyncfix.cfg.
-
-=== [v3.9.5] - 2026-08-26 22:01 PHT ===
-* Restored standard Line of Sight requirements for Main Exit, Main Entrance, and Fire Exits in Better Scanner (ScrapSyncFix). Exits can no longer be scanned through facility walls.
-* Maintained wall penetration exclusively for Scrap (and optional Enemies) at Tier 3 Better Scanner.
-
-=== [v3.9.4] - 2026-08-26 21:09 PHT ===
-* Enhanced patcher self-update logic using a detached spawn-and-replace process to prevent file-locking and 32-bit batch integer overflow bugs.
-* Bundled lethal_company_patcher.bat and update_patcher.bat directly into patch.zip so any patch run will deliver the latest patcher into the game directory.
-* Added 1-click update_patcher.bat for instant cache bypass and patcher refresh.
