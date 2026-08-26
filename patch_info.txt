@@ -1,3 +1,10 @@
+=== [v3.7.9] - 2026-08-26 15:00 PHT ===
+* Fixed LGU Better Scanner Compatibility with GeneralImprovements & Custom Scrap (REED-ScrapSyncFix v1.1.0):
+  - Fixed an issue where the Better Scanner upgrade from LateGame Upgrades (tier 3 wall-penetrating scan and +20m distance boost) was severely restricted or ignored.
+  - Eliminated GeneralImprovements' hardcoded 7-meter scan node candidate clamp, allowing scans to detect items up to 27+ meters away and ship/entrances up to 180+ meters.
+  - Fully restored scanning through walls for all vanilla and modded scrap items (ChillaxScraps, PremiumScraps, FarmAndCook, LethalThings, etc.) when Better Scanner tier 3 is unlocked.
+  - Resolved Linecast occlusion conflicts between HUD manager patches.
+
 === [v3.7.8] - 2026-08-26 14:55 PHT ===
 * Added Authoritative Moon Scrap Synchronization (REED-ScrapSyncFix v1.0.0):
   - Fixed an issue where Ship Monitor 9 ("Scrap Left") and Terminal scan commands showed drastically different values between Host (> $1,000) and Joiners (~ $200).
