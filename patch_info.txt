@@ -1,3 +1,15 @@
+=== [v3.8.1] - 2026-08-26 15:15 PHT ===
+* Added Live VoIP Diagnostics (F9) & Telemetry Logging (REED-LandingVoiceGuard v3.7.0):
+  - Added Deep Voice Diagnostic Hotkey ([F9]): Instantly scans the complete audio pipeline and dumps an exhaustive diagnostic snapshot to BepInEx/LogOutput.log.
+  - Diagnostic Snapshot covers:
+    * Microphone hardware devices, Unity recording status, and Dissonance capture state.
+    * Software mute/deafen states and VoiceBroadcastTrigger channels.
+    * Global AudioListener position, attachment, master volume, and SoundManager deafen timers.
+    * Dissonance network client/server status and VoIP packet buffer health.
+    * Per-player audit: Alive status, distance, Dissonance tracking, AudioSource playback, volume, and mixer channel routing.
+  - Added real-time event telemetry: automatically logs player death/revive mixer handovers, mute state changes, and packet buffer expansions.
+  - Retains [F10] manual voice reset with full step-by-step telemetry.
+
 === [v3.8.0] - 2026-08-26 15:10 PHT ===
 * Fixed Swapped Gnome Scan Node Types (REED-ScrapSyncFix v1.1.1):
   - Fixed an issue with the Gnomes mod where the Gnome scrap item mistakenly displayed as a RED danger node (like an enemy) despite being valuable loot.
