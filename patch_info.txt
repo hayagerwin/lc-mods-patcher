@@ -1,3 +1,9 @@
+=== [v4.8.1] - 2026-08-27 19:10 PHT ===
+* 📋 Coroner Autopsy & Simon Says Death Tracking Fix (DeathReportExtensions v1.3.4):
+  - ⚽ Simon Says & Remote Attack Hooks: Added dedicated dynamic interception hooks for Football Entity (`FootballAI`), Herobrine (`HerobrineAI`), and The Observer (`ObserverAI`), ensuring deaths caused by failed Simon Says commands or non-collision damage loops are 100% recorded as custom autopsies instead of falling back to "Died?".
+  - 🔍 Active Threat Proximity & Fatal Damage Fallbacks: Added immediate pre-damage checks in `PlayerControllerB.DamagePlayer` and intelligent monster proximity scans to accurately identify the killer monster even when attacks occur across range.
+  - 🌐 Multi-Language Tag Sync: Fixed XML language tags in `Strings_en-us_reed_extensions.xml` to match both `en` and `en-us` locales.
+
 === [v4.8.0] - 2026-08-27 18:45 PHT ===
 * 🚢 Fidelity-First Ship Lobby & Multi-Camera Tuning:
   - 🖥️ Zero-Loss Monitor Canvas Sleep (GeneralImprovements): Configured `AlwaysRenderMonitors = false`. When exploring dungeons 300m away, the CPU sleeps background 2D UI canvas redraws for the 14 ship monitors, completely eliminating idle CPU hitching while maintaining 100% full-resolution and real-time updates inside the ship.
