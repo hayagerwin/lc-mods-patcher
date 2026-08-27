@@ -1,3 +1,7 @@
+=== [v4.8.3] - 2026-08-27 19:20 PHT ===
+* 🔇 Clean Startup Log Formatting (AsyncLoggers):
+  - Filtered harmless `[Warning:InjectionLibrary]` diagnostic messages for native C++ binaries (`onnxruntime.dll`, `SileroVAD.API.dll`, `opus.dll`), ensuring a clean and clutter-free game launch log without false-alarm warnings.
+
 === [v4.8.2] - 2026-08-27 19:15 PHT ===
 * ☀️ Moon 32 Argent Daytime Free-Roam Tuning:
   - 🏞️ Disturbance-Free Scrap Hauling: Set outside daytime enemy power cap to 0 and removed aggressive daytime pests (Tulip Snakes, Bush Wolves, aggressive Baboons) on Moon 32 Argent.
