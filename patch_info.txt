@@ -1,3 +1,7 @@
+=== [v4.4.0] - 2026-08-27 16:00 PHT ===
+* Anti-Ghosting Window Guard (MoonRouteBuffer v1.6.0): Disabled Windows process window ghosting via Win32 API (`DisableProcessWindowsGhosting`). Completely eliminates the false "(Not Responding)" milky-white freeze overlay and the Windows "Close the program / Wait for response" dialog during heavy moon loading.
+* Unity Async Upload Buffer Expansion: Expanded Unity's async texture/mesh upload buffer (`QualitySettings.asyncUploadBufferSize = 64MB`) and async time slice (8ms) with `ThreadPriority.High` background loading. Eliminates disk thrashing and main thread stalls on slower PCs and HDDs.
+
 === [v4.3.0] - 2026-08-27 15:55 PHT ===
 * Mid-Orbit Late-Join Caching Guard (MoonRouteBuffer v1.5.0): Fixed the loophole where changing moons while solo/with fewer players and having a slow PC friend join mid-orbit allowed the host to instantly pull the lever before the new player could cache assets.
 * Automatic Mid-Orbit Re-Locking (`OnClientConnect` & `OnPlayerConnectedClientRpc`): The moment a player connects in orbit, the start match lever is immediately locked on the host with `[ Caching Moon Assets (X/Y)... ]`.
