@@ -67,6 +67,10 @@ fps_cfg = os.path.join(bepinex_dir, "config", "com.hayagerwin.lcfpscounter.cfg")
 if os.path.isfile(fps_cfg):
     entries_to_pack.add("BepInEx/config/com.hayagerwin.lcfpscounter.cfg")
 
+lvg_cfg = os.path.join(bepinex_dir, "config", "com.erwin.landingvoiceguard.cfg")
+if os.path.isfile(lvg_cfg):
+    entries_to_pack.add("BepInEx/config/com.erwin.landingvoiceguard.cfg")
+
 lll_cfg = os.path.join(bepinex_dir, "config", "LethalLevelLoader.cfg")
 if os.path.isfile(lll_cfg):
     entries_to_pack.add("BepInEx/config/LethalLevelLoader.cfg")

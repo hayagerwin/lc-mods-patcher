@@ -1,14 +1,8 @@
+=== [v4.0.1] - 2026-08-27 09:46 PHT ===
+* Permanent Microphone Un-Mute on Custom Moons: Disabled artificial landing mute by default (`EnableLandingGuard = false`) and added an enforced 5-second maximum failsafe watchdog alongside DunGen level generation hooks. Guarantees your microphone is never left in a muted state on custom moons (Zenit, PsychSanctum, E-Gypt, etc.).
+
 === [v4.0.0] - 2026-08-27 09:13 PHT ===
 * Critical VoIP Disconnect Auto-Heal in LandingVoiceGuard (v3.9.0): Hooked player connect/disconnect events to immediately re-evaluate and un-mute Dissonance's `VoiceBroadcastTrigger`. Fixes the bug where teammates couldn't hear your voice after a player abruptly dropped from the lobby.
 * Spectator 3D AudioListener Dynamic Camera Binding: When dead and spectating, the AudioListener now dynamically attaches directly to the spectated teammate's camera, eliminating distance attenuation so alive teammates can always be heard at full clarity.
 * Orphaned Disconnected Slot Voice Guard: Patched `StartOfRound.UpdatePlayerVoiceEffects` to ignore empty player slots, stopping the 2-second error loop and preventing unnecessary voice component resets.
 * Transmission Keep-Alive Watchdog: Added a background heartbeat to guarantee outgoing microphone transmission channels never get stuck in a closed state.
-
-=== [v3.9.10] - 2026-08-27 08:07 PHT ===
-* Fixed HarmonyX Property Warning Spam in SnowyLibFix: Resolved `AccessTools.Property: Could not find property for type ... and name ItemHolder` log spam. Cached reflection handles statically and added a Harmony Finalizer to cleanly neutralize anime model render exceptions without generating log warnings.
-
-=== [v3.9.9] - 2026-08-27 07:52 PHT ===
-* Critical VoIP Engine Fix in LandingVoiceGuard (v3.8.0): Switched level load muting to pure software broadcast suppression instead of calling Microphone.End(). Preserves continuous OS/USB microphone recording streams so headsets never disconnect or stall during moon transitions.
-* ModelReplacement Exception Shield in SnowyLibFix (v1.2.0): Hooked BodyReplacementBase.UpdateItemTransform to safely clamp HotbarPlus slots, eliminating 20,000+ IndexOutOfRangeException exceptions that previously choked Unity's main thread and audio mixing engine.
-* Audio Stutter Elimination: Removed verbose per-packet buffer logging from PacketWriter expander to prevent main-thread I/O hitches during heavy voice activity.
-* Enhanced F10 Hotkey: Now performs a deep hardware capture restart and mixer resync if Windows audio drivers ever hang.
