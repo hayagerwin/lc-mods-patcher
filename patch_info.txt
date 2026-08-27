@@ -1,3 +1,9 @@
+=== [v4.8.5] - 2026-08-27 19:40 PHT ===
+* 🚇 Moon 32 Argent Custom Interior Overhaul:
+  - 🚆 CIDOM Metro #1 Primary Interior: Made CIDOM Metro the highest weighted dungeon flow on Argent (`Weight 400` / ~47.1%), featuring sprawling subway stations, railway tunnels, turnstiles, and subterranean train platforms.
+  - 🟡 Liminal Facility (Backrooms): Maintained as prominent secondary psychological horror interior (`Weight 250` / ~29.4%).
+  - 💧 Drains Facility: Integrated Drains sewer network (`Weight 200` / ~23.5%) for multi-route underground industrial exploration.
+
 === [v4.8.4] - 2026-08-27 19:30 PHT ===
 * 🌲 Slenderman Maximization & Inside Entity Tuning (Moon 32 Argent):
   - 👤 Slenderman Stalker Overhaul: Maximized natural spawn chance (75), boosted Argent page spawn density (25), shortened stalking intervals (12s), and enabled breaker light flips when spotted.
