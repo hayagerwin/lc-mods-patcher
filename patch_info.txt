@@ -1,3 +1,6 @@
+=== [v3.9.10] - 2026-08-27 08:07 PHT ===
+* Fixed HarmonyX Property Warning Spam in SnowyLibFix: Resolved `AccessTools.Property: Could not find property for type ... and name ItemHolder` log spam. Cached reflection handles statically and added a Harmony Finalizer to cleanly neutralize anime model render exceptions without generating log warnings.
+
 === [v3.9.9] - 2026-08-27 07:52 PHT ===
 * Critical VoIP Engine Fix in LandingVoiceGuard (v3.8.0): Switched level load muting to pure software broadcast suppression instead of calling Microphone.End(). Preserves continuous OS/USB microphone recording streams so headsets never disconnect or stall during moon transitions.
 * ModelReplacement Exception Shield in SnowyLibFix (v1.2.0): Hooked BodyReplacementBase.UpdateItemTransform to safely clamp HotbarPlus slots, eliminating 20,000+ IndexOutOfRangeException exceptions that previously choked Unity's main thread and audio mixing engine.
@@ -9,8 +12,3 @@
 * S+ Tier Moons Rebalanced: 10 E-Gypt ($550, was $60) and 111 PsychSanctum ($550, was $340) now require appropriate investment to prevent Day 1 endgame farming.
 * Lethal Threat Moons Rebalanced: 607 Vigilance ($700), 37 Zenit ($750), 161 Abaddon ($800), and The Iris ($1,000) reflect their extreme danger profiles.
 * Mid-Hazard Moons Rebalanced: 556 Flicker ($250, was $500), 551 Lament ($300, was $550), 31 Arcadia ($200), and 823 Bozoros ($350) now sit within fair Tier 1.5 - Tier 2 entry brackets.
-
-=== [v3.9.7] - 2026-08-27 06:23 PHT ===
-* Fixed Enemy Gnome Scan Bug: Enemy Gnomes (Red Gnome & Blue Flashbang Gnome) previously scanned as green $30 scrap items due to inverted ScanNodeProperties in the mod assetbundle.
-* Implemented universal dynamic in-memory ScanNode auto-correction in ScrapSyncFix without modifying any third-party mod files or scripts on disk.
-* Guarantees all EnemyAI entities scan strictly as enemies (Red HUD box) and all GrabbableObject items scan as scrap (Green HUD box).
