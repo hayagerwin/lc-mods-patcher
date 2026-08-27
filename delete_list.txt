@@ -15,3 +15,4 @@ BepInEx/plugins/coderCleric-Poltergeist/sounds/SpikeRoofSlam.ogg
 BepInEx/plugins/coderCleric-Poltergeist/sounds/squeaky.mp3
 BepInEx/plugins/coderCleric-Poltergeist/sounds/TVKittenTheme.ogg
 BepInEx/plugins/coderCleric-Poltergeist/sounds/growl.ogg
+OnlineFix.url
