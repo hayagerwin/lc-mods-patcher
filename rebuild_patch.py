@@ -75,6 +75,10 @@ lll_cfg = os.path.join(bepinex_dir, "config", "LethalLevelLoader.cfg")
 if os.path.isfile(lll_cfg):
     entries_to_pack.add("BepInEx/config/LethalLevelLoader.cfg")
 
+sponge_cfg = os.path.join(bepinex_dir, "config", "LethalSponge.cfg")
+if os.path.isfile(sponge_cfg):
+    entries_to_pack.add("BepInEx/config/LethalSponge.cfg")
+
 onlinefix_ini = os.path.join(game_root, "OnlineFix.ini")
 if os.path.isfile(onlinefix_ini):
     entries_to_pack.add("OnlineFix.ini")

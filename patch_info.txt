@@ -1,3 +1,9 @@
+=== [v4.5.0] - 2026-08-27 17:00 PHT ===
+* ⚡ Massive Game Launch & Boot Optimization: Shaved ~30 seconds off cold game startup time.
+* Fast Startup Reflection & Autopsy Integration (DeathReportExtensions v1.3.3): Replaced global 50,000-type reflection scans with assembly-cached type lookups, reducing plugin startup initialization from 24.5s down to 0.18s.
+* Synchronized Ship Scrap Counter & Fix (ScrapSyncFix v1.2.0): Corrected Harmony hook signature for GeneralImprovements GetScrapAmountAndValue, eliminated IL compile errors, and optimized scrap search loops with fast zero-allocation array queries.
+* Disabled Startup Mesh Decimation (LethalSponge): Disabled boot-time vertex decimation loops on cosmetics and items, saving an extra 5-10s during game launch.
+
 === [v4.4.0] - 2026-08-27 16:00 PHT ===
 * Anti-Ghosting Window Guard (MoonRouteBuffer v1.6.0): Disabled Windows process window ghosting via Win32 API (`DisableProcessWindowsGhosting`). Completely eliminates the false "(Not Responding)" milky-white freeze overlay and the Windows "Close the program / Wait for response" dialog during heavy moon loading.
 * Unity Async Upload Buffer Expansion: Expanded Unity's async texture/mesh upload buffer (`QualitySettings.asyncUploadBufferSize = 64MB`) and async time slice (8ms) with `ThreadPriority.High` background loading. Eliminates disk thrashing and main thread stalls on slower PCs and HDDs.

@@ -9,7 +9,7 @@ REM ============================================================================
 set "REPO_USER=hayagerwin"
 set "REPO_NAME=lc-mods-patcher"
 set "BRANCH=main"
-set "PATCHER_VERSION=20260827155905"
+set "PATCHER_VERSION=20260827170009"
 
 REM Script directory and config path
 set "SCRIPT_DIR=%~dp0"
