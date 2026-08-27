@@ -1,3 +1,9 @@
+=== [v4.0.0] - 2026-08-27 09:13 PHT ===
+* Critical VoIP Disconnect Auto-Heal in LandingVoiceGuard (v3.9.0): Hooked player connect/disconnect events to immediately re-evaluate and un-mute Dissonance's `VoiceBroadcastTrigger`. Fixes the bug where teammates couldn't hear your voice after a player abruptly dropped from the lobby.
+* Spectator 3D AudioListener Dynamic Camera Binding: When dead and spectating, the AudioListener now dynamically attaches directly to the spectated teammate's camera, eliminating distance attenuation so alive teammates can always be heard at full clarity.
+* Orphaned Disconnected Slot Voice Guard: Patched `StartOfRound.UpdatePlayerVoiceEffects` to ignore empty player slots, stopping the 2-second error loop and preventing unnecessary voice component resets.
+* Transmission Keep-Alive Watchdog: Added a background heartbeat to guarantee outgoing microphone transmission channels never get stuck in a closed state.
+
 === [v3.9.10] - 2026-08-27 08:07 PHT ===
 * Fixed HarmonyX Property Warning Spam in SnowyLibFix: Resolved `AccessTools.Property: Could not find property for type ... and name ItemHolder` log spam. Cached reflection handles statically and added a Harmony Finalizer to cleanly neutralize anime model render exceptions without generating log warnings.
 
@@ -6,9 +12,3 @@
 * ModelReplacement Exception Shield in SnowyLibFix (v1.2.0): Hooked BodyReplacementBase.UpdateItemTransform to safely clamp HotbarPlus slots, eliminating 20,000+ IndexOutOfRangeException exceptions that previously choked Unity's main thread and audio mixing engine.
 * Audio Stutter Elimination: Removed verbose per-packet buffer logging from PacketWriter expander to prevent main-thread I/O hitches during heavy voice activity.
 * Enhanced F10 Hotkey: Now performs a deep hardware capture restart and mixer resync if Windows audio drivers ever hang.
-
-=== [v3.9.8] - 2026-08-27 06:43 PHT ===
-* Balanced Moon Routing Economy: Synchronized terminal routing costs with Dynamic Scrap Multipliers to establish a balanced progression curve.
-* S+ Tier Moons Rebalanced: 10 E-Gypt ($550, was $60) and 111 PsychSanctum ($550, was $340) now require appropriate investment to prevent Day 1 endgame farming.
-* Lethal Threat Moons Rebalanced: 607 Vigilance ($700), 37 Zenit ($750), 161 Abaddon ($800), and The Iris ($1,000) reflect their extreme danger profiles.
-* Mid-Hazard Moons Rebalanced: 556 Flicker ($250, was $500), 551 Lament ($300, was $550), 31 Arcadia ($200), and 823 Bozoros ($350) now sit within fair Tier 1.5 - Tier 2 entry brackets.
