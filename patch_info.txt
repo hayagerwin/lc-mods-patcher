@@ -1,7 +1,7 @@
 === [v4.7.0] - 2026-08-27 18:12 PHT ===
 * 🌙 Moon 32 Argent S+ Difficulty & Monster Overhaul:
   - 🏰 Interior Threat Overhaul: Replaced low-tier pests (spiders, bugs, centipedes) with high-tier horrors. Significantly boosted Jester spawn weight (35), Haunted Harpists (30), Mirage Skinwalkers (30), Ethereal Enforcers (25), Clay Surgeon / Barbers (25), Coil-Heads (25), Brackens (25), Nutcrackers (20), Maneater beasts (20), and Ghost Girls (15). Inside max power raised to 18.
-  - 🦖 Outside Apex Predator Incursions: Increased outdoor nighttime power cap to 22. Boosted spawn chances for Jurassic T-Rex (50), The Observer (45), Football Entity (35), Herobrine (45), Siren Head (20), Old Bird Mechs (25), and Forest Giants (30).
+  - 🦖 Outside Apex Predator Incursions (Dog-Free Titan World): Removed Eyeless Dogs to eliminate conflicting stealth mechanics. Increased outdoor nighttime power cap to 22, heavily favoring Jurassic T-Rex (55), The Observer (50), Football Entity (35), Herobrine (45), Old Bird Mechs (30), Forest Giants (30), Siren Head (25), and Earth Leviathans (20).
   - ☀️ Daytime Roamers: Added Tulip Snakes, Bush Wolves, and Baboon packs to keep daytime scrap hauling engaging.
 
 === [v4.6.0] - 2026-08-27 17:25 PHT ===
