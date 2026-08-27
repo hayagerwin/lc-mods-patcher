@@ -83,7 +83,7 @@ cull_cfg = os.path.join(bepinex_dir, "config", "com.fumiko.CullFactory.cfg")
 if os.path.isfile(cull_cfg):
     entries_to_pack.add("BepInEx/config/com.fumiko.CullFactory.cfg")
 
-for mob_cfg in ["347956.JPOGTrex.cfg", "Reiko888.Observer.cfg", "Kittenji.FootballEntity.cfg", "Kittenji.HerobrineMod.cfg", "ShaosilGaming.GeneralImprovements.cfg", "Zaggy1024.OpenBodyCams.cfg"]:
+for mob_cfg in ["347956.JPOGTrex.cfg", "Reiko888.Observer.cfg", "Kittenji.FootballEntity.cfg", "Kittenji.HerobrineMod.cfg", "sparble.slendermanmod.cfg", "ShaosilGaming.GeneralImprovements.cfg", "Zaggy1024.OpenBodyCams.cfg"]:
     m_p = os.path.join(bepinex_dir, "config", mob_cfg)
     if os.path.isfile(m_p):
         entries_to_pack.add(f"BepInEx/config/{mob_cfg}")

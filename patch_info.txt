@@ -1,3 +1,8 @@
+=== [v4.8.4] - 2026-08-27 19:30 PHT ===
+* 🌲 Slenderman Maximization & Inside Entity Tuning (Moon 32 Argent):
+  - 👤 Slenderman Stalker Overhaul: Maximized natural spawn chance (75), boosted Argent page spawn density (25), shortened stalking intervals (12s), and enabled breaker light flips when spotted.
+  - 🏰 Clean Custom Dungeon Roster: Removed Coil-Head, Bracken, Ghost Girl, and Nutcracker from 32 Argent, focusing the interior pool on high-tier custom horrors: Jester (45), Haunted Harpist (40), Mirage Mimics (35), Clay Surgeon / Barber (35), Ethereal Enforcer (30), and Maneater (25).
+
 === [v4.8.3] - 2026-08-27 19:20 PHT ===
 * 🔇 Clean Startup Log Formatting (AsyncLoggers):
   - Filtered harmless `[Warning:InjectionLibrary]` diagnostic messages for native C++ binaries (`onnxruntime.dll`, `SileroVAD.API.dll`, `opus.dll`), ensuring a clean and clutter-free game launch log without false-alarm warnings.
