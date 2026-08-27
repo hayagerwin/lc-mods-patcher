@@ -1,3 +1,8 @@
+=== [v4.3.0] - 2026-08-27 15:55 PHT ===
+* Mid-Orbit Late-Join Caching Guard (MoonRouteBuffer v1.5.0): Fixed the loophole where changing moons while solo/with fewer players and having a slow PC friend join mid-orbit allowed the host to instantly pull the lever before the new player could cache assets.
+* Automatic Mid-Orbit Re-Locking (`OnClientConnect` & `OnPlayerConnectedClientRpc`): The moment a player connects in orbit, the start match lever is immediately locked on the host with `[ Caching Moon Assets (X/Y)... ]`.
+* Joining Player Auto Pre-Warming: The joining client immediately initiates background pre-warming for the target moon's AssetBundles, scrap, and enemy prefabs upon connection, unlocking the lever only when all connected crew members are ready.
+
 === [v4.2.0] - 2026-08-27 15:35 PHT ===
 * Synchronized Descent Scene Loading Gates (MoonRouteBuffer v1.4.0): Fixed the critical desync bug where the host's fast PC loaded the moon terrain and generated the dungeon while slower PCs were still loading the additive scene and saw only outer space.
 * Deep Asset Pre-Warming in Orbit: The client now recursively touches and pre-loads all level enemy prefabs, outside monsters, scrap props, and LethalLevelLoader streaming AssetBundles into memory during orbit transit before signaling readiness.
