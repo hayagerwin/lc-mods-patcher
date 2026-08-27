@@ -1,3 +1,10 @@
+=== [v4.1.0] - 2026-08-27 15:05 PHT ===
+* Recalibrated Moon Route Asset Caching & Transit Buffer (MoonRouteBuffer v1.3.0): Fixed the bug where the host immediately pulling the lever after routing to a new moon overwhelmed slower PCs.
+* Multi-Stage Client Asset Verification: Every client now asynchronously waits for custom moon streaming AssetBundles (LethalLevelLoader) and visual meshes to finish loading, and stabilizes disk I/O and garbage collection before reporting readiness.
+* Configurable Transit Stabilization Buffer: Added a 3-second minimum post-arrival transit buffer (`MinTransitBufferSeconds = 3.0s`) to give slower PCs breathing room to decompress assets and warm up shaders.
+* Multi-Point Anti-Race Lever Guards: Hard prefix interceptors on `PullLever`, `StartGame`, `StartGameServerRpc`, and `StartMatchLever.Update` guarantee the start match lever cannot be pulled or triggered until all connected players have verified asset readiness.
+* Real-Time Caching Progress & HUD Feedback: Dynamic lever hover tip displays `[ Caching Moon Assets (X/Y)... ]` and notifies the lobby when all crew members are cached and ready to land.
+
 === [v4.0.1] - 2026-08-27 09:46 PHT ===
 * Permanent Microphone Un-Mute on Custom Moons: Disabled artificial landing mute by default (`EnableLandingGuard = false`) and added an enforced 5-second maximum failsafe watchdog alongside DunGen level generation hooks. Guarantees your microphone is never left in a muted state on custom moons (Zenit, PsychSanctum, E-Gypt, etc.).
 
