@@ -1,3 +1,8 @@
+=== [v4.8.2] - 2026-08-27 19:15 PHT ===
+* ☀️ Moon 32 Argent Daytime Free-Roam Tuning:
+  - 🏞️ Disturbance-Free Scrap Hauling: Set outside daytime enemy power cap to 0 and removed aggressive daytime pests (Tulip Snakes, Bush Wolves, aggressive Baboons) on Moon 32 Argent.
+  - 🌙 Day vs. Night Dynamic Contrast: Guarantees players an undisturbed morning to establish forward scrap routes and explore the valley, followed by intense late-afternoon titan incursions (Jurassic T-Rex, The Observer, Old Birds, Herobrine, and Football Entity).
+
 === [v4.8.1] - 2026-08-27 19:10 PHT ===
 * 📋 Coroner Autopsy & Simon Says Death Tracking Fix (DeathReportExtensions v1.3.4):
   - ⚽ Simon Says & Remote Attack Hooks: Added dedicated dynamic interception hooks for Football Entity (`FootballAI`), Herobrine (`HerobrineAI`), and The Observer (`ObserverAI`), ensuring deaths caused by failed Simon Says commands or non-collision damage loops are 100% recorded as custom autopsies instead of falling back to "Died?".
