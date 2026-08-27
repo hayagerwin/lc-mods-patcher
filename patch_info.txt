@@ -1,3 +1,8 @@
+=== [v4.6.0] - 2026-08-27 17:25 PHT ===
+* 🏰 In-Facility Dynamic Occlusion Culling (CullFactory v2.0.11): Integrated portal-based occlusion culling for all DunGen interiors. Prevents rendering occluded rooms, lighting, and props through solid walls, yielding an immediate +30 to +60 FPS boost inside complex facilities.
+* Full Custom Moon & Interior Compatibility: Tuned branching depth and doorway thresholds for all 15 modded dungeon flows (Gothic Monastery, Bunker, Niven Reactor, Tower, etc.) with automatic depth culling fallbacks on broken sockets.
+* Multi-Camera Support: Seamlessly integrated with OpenBodyCams and ship radar monitors without visual clipping or void artifacts.
+
 === [v4.5.0] - 2026-08-27 17:00 PHT ===
 * ⚡ Massive Game Launch & Boot Optimization: Shaved ~30 seconds off cold game startup time.
 * Fast Startup Reflection & Autopsy Integration (DeathReportExtensions v1.3.3): Replaced global 50,000-type reflection scans with assembly-cached type lookups, reducing plugin startup initialization from 24.5s down to 0.18s.

@@ -79,6 +79,10 @@ sponge_cfg = os.path.join(bepinex_dir, "config", "LethalSponge.cfg")
 if os.path.isfile(sponge_cfg):
     entries_to_pack.add("BepInEx/config/LethalSponge.cfg")
 
+cull_cfg = os.path.join(bepinex_dir, "config", "com.fumiko.CullFactory.cfg")
+if os.path.isfile(cull_cfg):
+    entries_to_pack.add("BepInEx/config/com.fumiko.CullFactory.cfg")
+
 onlinefix_ini = os.path.join(game_root, "OnlineFix.ini")
 if os.path.isfile(onlinefix_ini):
     entries_to_pack.add("OnlineFix.ini")
@@ -89,7 +93,7 @@ if os.path.isdir(coroner_cfg_dir):
         if f.endswith(".xml"):
             entries_to_pack.add(f"BepInEx/config/EliteMasterEric-Coroner/{f}")
 
-for extra_plugin in ["EliteMasterEric-Coroner", "Turkeysteaks-CoronerIntegrations", "xilophor-StaticNetcodeLib"]:
+for extra_plugin in ["EliteMasterEric-Coroner", "Turkeysteaks-CoronerIntegrations", "xilophor-StaticNetcodeLib", "fumiko-CullFactory"]:
     ep_dir = os.path.join(bepinex_dir, "plugins", extra_plugin)
     if os.path.isdir(ep_dir):
         for froot, _, ffiles in os.walk(ep_dir):
